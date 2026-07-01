@@ -432,13 +432,14 @@
   /* ── HAMBURGUESA ── */
   .hamburguesa {
     display: none;
-    flex-direction: column; gap: 5px;
-    cursor: pointer; padding: 4px;
+    flex-direction: column; gap: 6px;
+    cursor: pointer; padding: 10px 14px;
     background: none; border: none;
+    align-items: center; justify-content: center;
   }
   .hamburguesa span {
-    display: block; width: 24px; height: 2px;
-    background: #ccc; border-radius: 2px;
+    display: block; width: 28px; height: 3px;
+    background: #ffffff; border-radius: 3px;
     transition: all 0.3s;
   }
   .hamburguesa.activo span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
@@ -470,7 +471,7 @@
       font-size: 0.95rem;
     }
     .nav-right { gap: 0.5rem; padding-right: 0; margin-right: 0; }
-    .hamburguesa { padding: 0 1rem; }
+    .hamburguesa { padding: 10px 14px 10px 10px; }
   }
 
 </style>
