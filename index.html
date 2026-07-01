@@ -816,7 +816,14 @@ async function enviarFormulario(e) {
     const res = await fetch('https://formspree.io/f/mqevejgl', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ nombre, email, asunto, mensaje })
+      body: JSON.stringify({
+        _subject: asunto + ' - Sindicato UCEN',
+        _replyto: email,
+        'Nombre': nombre,
+        'Correo de contacto': email,
+        'Asunto': asunto,
+        'Mensaje': mensaje
+      })
     });
 
     if (res.ok) {
