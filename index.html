@@ -686,7 +686,7 @@
       <div>
         <p class="section-eyebrow">Únete hoy</p>
         <h2 class="section-title">Sé parte del sindicato</h2>
-        <p class="section-body">Afiliarte es sencillo, voluntario y sin costo inicial. Completa el formulario y un representante de nuestra directiva se pondrá en contacto contigo.</p>
+        <p class="section-body">Afiliarte es sencillo, voluntario y sin costo inicial. Descarga el formulario y complétalo, lo envías a nuestro correo y un representante de nuestra directiva se pondrá en contacto contigo.</p>
       </div>
       <a href="documentos/formulario_inscripcion.doc" download class="btn-blanco">⬇ Descargar formulario de inscripción</a>
     </div>
@@ -782,11 +782,24 @@ function mostrarSeccion(id) {
   const seccion = document.getElementById(id);
   if (seccion) {
     seccion.style.display = 'block';
+    // Guardar que esta sección fue activada
+    const visibles = JSON.parse(sessionStorage.getItem('seccionesVisibles') || '[]');
+    if (!visibles.includes(id)) visibles.push(id);
+    sessionStorage.setItem('seccionesVisibles', JSON.stringify(visibles));
     setTimeout(() => {
       seccion.scrollIntoView({ behavior: 'smooth' });
     }, 50);
   }
 }
+
+// Al cargar la página, restaurar secciones que estaban visibles
+window.addEventListener('DOMContentLoaded', () => {
+  const visibles = JSON.parse(sessionStorage.getItem('seccionesVisibles') || '[]');
+  visibles.forEach(id => {
+    const seccion = document.getElementById(id);
+    if (seccion) seccion.style.display = 'block';
+  });
+});
 
 function toggleMenu() {
   const menu = document.getElementById('navLinks');
