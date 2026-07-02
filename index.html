@@ -539,6 +539,89 @@
     }
   }
 
+
+  /* ── MODO OSCURO AUTOMÁTICO ── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --blanco:     #1a1a1a;
+      --gris:       #e0e0e0;
+      --gris-medio: #aaaaaa;
+      --gris-claro: #252525;
+      --borde:      #3a3a3a;
+      --carbon:     #f0f0f0;
+    }
+
+    body { background: #1a1a1a; color: #e0e0e0; }
+
+    /* Nav */
+    nav { background: rgba(10,10,10,0.97); }
+
+    /* Secciones claras */
+    .sobre  { background: #1a1a1a; }
+    .beneficios { background: #252525; }
+    .noticias { background: #1a1a1a; }
+    .contacto { background: #252525; }
+    .documentos { background: #1a1a1a; }
+
+    /* Cards */
+    .card {
+      background: #2a2a2a;
+      border-top-color: #4A4A4A;
+    }
+    .card h3 { color: #f0f0f0; }
+
+    /* Noticias */
+    .noticia { border-color: #3a3a3a; background: #2a2a2a; }
+    .noticia-head { background: #333; }
+    .noticia-body h3 { color: #f0f0f0; }
+
+    /* Documentos */
+    .doc-card { background: #2a2a2a; border-color: #3a3a3a; }
+    .doc-card h3 { color: #f0f0f0; }
+    .doc-tipo { background: #333; color: #aaa; }
+    .doc-tipo.word { background: #1a2a3a; color: #7aadff; }
+    .doc-tipo.pdf  { background: #2a1a1a; color: #ff8080; }
+    .envio-card { background: #2a2a2a; }
+    .envio-card h3 { color: #f0f0f0; }
+
+    /* Títulos de sección */
+    .section-title { color: #f0f0f0; }
+
+    /* Formulario contacto */
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      background: #2a2a2a;
+      border-color: #3a3a3a;
+      color: #e0e0e0;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color: #4A4A4A; }
+    .form-group label { color: #aaa; }
+
+    /* Contacto info */
+    .info-text { color: #aaa; }
+    .info-text strong { color: #e0e0e0; }
+    .contacto-info h3 { color: #f0f0f0; }
+
+    /* Footer */
+    footer { background: #0d0d0d; }
+
+    /* Afiliación banda */
+    .afiliacion { background: #2a2a2a; }
+    .afiliacion .section-title { color: #f0f0f0; }
+    .afiliacion .section-body { color: #aaa; }
+    .btn-blanco { background: #f0f0f0; color: #2a2a2a; }
+
+    /* Sobre nosotros */
+    .sobre-img { background: #2a2a2a; }
+
+    /* Botones descarga */
+    .btn-descarga { background: #3a3a3a; }
+    .btn-descarga:hover { background: #4a4a4a; }
+  }
+
 </style>
 </head>
 <body>
