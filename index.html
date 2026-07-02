@@ -704,6 +704,8 @@
   }
 
 </style>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
 </head>
 <body>
 
@@ -1056,14 +1058,13 @@ function cerrarMenu() {
 async function enviarFormulario(e) {
   e.preventDefault();
 
-  const nombre  = document.getElementById('nombre').value.trim();
-  const email   = document.getElementById('email').value.trim();
-  const asunto  = document.getElementById('asunto').value;
-  const mensaje = document.getElementById('mensaje').value.trim();
+  const nombre   = document.getElementById('nombre').value.trim();
+  const email    = document.getElementById('email').value.trim();
+  const asunto   = document.getElementById('asunto').value;
+  const mensaje  = document.getElementById('mensaje').value.trim();
   const feedback = document.getElementById('formFeedback');
   const btn      = document.getElementById('btnEnviar');
 
-  // Validación básica
   if (!nombre || !email || !asunto || !mensaje) {
     feedback.style.display = 'block';
     feedback.style.background = '#fff3f3';
@@ -1077,33 +1078,24 @@ async function enviarFormulario(e) {
   btn.disabled = true;
 
   try {
-    const res = await fetch('https://formspree.io/f/mqevejgl', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: asunto + ' - Sindicato UCEN',
-        _replyto: email,
-        'Nombre': nombre,
-        'Correo de contacto': email,
-        'Asunto': asunto,
-        'Mensaje': mensaje
-      })
+    await emailjs.send('service_od1ynkz', 'template_ctug1pi', {
+      nombre:  nombre,
+      email:   email,
+      asunto:  asunto,
+      mensaje: mensaje
     });
 
-    if (res.ok) {
-      feedback.style.display = 'block';
-      feedback.style.background = '#f0fff4';
-      feedback.style.border = '1px solid #4caf50';
-      feedback.style.color = '#2e7d32';
-      feedback.textContent = '✓ Mensaje enviado correctamente. Nos pondremos en contacto contigo a la brevedad.';
-      document.getElementById('nombre').value  = '';
-      document.getElementById('email').value   = '';
-      document.getElementById('asunto').value  = '';
-      document.getElementById('mensaje').value = '';
-      btn.textContent = 'Mensaje enviado';
-    } else {
-      throw new Error('Error en el servidor');
-    }
+    feedback.style.display = 'block';
+    feedback.style.background = '#f0fff4';
+    feedback.style.border = '1px solid #4caf50';
+    feedback.style.color = '#2e7d32';
+    feedback.textContent = '✓ Mensaje enviado correctamente. Nos pondremos en contacto contigo a la brevedad.';
+    document.getElementById('nombre').value  = '';
+    document.getElementById('email').value   = '';
+    document.getElementById('asunto').value  = '';
+    document.getElementById('mensaje').value = '';
+    btn.textContent = 'Mensaje enviado';
+
   } catch (err) {
     feedback.style.display = 'block';
     feedback.style.background = '#fff3f3';
