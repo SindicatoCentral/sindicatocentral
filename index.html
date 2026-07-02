@@ -1097,6 +1097,7 @@ async function enviarFormulario(e) {
     btn.textContent = 'Mensaje enviado';
 
   } catch (err) {
+    console.error('EmailJS error completo:', JSON.stringify(err));
     feedback.style.display = 'block';
     feedback.style.background = '#fff3f3';
     feedback.style.border = '1px solid #e06068';
