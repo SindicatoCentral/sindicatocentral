@@ -1078,23 +1078,36 @@ async function enviarFormulario(e) {
   btn.disabled = true;
 
   try {
-    await emailjs.send('service_od1ynkz', 'template_t3x6dhr', {
-      nombre:  nombre,
-      email:   email,
-      asunto:  asunto,
-      mensaje: mensaje
+    const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_id:  'service_od1ynkz',
+        template_id: 'template_t3x6dhr',
+        user_id:     'ihfUuwYWzNx9WwHoE',
+        template_params: {
+          nombre:  nombre,
+          email:   email,
+          asunto:  asunto,
+          mensaje: mensaje
+        }
+      })
     });
 
-    feedback.style.display = 'block';
-    feedback.style.background = '#f0fff4';
-    feedback.style.border = '1px solid #4caf50';
-    feedback.style.color = '#2e7d32';
-    feedback.textContent = '✓ Mensaje enviado correctamente. Nos pondremos en contacto contigo a la brevedad.';
-    document.getElementById('nombre').value  = '';
-    document.getElementById('email').value   = '';
-    document.getElementById('asunto').value  = '';
-    document.getElementById('mensaje').value = '';
-    btn.textContent = 'Mensaje enviado';
+    if (res.ok) {
+      feedback.style.display = 'block';
+      feedback.style.background = '#f0fff4';
+      feedback.style.border = '1px solid #4caf50';
+      feedback.style.color = '#2e7d32';
+      feedback.textContent = '✓ Mensaje enviado correctamente. Nos pondremos en contacto contigo a la brevedad.';
+      document.getElementById('nombre').value  = '';
+      document.getElementById('email').value   = '';
+      document.getElementById('asunto').value  = '';
+      document.getElementById('mensaje').value = '';
+      btn.textContent = 'Mensaje enviado';
+    } else {
+      throw new Error('Error ' + res.status);
+    }
 
   } catch (err) {
     console.error('EmailJS error completo:', JSON.stringify(err));
