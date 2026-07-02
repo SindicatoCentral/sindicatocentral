@@ -449,14 +449,30 @@
   @media (max-width: 768px) {
     nav {
       grid-template-columns: auto 1fr auto;
-      padding: 0 0 0 0.8rem;
+      padding: 0;
+      height: 56px;
     }
-    .hamburguesa { display: flex; }
-    
+    .nav-logo { height: 26px; margin-left: 0.6rem; }
+    .nav-right { gap: 0.2rem; padding-right: 0; margin-right: 0; }
+    .nav-right img { height: 18px; }
+    .nav-cta {
+      font-size: 0.65rem;
+      padding: 0.35rem 0.7rem;
+    }
+    .hamburguesa {
+      display: flex;
+      padding: 0 0.8rem;
+      height: 56px;
+      align-items: center;
+    }
+    .hamburguesa span {
+      width: 22px;
+      height: 2px;
+    }
     .nav-links {
       display: none;
       position: fixed;
-      top: 68px; left: 0; right: 0;
+      top: 56px; left: 0; right: 0;
       background: rgba(30,30,30,0.98);
       flex-direction: column;
       padding: 1.5rem 2rem;
@@ -470,9 +486,6 @@
       display: block; padding: 1rem 0;
       font-size: 0.95rem;
     }
-    .nav-right { gap: 0.3rem; padding-right: 0; margin-right: 0; }
-    .nav-right img { height: 22px; }
-    .hamburguesa { padding: 8px 8px 8px 6px; }
   }
 
 </style>
