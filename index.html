@@ -355,46 +355,68 @@
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
+
+    /* NAV */
     nav {
-      grid-template-columns: auto 1fr auto;
-      padding: 0 0 0 0.8rem;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
       height: 56px;
     }
-    .nav-logo { height: 28px; }
-    .nav-links { display: none; }
+    .nav-logo { height: 30px; }
+    .nav-logo-ucen { height: 20px; }
+    .nav-right { display: flex; align-items: center; gap: 0.8rem; }
+    .nav-cta-desktop { display: none !important; }
+    .hamburguesa { display: flex; padding: 4px 0; }
+    .hamburguesa span { width: 24px; height: 2.5px; }
+
+    /* MENÚ DESPLEGABLE */
+    .nav-links {
+      display: none;
+      position: fixed;
+      top: 56px; left: 0; right: 0;
+      background: rgba(20,20,20,0.99);
+      flex-direction: column;
+      padding: 0;
+      z-index: 999;
+      border-bottom: 3px solid var(--rojo);
+    }
+    .nav-links.abierto { display: flex !important; }
+    .nav-links li {
+      border-bottom: 1px solid #333;
+      margin: 0;
+      background: none;
+    }
+    .nav-links li a {
+      display: block !important;
+      padding: 1rem 1.5rem !important;
+      font-size: 0.95rem !important;
+      color: #cccccc !important;
+      text-decoration: none;
+    }
+    .nav-links li a:hover { color: #fff !important; }
+
+    /* AFÍLIATE EN MENÚ MÓVIL */
     .nav-afiliate-movil {
-      background: var(--rojo);
-      margin-top: 0.5rem;
+      background: var(--rojo) !important;
       border-bottom: none !important;
     }
     .nav-afiliate-movil a {
-      color: #fff !important;
+      color: #ffffff !important;
       font-weight: 700 !important;
-      text-align: center;
+      text-align: center !important;
+      letter-spacing: 0.05em !important;
     }
+
+    /* RESTO RESPONSIVE */
     .banda { grid-template-columns: 1fr; }
     .afiliacion-inner { grid-template-columns: 1fr; }
     .contacto-grid { grid-template-columns: 1fr; gap: 2rem; }
     .form-row { grid-template-columns: 1fr; }
     .directores-grid { grid-template-columns: repeat(2, 1fr); }
-    .nav-right { gap: 0.3rem; padding-right: 0; }
-    .nav-logo-ucen { height: 20px; }
-    .nav-cta-desktop { display: none; }
-    .hamburguesa { display: flex; padding: 0 0.8rem; height: 56px; align-items: center; }
-    .hamburguesa span { width: 24px; height: 2.5px; }
-    .nav-links.abierto {
-      display: flex;
-      position: fixed;
-      top: 56px; left: 0; right: 0;
-      background: rgba(30,30,30,0.98);
-      flex-direction: column;
-      padding: 1rem 2rem;
-      gap: 0;
-      border-bottom: 2px solid var(--rojo);
-      z-index: 99;
-    }
-    .nav-links li { border-bottom: 1px solid #333; }
-    .nav-links a { display: block; padding: 0.9rem 0; font-size: 0.95rem; color: #ccc; }
+    .sobre-grid { grid-template-columns: 1fr; gap: 2.5rem; }
   }
 
   /* ── DOCUMENTOS ── */
