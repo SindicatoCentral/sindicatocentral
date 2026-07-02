@@ -678,6 +678,31 @@
     }
   }
 
+
+  /* ── BOTÓN SUBIR ── */
+  .btn-subir {
+    position: fixed;
+    bottom: 2rem; right: 1.5rem;
+    width: 44px; height: 44px;
+    background: #4A4A4A;
+    color: white;
+    border: none; border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s, transform 0.2s, background 0.2s;
+    z-index: 200;
+  }
+  .btn-subir.visible { opacity: 1; pointer-events: all; }
+  .btn-subir:hover { background: #2C2C2C; transform: translateY(-2px); }
+
+  @media (prefers-color-scheme: dark) {
+    .btn-subir { background: #555; }
+    .btn-subir:hover { background: #777; }
+  }
+
 </style>
 </head>
 <body>
@@ -1089,6 +1114,21 @@ async function enviarFormulario(e) {
     btn.disabled = false;
   }
 }
+</script>
+
+
+<button class="btn-subir" id="btnSubir" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Volver arriba">↑</button>
+
+
+<script>
+  window.addEventListener('scroll', function() {
+    const btn = document.getElementById('btnSubir');
+    if (window.scrollY > 400) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  });
 </script>
 
 </body>
