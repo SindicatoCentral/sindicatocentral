@@ -703,6 +703,120 @@
     .btn-subir:hover { background: #777; }
   }
 
+
+  /* ── PROCESO AFILIACIÓN ── */
+  .proceso { background: var(--gris-claro); }
+  .pasos-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .paso-card {
+    background: var(--blanco);
+    border-radius: 2px; padding: 2rem 1.5rem;
+    position: relative;
+    border-top: 3px solid var(--rojo);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .paso-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.08); transform: translateY(-3px); }
+  .paso-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem; font-weight: 900;
+    color: var(--rojo); line-height: 1; margin-bottom: 0.8rem;
+    opacity: 0.15;
+    position: absolute; top: 1rem; right: 1.2rem;
+  }
+  .paso-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; color: var(--carbon); margin-bottom: 0.5rem;
+  }
+  .paso-card p { font-size: 0.88rem; color: var(--gris-medio); }
+
+  /* ── DERECHOS Y OBLIGACIONES ── */
+  .derechos { background: var(--blanco); }
+  .derechos-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2rem; margin-top: 3rem;
+  }
+  .derechos-col h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; color: var(--carbon);
+    margin-bottom: 1.2rem; padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--rojo);
+  }
+  .derechos-item {
+    display: flex; gap: 0.8rem; margin-bottom: 1rem; align-items: flex-start;
+  }
+  .derechos-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .derechos-item p { font-size: 0.88rem; color: var(--gris-medio); line-height: 1.5; }
+
+  /* ── COMISIONES ── */
+  .comisiones { background: var(--carbon); }
+  .comisiones .section-title { color: var(--blanco); }
+  .comisiones .section-eyebrow { color: #aaa; }
+  .comisiones-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .comision-card {
+    background: #2a2a2a; border-radius: 2px; padding: 2rem 1.8rem;
+    border-left: 3px solid var(--rojo);
+    transition: background 0.2s;
+  }
+  .comision-card:hover { background: #333; }
+  .comision-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .comision-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem; color: var(--blanco); margin-bottom: 0.8rem;
+  }
+  .comision-card ul { list-style: none; padding: 0; }
+  .comision-card ul li {
+    font-size: 0.85rem; color: #aaa; padding: 0.3rem 0;
+    padding-left: 1rem; position: relative;
+  }
+  .comision-card ul li::before {
+    content: '—'; position: absolute; left: 0; color: var(--rojo);
+  }
+
+  /* ── FAQ ── */
+  .faq { background: var(--gris-claro); }
+  .faq-lista { margin-top: 3rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .faq-item {
+    background: var(--blanco); border-radius: 2px;
+    border-left: 3px solid var(--rojo);
+    overflow: hidden;
+  }
+  .faq-pregunta {
+    width: 100%; background: none; border: none; cursor: pointer;
+    padding: 1.2rem 1.5rem; text-align: left;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Inter', sans-serif; font-size: 0.95rem;
+    font-weight: 600; color: var(--carbon);
+  }
+  .faq-pregunta:hover { background: var(--gris-claro); }
+  .faq-icono { font-size: 1.2rem; transition: transform 0.3s; flex-shrink: 0; }
+  .faq-item.abierto .faq-icono { transform: rotate(45deg); }
+  .faq-respuesta {
+    display: none; padding: 0 1.5rem 1.2rem;
+    font-size: 0.9rem; color: var(--gris-medio); line-height: 1.7;
+  }
+  .faq-item.abierto .faq-respuesta { display: block; }
+
+  @media (max-width: 768px) {
+    .derechos-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .proceso { background: #252525; }
+    .paso-card { background: #2a2a2a; }
+    .paso-card h3 { color: #f0f0f0; }
+    .derechos { background: #1a1a1a; }
+    .derechos-col h3 { color: #f0f0f0; }
+    .faq { background: #252525; }
+    .faq-item { background: #2a2a2a; }
+    .faq-pregunta { color: #f0f0f0; }
+    .faq-pregunta:hover { background: #333; }
+  }
+
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -767,13 +881,213 @@
         <p>Fundado el <strong>23 de octubre de 1990</strong> en la ciudad de Santiago, el Sindicato de Trabajadores de la Universidad Central de Chile lleva más de tres décadas defendiendo los intereses de los trabajadores de nuestra casa de estudios. Inscrito en el Registro Sindical Único bajo el N° 13012450, con domicilio en la comuna de Santiago y jurisdicción en el área Metropolitana.</p>
         <p>Nuestro propósito es representar a los trabajadores afiliados en el ejercicio de sus derechos, negociar colectivamente para mejorar sus condiciones laborales, prestar ayuda mutua entre asociados y promover la educación sindical, técnica y general de nuestros socios.</p>
         <p>Velamos además por la prevención de riesgos laborales, el mejoramiento de la calidad del empleo y el acceso a servicios de asesoría jurídica, educacional y socioeconómica para todos nuestros afiliados.</p>
-        <p>Nuestra directiva es elegida democráticamente cada <strong>cuatro años</strong> ante un Ministro de Fe y rinde cuenta anualmente a la Asamblea de Socios, nuestra máxima autoridad deliberante y decisoria.</p>
+        <p>La Asamblea de Socios es nuestra máxima autoridad deliberante y decisoria, y se reúne ordinariamente cada 45 días para resolver los asuntos que permitan la mejor marcha de la organización.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- BENEFICIOS -->
+
+<!-- PROCESO DE AFILIACIÓN -->
+<section class="proceso" id="afiliacion-proceso">
+  <div class="container">
+    <p class="section-eyebrow">Paso a paso</p>
+    <h2 class="section-title">¿Cómo afiliarse?</h2>
+    <p class="section-body">El proceso de afiliación es voluntario, sencillo y está regulado por nuestros estatutos.</p>
+    <div class="pasos-grid">
+      <div class="paso-card">
+        <span class="paso-num">1</span>
+        <h3>Descarga el formulario</h3>
+        <p>Descarga el formulario de solicitud de afiliación disponible en la sección de Documentos de este sitio.</p>
+      </div>
+      <div class="paso-card">
+        <span class="paso-num">2</span>
+        <h3>Completa y presenta</h3>
+        <p>Completa el formulario y preséntalo por escrito ante el Secretario del Sindicato o quien lo reemplace.</p>
+      </div>
+      <div class="paso-card">
+        <span class="paso-num">3</span>
+        <h3>Resolución en asamblea</h3>
+        <p>Tu solicitud será resuelta en la próxima asamblea ordinaria. Si no se trata, se entiende automáticamente aprobada.</p>
+      </div>
+      <div class="paso-card">
+        <span class="paso-num">4</span>
+        <h3>Bienvenido al sindicato</h3>
+        <p>Una vez aprobada tu solicitud, la fecha de ingreso será la de presentación de tu solicitud escrita.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DERECHOS Y OBLIGACIONES -->
+<section class="derechos" id="derechos">
+  <div class="container">
+    <p class="section-eyebrow">Artículos 5° y 6°</p>
+    <h2 class="section-title">Derechos y obligaciones</h2>
+    <div class="derechos-grid">
+      <div class="derechos-col">
+        <h3>✅ Derechos de los socios</h3>
+        <div class="derechos-item">
+          <span class="derechos-icon">🗳️</span>
+          <p>Votar y ser votado para cargos sindicales según lo establecido en el estatuto.</p>
+        </div>
+        <div class="derechos-item">
+          <span class="derechos-icon">🤝</span>
+          <p>Ser representado por el Sindicato en la negociación colectiva y en el ejercicio de derechos del contrato individual.</p>
+        </div>
+        <div class="derechos-item">
+          <span class="derechos-icon">📢</span>
+          <p>Participar en todas las actividades y decisiones del Sindicato con libertad de expresión.</p>
+        </div>
+        <div class="derechos-item">
+          <span class="derechos-icon">🏛️</span>
+          <p>Presentarse como candidato al Directorio Sindical y a las diferentes comisiones.</p>
+        </div>
+        <div class="derechos-item">
+          <span class="derechos-icon">📋</span>
+          <p>Acceder a la información y documentación del Sindicato cuando lo requiera.</p>
+        </div>
+      </div>
+      <div class="derechos-col">
+        <h3>📌 Obligaciones de los socios</h3>
+        <div class="derechos-item">
+          <span class="derechos-icon">💰</span>
+          <p>Pagar oportunamente la cuota sindical mensual equivalente al <strong>1% del sueldo base</strong>.</p>
+        </div>
+        <div class="derechos-item">
+          <span class="derechos-icon">📖</span>
+          <p>Conocer el Estatuto y el Reglamento, respetando sus disposiciones y acuerdos de Asamblea.</p>
+        </div>
+        <div class="derechos-item">
+          <span class="derechos-icon">👥</span>
+          <p>Concurrir a las asambleas convocadas y cooperar en las labores de la organización.</p>
+        </div>
+        <div class="derechos-item">
+          <span class="derechos-icon">✍️</span>
+          <p>Firmar el registro de socios y comunicar al Secretario cualquier cambio de datos personales.</p>
+        </div>
+        <div class="derechos-item">
+          <span class="derechos-icon">🎯</span>
+          <p>Aceptar los cargos y comisiones que les sean encomendados por la organización.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMISIONES -->
+<section class="comisiones" id="comisiones">
+  <div class="container">
+    <p class="section-eyebrow">Artículo 51°</p>
+    <h2 class="section-title">Comisiones del Sindicato</h2>
+    <p class="section-body" style="color:#aaa;">El Directorio es asesorado por comisiones especializadas que velan por el bienestar integral de los socios.</p>
+    <div class="comisiones-grid">
+      <div class="comision-card">
+        <div class="comision-icon">📊</div>
+        <h3>Comisión Socioeconómica</h3>
+        <ul>
+          <li>Promover la ayuda y educación gremial, técnica y general de los asociados</li>
+          <li>Estudiar la constitución de mutualidades y otros servicios en beneficio de los socios</li>
+        </ul>
+      </div>
+      <div class="comision-card">
+        <div class="comision-icon">🎉</div>
+        <h3>Comisión de Recreación</h3>
+        <ul>
+          <li>Organizar programas de vacaciones para los asociados y sus familias</li>
+          <li>Fomentar la cultura física de los socios y sus familiares</li>
+        </ul>
+      </div>
+      <div class="comision-card">
+        <div class="comision-icon">⚖️</div>
+        <h3>Comisión de Disciplina</h3>
+        <ul>
+          <li>Velar por la correcta aplicación del Reglamento de Disciplina</li>
+          <li>Pronunciarse sobre violaciones a las obligaciones de los asociados</li>
+          <li>Intervenir en reclamaciones sobre violación de derechos de los socios</li>
+        </ul>
+      </div>
+      <div class="comision-card">
+        <div class="comision-icon">🔍</div>
+        <h3>Comisión Revisora de Cuentas</h3>
+        <ul>
+          <li>Fiscalizar el ingreso y correcta inversión de los fondos sindicales</li>
+          <li>Verificar que gastos e inversiones se ajusten al presupuesto</li>
+          <li>Confeccionar el informe financiero anual ante la asamblea</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <p class="section-eyebrow">Respuestas claras</p>
+    <h2 class="section-title">Preguntas frecuentes</h2>
+    <div class="faq-lista">
+
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          ¿Cuánto es la cuota sindical mensual?
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">La cuota sindical mensual equivale al <strong>1% del sueldo base</strong> de cada socio, según lo establecido en el Artículo 5° de nuestros estatutos. Los socios con más de 2 cuotas impagas pierden automáticamente el acceso a los beneficios sociales hasta regularizar su situación.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          ¿Cada cuánto se reúne la Asamblea de Socios?
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">La Asamblea Ordinaria se reúne <strong>a lo menos cada 45 días</strong>. Las asambleas extraordinarias se convocan por iniciativa del Presidente o por solicitud firmada del 20% de los asociados, para tratar temas específicos como reformas estatutarias, elección o censura del directorio.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          ¿Cómo se elige la directiva sindical?
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">El Directorio Sindical se elige cada <strong>4 años</strong> en una asamblea extraordinaria ante un Ministro de Fe de la Inspección del Trabajo. Los candidatos deben presentar su postulación por escrito ante el Secretario entre 15 y 2 días antes de la elección. Resultan elegidos quienes obtengan las más altas mayorías relativas.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          ¿Qué requisitos debo cumplir para ser Director?
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">Para ser Director del Sindicato debes: saber leer y escribir, estar al día en las cuotas sindicales, tener <strong>al menos 2 años de antigüedad</strong> como socio y haber participado en tres seminarios sobre sindicalismo con documentación que lo acredite.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          ¿Qué pasa si no pago mis cuotas sindicales?
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">Si te atrasas en el pago de <strong>2 o más cuotas mensuales</strong>, perderás automáticamente el acceso a los beneficios sociales. Recuperarás este derecho desde la fecha en que pagues íntegramente la deuda, pero sin efecto retroactivo. Además, con 6 meses de atraso puedes perder la calidad de socio.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          ¿Qué servicios de asesoría ofrece el sindicato?
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">El Sindicato puede constituir o asociarse a servicios de asesoría <strong>técnica, jurídica, educacional, cultural y socioeconómica</strong> para sus afiliados. También puede constituirse o asociarse a instituciones de salud y fondos de beneficio mutuo, según lo establecido en el Artículo 2° de nuestros estatutos.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          ¿Cómo puedo dejar de ser socio?
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">Puedes renunciar al Sindicato en cualquier momento mediante una nota dirigida al Secretario. También se pierde la calidad de socio al dejar de pertenecer a la Universidad Central de Chile, por no pago de cuotas durante 6 meses consecutivos, o por expulsión acordada por la Asamblea.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <section class="beneficios" id="beneficios">
   <div class="container">
     <p class="section-eyebrow">Para los socios</p>
@@ -784,14 +1098,14 @@
 
       <div class="card">
         <div class="card-icon">⚖️</div>
-        <h3>Asesoría legal</h3>
-        <p>Atención de abogado para consultas laborales y representación en caso de conflicto.</p>
+        <h3>Asesoría jurídica</h3>
+        <p>Representación legal ante autoridades administrativas o judiciales y asesoría en el ejercicio de derechos laborales individuales y colectivos.</p>
       </div>
 
       <div class="card">
         <div class="card-icon">🎓</div>
-        <h3>Becas de estudio</h3>
-        <p>Beneficios arancelarios para socios e hijos que estudien en la universidad.</p>
+        <h3>Educación y capacitación</h3>
+        <p>Promoción de la educación sindical, técnica y general. Constitución de comités bipartitos de capacitación en el marco de la ley N° 19.518.</p>
       </div>
       <div class="card">
         <div class="card-icon">🤝</div>
@@ -1143,6 +1457,14 @@ async function enviarFormulario(e) {
       btn.classList.remove('visible');
     }
   });
+</script>
+
+
+<script>
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  item.classList.toggle('abierto');
+}
 </script>
 
 </body>
