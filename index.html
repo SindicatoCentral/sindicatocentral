@@ -1105,6 +1105,13 @@ async function enviarFormulario(e) {
       document.getElementById('asunto').value  = '';
       document.getElementById('mensaje').value = '';
       btn.textContent = 'Mensaje enviado';
+
+      setTimeout(() => {
+        feedback.style.display = 'none';
+        feedback.textContent = '';
+        btn.textContent = 'Enviar mensaje';
+        btn.disabled = false;
+      }, 4000);
     } else {
       throw new Error('Error ' + res.status);
     }
