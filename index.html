@@ -13,8 +13,8 @@
     --rojo:    #4A4A4A;
     --rojo-oscuro: #2C2C2C;
     --carbon:  #333333;
-    --gris:    #2C2C2C;
-    --gris-medio: #6B6B6B;
+    --gris:    #1a1a1a;
+    --gris-medio: #444444;
     --gris-claro: #F0F0F0;
     --blanco:  #FFFFFF;
     --borde:   #D8D8D8;
@@ -49,7 +49,7 @@
   .nav-logo-ucen { height: 58px; opacity: 0.9; flex-shrink: 0; margin-right: 0.4rem; }
   .nav-links { display: flex; gap: 2rem; list-style: none; justify-content: center; }
   .nav-links a {
-    color: #ccc; text-decoration: none;
+    color: #e0e0e0; text-decoration: none;
     font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase;
     font-weight: 500;
     transition: color 0.2s;
@@ -110,7 +110,7 @@
   }
   .hero h1 em { color: var(--rojo); font-style: normal; }
   .hero-sub {
-    color: #aaa; font-size: 1rem; max-width: 480px;
+    color: #cccccc; font-size: 1rem; max-width: 480px;
     margin: 0 auto 2.5rem;
     animation: fadeUp 0.9s 0.3s ease both;
     position: relative;
@@ -243,7 +243,7 @@
     margin-bottom: 1rem;
   }
   .director-card h3 { font-size: 0.95rem; color: var(--blanco); margin-bottom: 0.25rem; }
-  .director-card span { font-size: 0.78rem; color: #888; letter-spacing: 0.05em; text-transform: uppercase; }
+  .director-card span { font-size: 0.78rem; color: #bbbbbb; letter-spacing: 0.05em; text-transform: uppercase; }
 
   /* ── NOTICIAS ── */
   .noticias { background: var(--blanco); }
@@ -345,14 +345,14 @@
 
   /* ── FOOTER ── */
   footer {
-    background: #111; color: #888;
+    background: #111; color: #bbbbbb;
     padding: 3rem 2rem 2rem;
     text-align: center;
   }
   .footer-logo { height: 48px; filter: brightness(0) invert(0.4); margin-bottom: 1rem; }
   .footer-text { font-size: 0.8rem; line-height: 1.7; }
   .footer-divider { border: none; border-top: 1px solid #2a2a2a; margin: 1.5rem auto; max-width: 400px; }
-  .footer-copy { font-size: 0.72rem; color: #555; }
+  .footer-copy { font-size: 0.72rem; color: #888; }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
@@ -544,14 +544,14 @@
   @media (prefers-color-scheme: dark) {
     :root {
       --blanco:     #1a1a1a;
-      --gris:       #e0e0e0;
-      --gris-medio: #aaaaaa;
+      --gris:       #f0f0f0;
+      --gris-medio: #cccccc;
       --gris-claro: #252525;
       --borde:      #3a3a3a;
-      --carbon:     #f0f0f0;
+      --carbon:     #ffffff;
     }
 
-    body { background: #1a1a1a; color: #e0e0e0; }
+    body { background: #1a1a1a; color: #f0f0f0; }
 
     /* Nav */
     nav { background: rgba(10,10,10,0.97); }
@@ -601,7 +601,7 @@
     .form-group label { color: #aaa; }
 
     /* Contacto info */
-    .info-text { color: #aaa; }
+    .info-text { color: #cccccc; }
     .info-text strong { color: #e0e0e0; }
     .contacto-info h3 { color: #f0f0f0; }
 
@@ -611,7 +611,7 @@
     /* Afiliación banda */
     .afiliacion { background: #2a2a2a; }
     .afiliacion .section-title { color: #f0f0f0; }
-    .afiliacion .section-body { color: #aaa; }
+    .afiliacion .section-body { color: #dddddd; }
     .btn-blanco { background: #f0f0f0; color: #2a2a2a; }
 
     /* Sobre nosotros */
@@ -770,7 +770,7 @@
   }
   .comision-card ul { list-style: none; padding: 0; }
   .comision-card ul li {
-    font-size: 0.85rem; color: #aaa; padding: 0.3rem 0;
+    font-size: 0.85rem; color: #cccccc; padding: 0.3rem 0;
     padding-left: 1rem; position: relative;
   }
   .comision-card ul li::before {
