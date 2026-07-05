@@ -1280,6 +1280,7 @@
   </p>
   <hr class="footer-divider">
   <p class="footer-copy">© 2025 Sindicato de Trabajadores UCEN · Todos los derechos reservados</p>
+  <a href="admin.html" style="display:inline-block; margin-top:1rem; font-size:0.72rem; color:#555; text-decoration:none; letter-spacing:0.08em; text-transform:uppercase; border:1px solid #333; padding:0.4rem 1rem; border-radius:2px; transition:color 0.2s, border-color 0.2s;" onmouseover="this.style.color='#aaa'; this.style.borderColor='#555';" onmouseout="this.style.color='#555'; this.style.borderColor='#333';">⚙ Panel administrativo</a>
 </footer>
 
 
@@ -1437,41 +1438,46 @@ function toggleFaq(btn) {
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  const grid = document.getElementById('noticiasGrid');
+  async function cargarNoticias() {
+    const grid = document.getElementById('noticiasGrid');
+    try {
+      const q    = query(collection(db, 'noticias'), orderBy('fecha', 'desc'));
+      const snap = await getDocs(q);
 
-  try {
-    const q    = query(collection(db, 'noticias'), orderBy('fecha', 'desc'));
-    const snap = await getDocs(q);
+      if (snap.empty) {
+        grid.innerHTML = `<p class="section-body" style="grid-column:1/-1; color:#666;">
+          Próximamente publicaremos aquí los comunicados y noticias del sindicato. Mantente atento.
+        </p>`;
+        return;
+      }
 
-    if (snap.empty) {
-      grid.innerHTML = `<p class="section-body" style="grid-column:1/-1; color:#666;">
-        Próximamente publicaremos aquí los comunicados y noticias del sindicato. Mantente atento.
+      grid.innerHTML = '';
+      snap.forEach(d => {
+        const n = d.data();
+        const fecha = n.fecha
+          ? new Date(n.fecha.seconds * 1000).toLocaleDateString('es-CL', { year: 'numeric', month: 'long' })
+          : '';
+        grid.innerHTML += `
+          <div class="noticia">
+            <div class="noticia-head">
+              <span class="noticia-fecha">${fecha}</span>
+            </div>
+            <div class="noticia-body">
+              <h3>${n.titulo}</h3>
+              <p>${n.resumen}</p>
+            </div>
+          </div>`;
+      });
+    } catch(e) {
+      console.error('Error cargando noticias:', e);
+      const grid = document.getElementById('noticiasGrid');
+      grid.innerHTML = `<p class="section-body" style="grid-column:1/-1;">
+        Próximamente publicaremos aquí los comunicados y noticias del sindicato.
       </p>`;
-      return;
     }
-
-    grid.innerHTML = '';
-    snap.forEach(d => {
-      const n = d.data();
-      const fecha = n.fecha
-        ? new Date(n.fecha.seconds * 1000).toLocaleDateString('es-CL', { year: 'numeric', month: 'long' })
-        : '';
-      grid.innerHTML += `
-        <div class="noticia">
-          <div class="noticia-head">
-            <span class="noticia-fecha">${fecha}</span>
-          </div>
-          <div class="noticia-body">
-            <h3>${n.titulo}</h3>
-            <p>${n.resumen}</p>
-          </div>
-        </div>`;
-    });
-  } catch(e) {
-    grid.innerHTML = `<p class="section-body" style="grid-column:1/-1;">
-      Próximamente publicaremos aquí los comunicados y noticias del sindicato.
-    </p>`;
   }
+
+  cargarNoticias();
 </script>
 
 </body>

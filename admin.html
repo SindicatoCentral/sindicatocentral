@@ -367,6 +367,10 @@
       document.getElementById('loginWrap').style.display = 'none';
       document.getElementById('panelWrap').style.display = 'block';
       document.getElementById('topbarUser').textContent = user.email;
+      // Limpiar campos de login
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('loginError').style.display = 'none';
       cargarNoticias();
     } else {
       document.getElementById('loginWrap').style.display = 'flex';
