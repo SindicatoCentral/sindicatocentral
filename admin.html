@@ -285,6 +285,7 @@
     <span class="topbar-title">Panel Administrador — Sindicato UCEN</span>
     <div class="topbar-right">
       <span class="topbar-user" id="topbarUser"></span>
+      <a href="index.html" style="color:#ccc; font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase; text-decoration:none; border:1px solid #555; padding:0.4rem 1rem; border-radius:2px; transition:all 0.2s;" onmouseover="this.style.color='#fff'; this.style.borderColor='#aaa';" onmouseout="this.style.color='#ccc'; this.style.borderColor='#555';">← Ir al sitio</a>
       <button class="btn-salir" onclick="cerrarSesion()">Cerrar sesión</button>
     </div>
   </div>
@@ -388,6 +389,7 @@
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginError').style.display = 'none';
+    window.location.href = 'index.html';
   };
 
   // ── TABS
