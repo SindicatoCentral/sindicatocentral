@@ -817,6 +817,30 @@
     .faq-pregunta:hover { background: #333; }
   }
 
+
+  /* ── LEER MÁS ── */
+  .noticia-body p {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .noticia-body p.expandido {
+    display: block;
+    -webkit-line-clamp: unset;
+  }
+  .btn-leermas {
+    background: none; border: none; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--rojo); letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 0;
+    margin-top: 0.8rem; display: inline-block;
+    transition: opacity 0.2s;
+  }
+  .btn-leermas:hover { opacity: 0.7; }
+
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -1454,13 +1478,28 @@ function toggleFaq(btn) {
       snap.forEach(d => {
         const n = d.data();
         const contenido = (n.contenido || '').replace(/\n/g, '<br>');
-        grid.innerHTML += `
-          <div class="noticia">
-            <div class="noticia-body">
-              <h3>${n.titulo}</h3>
-              <p>${contenido}</p>
-            </div>
-          </div>`;
+        const div = document.createElement('div');
+        div.className = 'noticia';
+        const p = document.createElement('p');
+        p.innerHTML = contenido;
+        const h3 = document.createElement('h3');
+        h3.textContent = n.titulo;
+        const body = document.createElement('div');
+        body.className = 'noticia-body';
+        body.appendChild(h3);
+        body.appendChild(p);
+
+        // Agregar botón leer más solo si el contenido es largo
+        const btn = document.createElement('button');
+        btn.className = 'btn-leermas';
+        btn.textContent = 'Leer más →';
+        btn.addEventListener('click', () => {
+          const expandido = p.classList.toggle('expandido');
+          btn.textContent = expandido ? '← Leer menos' : 'Leer más →';
+        });
+        body.appendChild(btn);
+        div.appendChild(body);
+        grid.appendChild(div);
       });
     } catch(e) {
       console.error('Error cargando noticias:', e);
