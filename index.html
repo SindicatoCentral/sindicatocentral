@@ -1134,7 +1134,9 @@
   <div class="container">
     <p class="section-eyebrow">Últimas novedades</p>
     <h2 class="section-title">Noticias y comunicados</h2>
-    <p class="section-body">Próximamente publicaremos aquí los comunicados y noticias del sindicato. Mantente atento.</p>
+    <div class="noticias-grid" id="noticiasGrid">
+      <p class="section-body" style="grid-column:1/-1;">Cargando noticias...</p>
+    </div>
   </div>
 </section>
 
@@ -1416,6 +1418,60 @@ function toggleFaq(btn) {
   const item = btn.parentElement;
   item.classList.toggle('abierto');
 }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, orderBy, query }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC8piyFY_dr0FQ-SCN6C_9zGtlppaJVtPQ",
+    authDomain: "sindicato-ucen.firebaseapp.com",
+    projectId: "sindicato-ucen",
+    storageBucket: "sindicato-ucen.firebasestorage.app",
+    messagingSenderId: "845293926331",
+    appId: "1:845293926331:web:b462a0c3c891c32fb0b69e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  const grid = document.getElementById('noticiasGrid');
+
+  try {
+    const q    = query(collection(db, 'noticias'), orderBy('fecha', 'desc'));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      grid.innerHTML = `<p class="section-body" style="grid-column:1/-1; color:#666;">
+        Próximamente publicaremos aquí los comunicados y noticias del sindicato. Mantente atento.
+      </p>`;
+      return;
+    }
+
+    grid.innerHTML = '';
+    snap.forEach(d => {
+      const n = d.data();
+      const fecha = n.fecha
+        ? new Date(n.fecha.seconds * 1000).toLocaleDateString('es-CL', { year: 'numeric', month: 'long' })
+        : '';
+      grid.innerHTML += `
+        <div class="noticia">
+          <div class="noticia-head">
+            <span class="noticia-fecha">${fecha}</span>
+          </div>
+          <div class="noticia-body">
+            <h3>${n.titulo}</h3>
+            <p>${n.resumen}</p>
+          </div>
+        </div>`;
+    });
+  } catch(e) {
+    grid.innerHTML = `<p class="section-body" style="grid-column:1/-1;">
+      Próximamente publicaremos aquí los comunicados y noticias del sindicato.
+    </p>`;
+  }
 </script>
 
 </body>
