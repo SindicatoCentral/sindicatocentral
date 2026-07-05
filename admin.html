@@ -305,23 +305,13 @@
       <div class="form-noticia" id="formNoticia">
         <h3 id="formTitulo">Nueva noticia</h3>
         <input type="hidden" id="noticiaId">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Título</label>
-            <input type="text" id="nTitulo" placeholder="Título de la noticia">
-          </div>
-          <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="nFecha">
-          </div>
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" id="nTitulo" placeholder="Título de la noticia o comunicado">
         </div>
         <div class="form-group">
-          <label>Resumen (visible en la página)</label>
-          <input type="text" id="nResumen" placeholder="Breve descripción de la noticia">
-        </div>
-        <div class="form-group">
-          <label>Contenido completo</label>
-          <textarea id="nContenido" placeholder="Contenido completo del comunicado o noticia..."></textarea>
+          <label>Contenido</label>
+          <textarea id="nContenido" placeholder="Escribe aquí el contenido completo..." style="min-height:180px;"></textarea>
         </div>
         <div class="form-acciones">
           <button class="btn-guardar" onclick="guardarNoticia()">Guardar noticia</button>
@@ -345,7 +335,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, Timestamp }
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -411,8 +401,6 @@
     document.getElementById('formTitulo').textContent = 'Nueva noticia';
     document.getElementById('noticiaId').value = '';
     document.getElementById('nTitulo').value = '';
-    document.getElementById('nFecha').value = new Date().toISOString().split('T')[0];
-    document.getElementById('nResumen').value = '';
     document.getElementById('nContenido').value = '';
   };
 
@@ -460,21 +448,18 @@
   window.guardarNoticia = async () => {
     const id       = document.getElementById('noticiaId').value;
     const titulo   = document.getElementById('nTitulo').value.trim();
-    const fechaStr = document.getElementById('nFecha').value;
-    const resumen  = document.getElementById('nResumen').value.trim();
     const contenido= document.getElementById('nContenido').value.trim();
 
-    if (!titulo || !fechaStr || !resumen) {
-      mostrarToast('Completa título, fecha y resumen.', 'error'); return;
+    if (!titulo || !contenido) {
+      mostrarToast('Completa el título y el contenido.', 'error'); return;
     }
 
-    const fecha = Timestamp.fromDate(new Date(fechaStr));
     try {
       if (id) {
-        await updateDoc(doc(db, 'noticias', id), { titulo, fecha, resumen, contenido });
+        await updateDoc(doc(db, 'noticias', id), { titulo, contenido });
         mostrarToast('Noticia actualizada correctamente.', 'exito');
       } else {
-        await addDoc(collection(db, 'noticias'), { titulo, fecha, resumen, contenido });
+        await addDoc(collection(db, 'noticias'), { titulo, contenido });
         mostrarToast('Noticia publicada correctamente.', 'exito');
       }
       ocultarFormulario();
@@ -485,14 +470,11 @@
   };
 
   // ── EDITAR NOTICIA
-  window.editarNoticia = (id, titulo, fechaSecs, resumen, contenido) => {
+  window.editarNoticia = (id, titulo, contenido) => {
     document.getElementById('formNoticia').classList.add('visible');
     document.getElementById('formTitulo').textContent = 'Editar noticia';
     document.getElementById('noticiaId').value = id;
     document.getElementById('nTitulo').value = titulo;
-    const fecha = new Date(fechaSecs * 1000).toISOString().split('T')[0];
-    document.getElementById('nFecha').value = fecha;
-    document.getElementById('nResumen').value = resumen;
     document.getElementById('nContenido').value = contenido?.replace(/\\n/g, '\n') || '';
     document.getElementById('formNoticia').scrollIntoView({ behavior: 'smooth' });
   };
