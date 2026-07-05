@@ -165,7 +165,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc }
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -290,7 +290,7 @@
         await updateDoc(doc(db, 'noticias', id), { titulo, contenido });
         mostrarToast('Noticia actualizada correctamente.', 'exito');
       } else {
-        await addDoc(collection(db, 'noticias'), { titulo, contenido });
+        await addDoc(collection(db, 'noticias'), { titulo, contenido, createdAt: serverTimestamp() });
         mostrarToast('Noticia publicada correctamente.', 'exito');
       }
       ocultarFormulario();
