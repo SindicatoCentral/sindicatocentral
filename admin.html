@@ -385,6 +385,9 @@
   // ── LOGOUT
   window.cerrarSesion = async () => {
     await signOut(auth);
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').style.display = 'none';
   };
 
   // ── TABS
