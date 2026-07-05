@@ -418,7 +418,7 @@
     const lista = document.getElementById('noticiasList');
     lista.innerHTML = '<div class="loading">Cargando noticias...</div>';
     try {
-      const q = query(collection(db, 'noticias'), orderBy('fecha', 'desc'));
+      const q = query(collection(db, 'noticias'));
       const snap = await getDocs(q);
       if (snap.empty) {
         lista.innerHTML = `<div class="vacio">
