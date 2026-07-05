@@ -165,7 +165,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp }
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -240,7 +240,8 @@
     const lista = document.getElementById('noticiasList');
     lista.innerHTML = '<div class="loading">Cargando noticias...</div>';
     try {
-      const snap = await getDocs(collection(db, 'noticias'));
+      const q = query(collection(db, 'noticias'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
       if (snap.empty) {
         lista.innerHTML = '<div class="vacio"><div class="vacio-icon">📰</div><p>No hay noticias publicadas aún.<br>Haz clic en "Nueva noticia" para agregar la primera.</p></div>';
         return;
