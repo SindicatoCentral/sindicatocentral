@@ -1447,7 +1447,7 @@ function toggleFaq(btn) {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, orderBy }
+  import { getFirestore, collection, getDocs, query, orderBy, where }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -1465,7 +1465,7 @@ function toggleFaq(btn) {
   async function cargarNoticias() {
     const grid = document.getElementById('noticiasGrid');
     try {
-      const q = query(collection(db, 'noticias'), orderBy('createdAt', 'desc'));
+      const q = query(collection(db, 'noticias'), where('estado', '==', 'publicada'), orderBy('createdAt', 'desc'));
       const snap = await getDocs(q);
 
       if (snap.empty) {

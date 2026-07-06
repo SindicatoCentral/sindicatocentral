@@ -87,6 +87,17 @@
   .vacio p { color: #888; font-size: 0.92rem; }
   .loading { text-align: center; padding: 3rem; color: #888; font-size: 0.9rem; }
 
+
+  .tabs-noticias { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .tab-n { padding: 0.55rem 1.3rem; border-radius: 2px; cursor: pointer; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border: 1.5px solid var(--borde); background: var(--blanco); color: var(--gris-medio); transition: all 0.2s; }
+  .tab-n.activo { background: var(--acento); color: var(--blanco); border-color: var(--acento); }
+  .tab-n:hover:not(.activo) { border-color: var(--acento); color: var(--acento); }
+  .btn-archivar { background: none; border: 1px solid #ffe0b2; color: #e65100; padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-archivar:hover { background: #fff3e0; }
+  .btn-restaurar { background: none; border: 1px solid #c8e6c9; color: var(--verde); padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-restaurar:hover { background: #f0fff4; }
+  .historial-badge { display: inline-block; font-size: 0.7rem; background: #f5f5f5; color: #888; padding: 0.2rem 0.5rem; border-radius: 2px; margin-left: 0.5rem; letter-spacing: 0.05em; }
+
   @media (max-width: 600px) {
     .panel-content { padding: 1.5rem 1rem; }
     .topbar { padding: 0 1rem; }
@@ -133,6 +144,12 @@
       <button class="btn-nuevo" onclick="mostrarFormulario()">+ Nueva noticia</button>
     </div>
 
+    <!-- Tabs -->
+    <div class="tabs-noticias">
+      <button class="tab-n activo" id="tabPublicadas" onclick="cambiarTabNoticias('publicada', this)">Publicadas</button>
+      <button class="tab-n" id="tabHistorial" onclick="cambiarTabNoticias('archivada', this)">Historial</button>
+    </div>
+
     <!-- Formulario -->
     <div class="form-noticia" id="formNoticia">
       <h3 id="formTitulo">Nueva noticia</h3>
@@ -165,7 +182,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy }
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -235,15 +252,30 @@
     document.getElementById('formNoticia').classList.remove('visible');
   };
 
+  let tabActual = 'publicada';
+
+  window.cambiarTabNoticias = (estado, el) => {
+    document.querySelectorAll('.tab-n').forEach(t => t.classList.remove('activo'));
+    el.classList.add('activo');
+    tabActual = estado;
+    cargarNoticias();
+  };
+
   // CARGAR NOTICIAS
   async function cargarNoticias() {
     const lista = document.getElementById('noticiasList');
-    lista.innerHTML = '<div class="loading">Cargando noticias...</div>';
+    lista.innerHTML = '<div class="loading">Cargando...</div>';
     try {
-      const q = query(collection(db, 'noticias'), orderBy('createdAt', 'desc'));
+      const q = query(
+        collection(db, 'noticias'),
+        where('estado', '==', tabActual),
+        orderBy('createdAt', 'desc')
+      );
       const snap = await getDocs(q);
+      const esHistorial = tabActual === 'archivada';
       if (snap.empty) {
-        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">📰</div><p>No hay noticias publicadas aún.<br>Haz clic en "Nueva noticia" para agregar la primera.</p></div>';
+        const msg = esHistorial ? 'No hay noticias archivadas.' : 'No hay noticias publicadas aún.<br>Haz clic en "Nueva noticia" para agregar la primera.';
+        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">' + (esHistorial ? '🗄️' : '📰') + '</div><p>' + msg + '</p></div>';
         return;
       }
       lista.innerHTML = '';
@@ -251,25 +283,29 @@
         const n = d.data();
         const item = document.createElement('div');
         item.className = 'noticia-item';
-        item.dataset.id       = d.id;
-        item.dataset.titulo   = n.titulo   || '';
-        item.dataset.contenido= n.contenido|| '';
+        item.dataset.id        = d.id;
+        item.dataset.titulo    = n.titulo    || '';
+        item.dataset.contenido = n.contenido || '';
         const resumen = (n.contenido || '').substring(0, 120) + ((n.contenido || '').length > 120 ? '...' : '');
+        const fechaStr = n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' }) : '';
         item.innerHTML =
           '<div class="noticia-info">' +
-            '<div class="noticia-titulo">' + (n.titulo || '') + '</div>' +
+            '<div class="noticia-titulo">' + (n.titulo || '') + (fechaStr ? '<span class="historial-badge">' + fechaStr + '</span>' : '') + '</div>' +
             '<div class="noticia-resumen">' + resumen + '</div>' +
           '</div>' +
           '<div class="noticia-acciones">' +
-            '<button class="btn-editar">Editar</button>' +
-            '<button class="btn-eliminar">Eliminar</button>' +
+            (!esHistorial ? '<button class="btn-editar">Editar</button>' : '') +
+            (!esHistorial ? '<button class="btn-archivar">Archivar</button>' : '') +
+            (esHistorial  ? '<button class="btn-restaurar">Restaurar</button>' : '') +
+            (esHistorial  ? '<button class="btn-eliminar">Eliminar</button>' : '') +
           '</div>';
-        item.querySelector('.btn-editar').addEventListener('click', () => {
-          editarNoticia(item.dataset.id, item.dataset.titulo, item.dataset.contenido);
-        });
-        item.querySelector('.btn-eliminar').addEventListener('click', () => {
-          eliminarNoticia(item.dataset.id);
-        });
+        if (!esHistorial) {
+          item.querySelector('.btn-editar').addEventListener('click', () => editarNoticia(item.dataset.id, item.dataset.titulo, item.dataset.contenido));
+          item.querySelector('.btn-archivar').addEventListener('click', () => archivarNoticia(item.dataset.id));
+        } else {
+          item.querySelector('.btn-restaurar').addEventListener('click', () => restaurarNoticia(item.dataset.id));
+          item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarNoticia(item.dataset.id));
+        }
         lista.appendChild(item);
       });
     } catch(e) {
@@ -291,7 +327,7 @@
         await updateDoc(doc(db, 'noticias', id), { titulo, contenido });
         mostrarToast('Noticia actualizada correctamente.', 'exito');
       } else {
-        await addDoc(collection(db, 'noticias'), { titulo, contenido, createdAt: serverTimestamp() });
+        await addDoc(collection(db, 'noticias'), { titulo, contenido, createdAt: serverTimestamp(), estado: 'publicada' });
         mostrarToast('Noticia publicada correctamente.', 'exito');
       }
       ocultarFormulario();
@@ -310,6 +346,29 @@
     document.getElementById('nContenido').value = contenido;
     document.getElementById('formNoticia').scrollIntoView({ behavior: 'smooth' });
   }
+
+  // ARCHIVAR
+  window.archivarNoticia = async (id) => {
+    if (!confirm('¿Archivar esta noticia? Dejará de mostrarse en el sitio pero quedará en el historial.')) return;
+    try {
+      await updateDoc(doc(db, 'noticias', id), { estado: 'archivada' });
+      mostrarToast('Noticia archivada correctamente.', 'exito');
+      cargarNoticias();
+    } catch(e) {
+      mostrarToast('Error al archivar: ' + e.message, 'error');
+    }
+  };
+
+  // RESTAURAR
+  window.restaurarNoticia = async (id) => {
+    try {
+      await updateDoc(doc(db, 'noticias', id), { estado: 'publicada' });
+      mostrarToast('Noticia restaurada y publicada nuevamente.', 'exito');
+      cargarNoticias();
+    } catch(e) {
+      mostrarToast('Error al restaurar: ' + e.message, 'error');
+    }
+  };
 
   // ELIMINAR
   window.eliminarNoticia = async (id) => {
