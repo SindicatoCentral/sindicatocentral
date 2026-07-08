@@ -8,20 +8,12 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --gris-oscuro: #1E1E1E;
-    --gris:        #2C2C2C;
-    --gris-medio:  #4A4A4A;
-    --gris-claro:  #F5F5F5;
-    --borde:       #D8D8D8;
-    --blanco:      #FFFFFF;
-    --acento:      #4A4A4A;
-    --acento-hover:#2C2C2C;
-    --rojo:        #C0242D;
-    --verde:       #2E7D32;
+    --gris-oscuro: #1E1E1E; --gris: #2C2C2C; --gris-medio: #4A4A4A;
+    --gris-claro: #F5F5F5; --borde: #D8D8D8; --blanco: #FFFFFF;
+    --acento: #4A4A4A; --acento-hover: #2C2C2C; --rojo: #C0242D; --verde: #2E7D32;
   }
   body { font-family: 'Inter', sans-serif; background: var(--gris-claro); color: var(--gris); min-height: 100vh; }
 
-  /* LOGIN */
   .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--gris-oscuro); }
   .login-box { background: var(--blanco); border-radius: 4px; padding: 3rem 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
   .login-logo { text-align: center; margin-bottom: 2rem; }
@@ -36,7 +28,6 @@
   .btn-login:hover { background: var(--acento-hover); }
   .login-error { background: #fff3f3; border: 1px solid #e06068; color: var(--rojo); padding: 0.75rem 1rem; border-radius: 2px; font-size: 0.85rem; margin-top: 1rem; display: none; }
 
-  /* PANEL */
   .panel-wrap { display: none; }
   .topbar { background: var(--gris-oscuro); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 60px; border-bottom: 2px solid var(--acento); position: sticky; top: 0; z-index: 100; }
   .topbar-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--blanco); }
@@ -46,62 +37,70 @@
   .btn-topbar:hover { border-color: #aaa; color: var(--blanco); }
 
   .panel-content { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem; }
-
-  /* HEADER SECCIÓN */
   .seccion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
   .seccion-header h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--gris-oscuro); }
   .btn-nuevo { background: var(--acento); color: var(--blanco); padding: 0.65rem 1.5rem; border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; }
   .btn-nuevo:hover { background: var(--acento-hover); }
 
-  /* FORMULARIO */
+  .tabs-noticias { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .tab-n { padding: 0.55rem 1.3rem; border-radius: 2px; cursor: pointer; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border: 1.5px solid var(--borde); background: var(--blanco); color: var(--gris-medio); transition: all 0.2s; }
+  .tab-n.activo { background: var(--acento); color: var(--blanco); border-color: var(--acento); }
+  .tab-n:hover:not(.activo) { border-color: var(--acento); color: var(--acento); }
+
   .form-noticia { background: var(--blanco); border-radius: 2px; padding: 2rem; border: 1px solid var(--borde); margin-bottom: 2rem; display: none; }
   .form-noticia.visible { display: block; }
   .form-noticia h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gris-oscuro); margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--borde); }
-  .form-acciones { display: flex; gap: 1rem; margin-top: 0.5rem; }
+  .form-acciones { display: flex; gap: 1rem; margin-top: 1rem; }
   .btn-guardar { background: var(--acento); color: var(--blanco); padding: 0.7rem 1.8rem; border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; }
   .btn-guardar:hover { background: var(--acento-hover); }
   .btn-cancelar { background: none; border: 1.5px solid var(--borde); color: var(--gris-medio); padding: 0.7rem 1.8rem; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; transition: all 0.2s; }
   .btn-cancelar:hover { border-color: var(--gris-medio); }
 
-  /* LISTA */
+  /* IMAGEN UPLOAD */
+  .upload-area { border: 2px dashed var(--borde); border-radius: 2px; padding: 1.5rem; text-align: center; cursor: pointer; transition: border-color 0.2s; margin-top: 0.4rem; position: relative; }
+  .upload-area:hover { border-color: var(--acento); }
+  .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-text { font-size: 0.85rem; color: var(--gris-medio); }
+  .upload-hint { font-size: 0.75rem; color: #aaa; margin-top: 0.3rem; }
+  .preview-img { max-width: 100%; max-height: 200px; border-radius: 2px; margin-top: 1rem; display: none; }
+  .progress-bar { height: 4px; background: var(--gris-claro); border-radius: 2px; margin-top: 0.8rem; display: none; }
+  .progress-fill { height: 100%; background: var(--acento); border-radius: 2px; width: 0%; transition: width 0.3s; }
+  .btn-quitar-img { background: none; border: 1px solid #ffcccc; color: var(--rojo); padding: 0.3rem 0.8rem; border-radius: 2px; cursor: pointer; font-size: 0.75rem; margin-top: 0.5rem; display: none; font-family: 'Inter', sans-serif; }
+
   .noticias-lista { display: flex; flex-direction: column; gap: 1rem; }
   .noticia-item { background: var(--blanco); border-radius: 2px; border: 1px solid var(--borde); padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; transition: box-shadow 0.2s; }
   .noticia-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .noticia-item-img { width: 80px; height: 60px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
   .noticia-info { flex: 1; }
   .noticia-titulo { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gris-oscuro); margin-bottom: 0.4rem; }
   .noticia-resumen { font-size: 0.85rem; color: #666; line-height: 1.5; }
-  .noticia-acciones { display: flex; gap: 0.5rem; flex-shrink: 0; }
+  .historial-badge { display: inline-block; font-size: 0.7rem; background: #f5f5f5; color: #888; padding: 0.2rem 0.5rem; border-radius: 2px; margin-left: 0.5rem; }
+  .noticia-acciones { display: flex; gap: 0.5rem; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
   .btn-editar { background: none; border: 1px solid var(--borde); color: var(--gris-medio); padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
   .btn-editar:hover { border-color: var(--acento); color: var(--acento); }
+  .btn-archivar { background: none; border: 1px solid #ffe0b2; color: #e65100; padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-archivar:hover { background: #fff3e0; }
+  .btn-restaurar { background: none; border: 1px solid #c8e6c9; color: var(--verde); padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-restaurar:hover { background: #f0fff4; }
   .btn-eliminar { background: none; border: 1px solid #ffcccc; color: var(--rojo); padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
   .btn-eliminar:hover { background: #fff3f3; }
 
-  /* TOAST */
   .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 2px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: none; z-index: 999; }
   .toast.exito { background: #f0fff4; border: 1px solid #4caf50; color: var(--verde); }
   .toast.error { background: #fff3f3; border: 1px solid #e06068; color: var(--rojo); }
 
-  /* VACÍO / LOADING */
   .vacio { text-align: center; padding: 4rem 2rem; background: var(--blanco); border: 1px dashed var(--borde); border-radius: 2px; }
   .vacio-icon { font-size: 3rem; margin-bottom: 1rem; }
   .vacio p { color: #888; font-size: 0.92rem; }
   .loading { text-align: center; padding: 3rem; color: #888; font-size: 0.9rem; }
 
-
-  .tabs-noticias { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .tab-n { padding: 0.55rem 1.3rem; border-radius: 2px; cursor: pointer; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border: 1.5px solid var(--borde); background: var(--blanco); color: var(--gris-medio); transition: all 0.2s; }
-  .tab-n.activo { background: var(--acento); color: var(--blanco); border-color: var(--acento); }
-  .tab-n:hover:not(.activo) { border-color: var(--acento); color: var(--acento); }
-  .btn-archivar { background: none; border: 1px solid #ffe0b2; color: #e65100; padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-  .btn-archivar:hover { background: #fff3e0; }
-  .btn-restaurar { background: none; border: 1px solid #c8e6c9; color: var(--verde); padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-  .btn-restaurar:hover { background: #f0fff4; }
-  .historial-badge { display: inline-block; font-size: 0.7rem; background: #f5f5f5; color: #888; padding: 0.2rem 0.5rem; border-radius: 2px; margin-left: 0.5rem; letter-spacing: 0.05em; }
-
   @media (max-width: 600px) {
     .panel-content { padding: 1.5rem 1rem; }
     .topbar { padding: 0 1rem; }
     .topbar-title { font-size: 0.9rem; }
+    .noticia-item { flex-direction: column; }
+    .noticia-acciones { width: 100%; }
   }
 </style>
 </head>
@@ -144,16 +143,16 @@
       <button class="btn-nuevo" onclick="mostrarFormulario()">+ Nueva noticia</button>
     </div>
 
-    <!-- Tabs -->
     <div class="tabs-noticias">
-      <button class="tab-n activo" id="tabPublicadas" onclick="cambiarTabNoticias('publicada', this)">Publicadas</button>
-      <button class="tab-n" id="tabHistorial" onclick="cambiarTabNoticias('archivada', this)">Historial</button>
+      <button class="tab-n activo" onclick="cambiarTabNoticias('publicada', this)">Publicadas</button>
+      <button class="tab-n" onclick="cambiarTabNoticias('archivada', this)">Historial</button>
     </div>
 
     <!-- Formulario -->
     <div class="form-noticia" id="formNoticia">
       <h3 id="formTitulo">Nueva noticia</h3>
       <input type="hidden" id="noticiaId">
+      <input type="hidden" id="noticiaImgUrl">
       <div class="form-group">
         <label>Título</label>
         <input type="text" id="nTitulo" placeholder="Título de la noticia o comunicado">
@@ -162,8 +161,22 @@
         <label>Contenido</label>
         <textarea id="nContenido" placeholder="Escribe aquí el contenido completo..."></textarea>
       </div>
+      <div class="form-group">
+        <label>Imagen (opcional)</label>
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="imgInput" accept="image/*" onchange="previsualizarImagen(this)">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-text">Haz clic o arrastra una imagen aquí</div>
+          <div class="upload-hint">JPG, PNG o WEBP — máx. 5MB</div>
+          <img class="preview-img" id="previewImg">
+        </div>
+        <button class="btn-quitar-img" id="btnQuitarImg" onclick="quitarImagen()">✕ Quitar imagen</button>
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
       <div class="form-acciones">
-        <button class="btn-guardar" onclick="guardarNoticia()">Guardar noticia</button>
+        <button class="btn-guardar" id="btnGuardar" onclick="guardarNoticia()">Guardar noticia</button>
         <button class="btn-cancelar" onclick="ocultarFormulario()">Cancelar</button>
       </div>
     </div>
@@ -175,7 +188,6 @@
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -184,6 +196,8 @@
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC8piyFY_dr0FQ-SCN6C_9zGtlppaJVtPQ",
@@ -194,31 +208,34 @@
     appId: "1:845293926331:web:b462a0c3c891c32fb0b69e"
   };
 
-  const app  = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db   = getFirestore(app);
+  const app     = initializeApp(firebaseConfig);
+  const auth    = getAuth(app);
+  const db      = getFirestore(app);
+  const storage = getStorage(app);
 
-  // AUTH STATE
+  let tabActual   = 'publicada';
+  let archivoImg  = null;
+
+  // AUTH
   onAuthStateChanged(auth, user => {
     if (user) {
-      document.getElementById('loginWrap').style.display = 'none';
-      document.getElementById('panelWrap').style.display = 'block';
-      document.getElementById('topbarUser').textContent = user.email;
+      document.getElementById('loginWrap').style.display  = 'none';
+      document.getElementById('panelWrap').style.display  = 'block';
+      document.getElementById('topbarUser').textContent   = user.email;
       limpiarLogin();
       cargarNoticias();
     } else {
-      document.getElementById('loginWrap').style.display = 'flex';
-      document.getElementById('panelWrap').style.display = 'none';
+      document.getElementById('loginWrap').style.display  = 'flex';
+      document.getElementById('panelWrap').style.display  = 'none';
     }
   });
 
   function limpiarLogin() {
-    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginEmail').value    = '';
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginError').style.display = 'none';
   }
 
-  // LOGIN
   window.iniciarSesion = async () => {
     const email    = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -227,32 +244,16 @@
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch(e) {
-      errDiv.style.display = 'block';
-      errDiv.textContent = 'Correo o contraseña incorrectos.';
+      errDiv.style.display  = 'block';
+      errDiv.textContent    = 'Correo o contraseña incorrectos.';
     }
   };
 
-  // LOGOUT
   window.cerrarSesion = async () => {
     await signOut(auth);
     limpiarLogin();
     window.location.href = 'index.html';
   };
-
-  // FORMULARIO
-  window.mostrarFormulario = () => {
-    document.getElementById('formNoticia').classList.add('visible');
-    document.getElementById('formTitulo').textContent = 'Nueva noticia';
-    document.getElementById('noticiaId').value = '';
-    document.getElementById('nTitulo').value = '';
-    document.getElementById('nContenido').value = '';
-  };
-
-  window.ocultarFormulario = () => {
-    document.getElementById('formNoticia').classList.remove('visible');
-  };
-
-  let tabActual = 'publicada';
 
   window.cambiarTabNoticias = (estado, el) => {
     document.querySelectorAll('.tab-n').forEach(t => t.classList.remove('activo'));
@@ -261,34 +262,145 @@
     cargarNoticias();
   };
 
-  // CARGAR NOTICIAS
+  // FORMULARIO
+  window.mostrarFormulario = () => {
+    document.getElementById('formNoticia').classList.add('visible');
+    document.getElementById('formTitulo').textContent    = 'Nueva noticia';
+    document.getElementById('noticiaId').value           = '';
+    document.getElementById('noticiaImgUrl').value       = '';
+    document.getElementById('nTitulo').value             = '';
+    document.getElementById('nContenido').value          = '';
+    quitarImagen();
+  };
+
+  window.ocultarFormulario = () => {
+    document.getElementById('formNoticia').classList.remove('visible');
+    archivoImg = null;
+  };
+
+  // IMAGEN
+  window.previsualizarImagen = (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      mostrarToast('La imagen no debe superar los 5MB.', 'error');
+      input.value = ''; return;
+    }
+    archivoImg = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('previewImg');
+      preview.src   = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById('btnQuitarImg').style.display = 'inline-block';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.quitarImagen = () => {
+    archivoImg = null;
+    document.getElementById('imgInput').value           = '';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('previewImg').src           = '';
+    document.getElementById('btnQuitarImg').style.display = 'none';
+    document.getElementById('noticiaImgUrl').value      = '';
+  };
+
+  async function subirImagen(file) {
+    return new Promise((resolve, reject) => {
+      const nombre   = Date.now() + '_' + file.name.replace(/\s/g, '_');
+      const storageRef = ref(storage, 'noticias/' + nombre);
+      const tarea    = uploadBytesResumable(storageRef, file);
+      const barra    = document.getElementById('progressBar');
+      const fill     = document.getElementById('progressFill');
+      barra.style.display = 'block';
+      tarea.on('state_changed',
+        snap => { fill.style.width = (snap.bytesTransferred / snap.totalBytes * 100) + '%'; },
+        err  => reject(err),
+        async () => {
+          const url = await getDownloadURL(tarea.snapshot.ref);
+          barra.style.display = 'none';
+          fill.style.width    = '0%';
+          resolve({ url, path: 'noticias/' + nombre });
+        }
+      );
+    });
+  }
+
+  // GUARDAR
+  window.guardarNoticia = async () => {
+    const id       = document.getElementById('noticiaId').value;
+    const titulo   = document.getElementById('nTitulo').value.trim();
+    const contenido= document.getElementById('nContenido').value.trim();
+    const imgUrlActual = document.getElementById('noticiaImgUrl').value;
+
+    if (!titulo || !contenido) {
+      mostrarToast('Completa el título y el contenido.', 'error'); return;
+    }
+
+    const btn = document.getElementById('btnGuardar');
+    btn.textContent = 'Guardando...';
+    btn.disabled    = true;
+
+    try {
+      let imgUrl  = imgUrlActual;
+      let imgPath = '';
+
+      if (archivoImg) {
+        const resultado = await subirImagen(archivoImg);
+        imgUrl  = resultado.url;
+        imgPath = resultado.path;
+      }
+
+      const datos = { titulo, contenido, imgUrl: imgUrl || '', imgPath: imgPath || '' };
+
+      if (id) {
+        await updateDoc(doc(db, 'noticias', id), datos);
+        mostrarToast('Noticia actualizada correctamente.', 'exito');
+      } else {
+        await addDoc(collection(db, 'noticias'), { ...datos, createdAt: serverTimestamp(), estado: 'publicada' });
+        mostrarToast('Noticia publicada correctamente.', 'exito');
+      }
+      ocultarFormulario();
+      cargarNoticias();
+    } catch(e) {
+      mostrarToast('Error al guardar: ' + e.message, 'error');
+    } finally {
+      btn.textContent = 'Guardar noticia';
+      btn.disabled    = false;
+    }
+  };
+
+  // CARGAR
   async function cargarNoticias() {
     const lista = document.getElementById('noticiasList');
     lista.innerHTML = '<div class="loading">Cargando...</div>';
     try {
-      const q = query(
-        collection(db, 'noticias'),
-        where('estado', '==', tabActual),
-        orderBy('createdAt', 'desc')
-      );
+      const q    = query(collection(db, 'noticias'), where('estado', '==', tabActual), orderBy('createdAt', 'desc'));
       const snap = await getDocs(q);
       const esHistorial = tabActual === 'archivada';
+
       if (snap.empty) {
         const msg = esHistorial ? 'No hay noticias archivadas.' : 'No hay noticias publicadas aún.<br>Haz clic en "Nueva noticia" para agregar la primera.';
         lista.innerHTML = '<div class="vacio"><div class="vacio-icon">' + (esHistorial ? '🗄️' : '📰') + '</div><p>' + msg + '</p></div>';
         return;
       }
+
       lista.innerHTML = '';
       snap.forEach(d => {
-        const n = d.data();
+        const n    = d.data();
         const item = document.createElement('div');
-        item.className = 'noticia-item';
-        item.dataset.id        = d.id;
-        item.dataset.titulo    = n.titulo    || '';
-        item.dataset.contenido = n.contenido || '';
-        const resumen = (n.contenido || '').substring(0, 120) + ((n.contenido || '').length > 120 ? '...' : '');
+        item.className        = 'noticia-item';
+        item.dataset.id       = d.id;
+        item.dataset.titulo   = n.titulo    || '';
+        item.dataset.contenido= n.contenido || '';
+        item.dataset.imgUrl   = n.imgUrl    || '';
+        const resumen  = (n.contenido || '').substring(0, 100) + ((n.contenido || '').length > 100 ? '...' : '');
         const fechaStr = n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' }) : '';
+        const imgHtml  = n.imgUrl ? '<img class="noticia-item-img" src="' + n.imgUrl + '" alt="">' : '';
+
         item.innerHTML =
+          (imgHtml ? imgHtml : '') +
           '<div class="noticia-info">' +
             '<div class="noticia-titulo">' + (n.titulo || '') + (fechaStr ? '<span class="historial-badge">' + fechaStr + '</span>' : '') + '</div>' +
             '<div class="noticia-resumen">' + resumen + '</div>' +
@@ -299,12 +411,13 @@
             (esHistorial  ? '<button class="btn-restaurar">Restaurar</button>' : '') +
             (esHistorial  ? '<button class="btn-eliminar">Eliminar</button>' : '') +
           '</div>';
+
         if (!esHistorial) {
-          item.querySelector('.btn-editar').addEventListener('click', () => editarNoticia(item.dataset.id, item.dataset.titulo, item.dataset.contenido));
+          item.querySelector('.btn-editar').addEventListener('click', () => editarNoticia(item.dataset.id, item.dataset.titulo, item.dataset.contenido, item.dataset.imgUrl));
           item.querySelector('.btn-archivar').addEventListener('click', () => archivarNoticia(item.dataset.id));
         } else {
           item.querySelector('.btn-restaurar').addEventListener('click', () => restaurarNoticia(item.dataset.id));
-          item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarNoticia(item.dataset.id));
+          item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarNoticia(item.dataset.id, item.dataset.imgUrl));
         }
         lista.appendChild(item);
       });
@@ -314,36 +427,24 @@
     }
   }
 
-  // GUARDAR
-  window.guardarNoticia = async () => {
-    const id       = document.getElementById('noticiaId').value;
-    const titulo   = document.getElementById('nTitulo').value.trim();
-    const contenido= document.getElementById('nContenido').value.trim();
-    if (!titulo || !contenido) {
-      mostrarToast('Completa el título y el contenido.', 'error'); return;
-    }
-    try {
-      if (id) {
-        await updateDoc(doc(db, 'noticias', id), { titulo, contenido });
-        mostrarToast('Noticia actualizada correctamente.', 'exito');
-      } else {
-        await addDoc(collection(db, 'noticias'), { titulo, contenido, createdAt: serverTimestamp(), estado: 'publicada' });
-        mostrarToast('Noticia publicada correctamente.', 'exito');
-      }
-      ocultarFormulario();
-      cargarNoticias();
-    } catch(e) {
-      mostrarToast('Error al guardar: ' + e.message, 'error');
-    }
-  };
-
   // EDITAR
-  function editarNoticia(id, titulo, contenido) {
+  function editarNoticia(id, titulo, contenido, imgUrl) {
     document.getElementById('formNoticia').classList.add('visible');
-    document.getElementById('formTitulo').textContent = 'Editar noticia';
-    document.getElementById('noticiaId').value  = id;
-    document.getElementById('nTitulo').value    = titulo;
-    document.getElementById('nContenido').value = contenido;
+    document.getElementById('formTitulo').textContent    = 'Editar noticia';
+    document.getElementById('noticiaId').value           = id;
+    document.getElementById('nTitulo').value             = titulo;
+    document.getElementById('nContenido').value          = contenido;
+    document.getElementById('noticiaImgUrl').value       = imgUrl || '';
+    archivoImg = null;
+    const preview = document.getElementById('previewImg');
+    if (imgUrl) {
+      preview.src           = imgUrl;
+      preview.style.display = 'block';
+      document.getElementById('btnQuitarImg').style.display = 'inline-block';
+    } else {
+      preview.style.display = 'none';
+      document.getElementById('btnQuitarImg').style.display = 'none';
+    }
     document.getElementById('formNoticia').scrollIntoView({ behavior: 'smooth' });
   }
 
@@ -370,12 +471,22 @@
     }
   };
 
-  // ELIMINAR
-  window.eliminarNoticia = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar esta noticia?')) return;
+  // ELIMINAR (con borrado de imagen en Storage)
+  window.eliminarNoticia = async (id, imgUrl) => {
+    if (!confirm('¿Eliminar definitivamente esta noticia? Esta acción no se puede deshacer.')) return;
     try {
+      // Eliminar imagen de Storage si existe
+      if (imgUrl) {
+        try {
+          const snap = await getDocs(query(collection(db, 'noticias'), where('imgUrl', '==', imgUrl)));
+          snap.forEach(async d => {
+            const imgPath = d.data().imgPath;
+            if (imgPath) await deleteObject(ref(storage, imgPath));
+          });
+        } catch(e) { console.warn('No se pudo eliminar la imagen:', e); }
+      }
       await deleteDoc(doc(db, 'noticias', id));
-      mostrarToast('Noticia eliminada.', 'exito');
+      mostrarToast('Noticia eliminada definitivamente.', 'exito');
       cargarNoticias();
     } catch(e) {
       mostrarToast('Error al eliminar: ' + e.message, 'error');
@@ -385,12 +496,11 @@
   // TOAST
   function mostrarToast(msg, tipo) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast ' + tipo;
+    t.textContent   = msg;
+    t.className     = 'toast ' + tipo;
     t.style.display = 'block';
     setTimeout(() => t.style.display = 'none', 3500);
   }
 </script>
-
 </body>
 </html>
