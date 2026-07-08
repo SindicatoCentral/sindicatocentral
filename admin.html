@@ -140,13 +140,58 @@
   <div class="panel-content">
     <div class="seccion-header">
       <h2>Noticias y comunicados</h2>
-      <button class="btn-nuevo" onclick="mostrarFormulario()">+ Nueva noticia</button>
+      <button class="btn-nuevo" id="seccion-header-btn" onclick="mostrarFormulario()">+ Nueva noticia</button>
     </div>
 
     <div class="tabs-noticias">
-      <button class="tab-n activo" onclick="cambiarTabNoticias('publicada', this)">Publicadas</button>
-      <button class="tab-n" onclick="cambiarTabNoticias('archivada', this)">Historial</button>
+      <button class="tab-n activo" id="tabNoticias" onclick="mostrarSeccion('noticias', this)">Noticias</button>
+      <button class="tab-n" onclick="mostrarSeccion('historial', this)">Historial</button>
+      <button class="tab-n" onclick="mostrarSeccion('popup', this)">Popup</button>
     </div>
+
+    <!-- SECCIÓN POPUP -->
+    <div id="secPopup" style="display:none;">
+      <div class="form-noticia visible" style="margin-bottom:0;">
+        <h3>Configuración del Popup</h3>
+        <div class="form-group" style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+          <label style="margin:0; text-transform:none; font-size:0.95rem; font-weight:600; color:var(--gris-oscuro);">Mostrar popup en el sitio</label>
+          <label style="position:relative; display:inline-block; width:48px; height:26px; cursor:pointer;">
+            <input type="checkbox" id="popupActivo" style="opacity:0; width:0; height:0;" onchange="togglePopup()">
+            <span id="toggleSpan" style="position:absolute; inset:0; background:#ccc; border-radius:26px; transition:0.3s;"></span>
+            <span id="toggleCircle" style="position:absolute; left:3px; top:3px; width:20px; height:20px; background:white; border-radius:50%; transition:0.3s;"></span>
+          </label>
+          <span id="popupEstadoLabel" style="font-size:0.85rem; color:#888;">Desactivado</span>
+        </div>
+        <div class="form-group">
+          <label>Título del popup</label>
+          <input type="text" id="popupTitulo" placeholder="Ej: Comunicado importante">
+        </div>
+        <div class="form-group">
+          <label>Mensaje</label>
+          <textarea id="popupMensaje" placeholder="Escribe el mensaje del popup..." style="min-height:120px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Imagen (opcional)</label>
+          <div class="upload-area" id="uploadAreaPopup">
+            <input type="file" id="imgInputPopup" accept="image/*" onchange="previsualizarImagenPopup(this)">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">Haz clic o arrastra una imagen aquí</div>
+            <div class="upload-hint">JPG, PNG o WEBP — máx. 5MB</div>
+            <img class="preview-img" id="previewImgPopup">
+          </div>
+          <button class="btn-quitar-img" id="btnQuitarImgPopup" onclick="quitarImagenPopup()">✕ Quitar imagen</button>
+          <div class="progress-bar" id="progressBarPopup">
+            <div class="progress-fill" id="progressFillPopup"></div>
+          </div>
+        </div>
+        <div class="form-acciones">
+          <button class="btn-guardar" onclick="guardarPopup()">Guardar popup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN NOTICIAS -->
+    <div id="secNoticias">
 
     <!-- Formulario -->
     <div class="form-noticia" id="formNoticia">
@@ -185,6 +230,7 @@
     <div class="noticias-lista" id="noticiasList">
       <div class="loading">Cargando noticias...</div>
     </div>
+    </div><!-- /secNoticias -->
   </div>
 </div>
 
@@ -194,7 +240,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where }
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
@@ -213,8 +259,27 @@
   const db      = getFirestore(app);
   const storage = getStorage(app);
 
-  let tabActual   = 'publicada';
-  let archivoImg  = null;
+  let tabActual      = 'publicada';
+  let archivoImg     = null;
+  let archivoImgPopup= null;
+
+  window.mostrarSeccion = (sec, el) => {
+    document.querySelectorAll('.tab-n').forEach(t => t.classList.remove('activo'));
+    el.classList.add('activo');
+    document.getElementById('secNoticias').style.display = 'none';
+    document.getElementById('secPopup').style.display    = 'none';
+    document.getElementById('formNoticia').classList.remove('visible');
+    if (sec === 'popup') {
+      document.getElementById('secPopup').style.display = 'block';
+      document.getElementById('seccion-header-btn').style.display = 'none';
+      cargarPopup();
+    } else {
+      document.getElementById('secNoticias').style.display = 'block';
+      document.getElementById('seccion-header-btn').style.display = 'inline-block';
+      tabActual = sec === 'noticias' ? 'publicada' : 'archivada';
+      cargarNoticias();
+    }
+  };
 
   // AUTH
   onAuthStateChanged(auth, user => {
@@ -223,6 +288,8 @@
       document.getElementById('panelWrap').style.display  = 'block';
       document.getElementById('topbarUser').textContent   = user.email;
       limpiarLogin();
+      document.getElementById('secNoticias').style.display = 'block';
+      document.getElementById('secPopup').style.display = 'none';
       cargarNoticias();
     } else {
       document.getElementById('loginWrap').style.display  = 'flex';
@@ -255,9 +322,105 @@
     window.location.href = 'index.html';
   };
 
-  window.cambiarTabNoticias = (estado, el) => {
+  let archivoImgPopup = null;
+
+  // MOSTRAR SECCIÓN
+  window.mostrarSeccion = (seccion, el) => {
     document.querySelectorAll('.tab-n').forEach(t => t.classList.remove('activo'));
     el.classList.add('activo');
+    document.getElementById('secNoticias').style.display = 'none';
+    document.getElementById('secPopup').style.display    = 'none';
+    document.getElementById('formNoticia').classList.remove('visible');
+    if (seccion === 'popup') {
+      document.getElementById('secPopup').style.display = 'block';
+      cargarPopup();
+    } else {
+      document.getElementById('secNoticias').style.display = 'block';
+      tabActual = seccion === 'historial' ? 'archivada' : 'publicada';
+      cargarNoticias();
+    }
+  };
+
+  // CARGAR POPUP
+  async function cargarPopup() {
+    try {
+      const snap = await getDoc(doc(db, 'config', 'popup'));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('popupTitulo').value   = d.titulo   || '';
+        document.getElementById('popupMensaje').value  = d.mensaje  || '';
+        const activo = d.activo || false;
+        document.getElementById('popupActivo').checked = activo;
+        actualizarToggle(activo);
+        if (d.imgUrl) {
+          const preview = document.getElementById('previewImgPopup');
+          preview.src           = d.imgUrl;
+          preview.style.display = 'block';
+          document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
+        }
+      }
+    } catch(e) { console.error('Error cargando popup:', e); }
+  }
+
+  function actualizarToggle(activo) {
+    const span   = document.getElementById('toggleSpan');
+    const circle = document.getElementById('toggleCircle');
+    const label  = document.getElementById('popupEstadoLabel');
+    span.style.background     = activo ? '#2E5F8A' : '#ccc';
+    circle.style.left         = activo ? '25px' : '3px';
+    label.textContent         = activo ? 'Activado' : 'Desactivado';
+    label.style.color         = activo ? '#2E5F8A' : '#888';
+  }
+
+  window.togglePopup = () => {
+    actualizarToggle(document.getElementById('popupActivo').checked);
+  };
+
+  // IMAGEN POPUP
+  window.previsualizarImagenPopup = (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { mostrarToast('La imagen no debe superar los 5MB.', 'error'); input.value = ''; return; }
+    archivoImgPopup = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('previewImgPopup');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.quitarImagenPopup = () => {
+    archivoImgPopup = null;
+    document.getElementById('imgInputPopup').value = '';
+    document.getElementById('previewImgPopup').style.display = 'none';
+    document.getElementById('previewImgPopup').src = '';
+    document.getElementById('btnQuitarImgPopup').style.display = 'none';
+  };
+
+  // GUARDAR POPUP
+  window.guardarPopup = async () => {
+    const titulo  = document.getElementById('popupTitulo').value.trim();
+    const mensaje = document.getElementById('popupMensaje').value.trim();
+    const activo  = document.getElementById('popupActivo').checked;
+    if (!titulo || !mensaje) { mostrarToast('Completa el título y el mensaje.', 'error'); return; }
+    try {
+      let imgUrl = '';
+      // Obtener imgUrl actual si existe
+      const snap = await getDoc(doc(db, 'config', 'popup'));
+      if (snap.exists()) imgUrl = snap.data().imgUrl || '';
+      if (archivoImgPopup) {
+        const res = await subirImagen(archivoImgPopup);
+        imgUrl = res.url;
+      }
+      await setDoc(doc(db, 'config', 'popup'), { titulo, mensaje, activo, imgUrl });
+      mostrarToast('Popup guardado correctamente.', 'exito');
+    } catch(e) { mostrarToast('Error al guardar: ' + e.message, 'error'); }
+  };
+
+  window.cambiarTabNoticias = (estado, el) => {
     tabActual = estado;
     cargarNoticias();
   };
@@ -490,6 +653,109 @@
       cargarNoticias();
     } catch(e) {
       mostrarToast('Error al eliminar: ' + e.message, 'error');
+    }
+  };
+
+  // POPUP - IMAGEN
+  window.previsualizarImagenPopup = (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { mostrarToast('La imagen no debe superar 5MB.', 'error'); input.value=''; return; }
+    archivoImgPopup = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const p = document.getElementById('previewImgPopup');
+      p.src = e.target.result; p.style.display = 'block';
+      document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.quitarImagenPopup = () => {
+    archivoImgPopup = null;
+    document.getElementById('imgInputPopup').value = '';
+    document.getElementById('previewImgPopup').style.display = 'none';
+    document.getElementById('previewImgPopup').src = '';
+    document.getElementById('btnQuitarImgPopup').style.display = 'none';
+  };
+
+  // POPUP - TOGGLE
+  window.togglePopup = () => {
+    const activo = document.getElementById('popupActivo').checked;
+    const span   = document.getElementById('toggleSpan');
+    const circle = document.getElementById('toggleCircle');
+    const label  = document.getElementById('popupEstadoLabel');
+    if (activo) {
+      span.style.background   = '#2E5F8A';
+      circle.style.left       = '25px';
+      label.textContent       = 'Activado';
+      label.style.color       = '#2E5F8A';
+    } else {
+      span.style.background   = '#ccc';
+      circle.style.left       = '3px';
+      label.textContent       = 'Desactivado';
+      label.style.color       = '#888';
+    }
+  };
+
+  // POPUP - CARGAR
+  async function cargarPopup() {
+    try {
+      const snap = await getDoc(doc(db, 'config', 'popup'));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('popupTitulo').value  = d.titulo   || '';
+        document.getElementById('popupMensaje').value = d.mensaje  || '';
+        document.getElementById('popupActivo').checked = d.activo  || false;
+        togglePopup();
+        if (d.imgUrl) {
+          const p = document.getElementById('previewImgPopup');
+          p.src = d.imgUrl; p.style.display = 'block';
+          document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
+        }
+      }
+    } catch(e) { console.error('Error cargando popup:', e); }
+  }
+
+  // POPUP - GUARDAR
+  window.guardarPopup = async () => {
+    const titulo  = document.getElementById('popupTitulo').value.trim();
+    const mensaje = document.getElementById('popupMensaje').value.trim();
+    const activo  = document.getElementById('popupActivo').checked;
+
+    if (activo && (!titulo || !mensaje)) {
+      mostrarToast('Completa título y mensaje para activar el popup.', 'error'); return;
+    }
+
+    try {
+      let imgUrl = '';
+      const snapActual = await getDoc(doc(db, 'config', 'popup'));
+      if (snapActual.exists()) imgUrl = snapActual.data().imgUrl || '';
+
+      if (archivoImgPopup) {
+        const nombre = Date.now() + '_popup_' + archivoImgPopup.name.replace(/\s/g,'_');
+        const storageRef = ref(storage, 'popup/' + nombre);
+        const bar  = document.getElementById('progressBarPopup');
+        const fill = document.getElementById('progressFillPopup');
+        bar.style.display = 'block';
+        await new Promise((res, rej) => {
+          const tarea = uploadBytesResumable(storageRef, archivoImgPopup);
+          tarea.on('state_changed',
+            s => fill.style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
+            rej,
+            async () => { imgUrl = await getDownloadURL(tarea.snapshot.ref); bar.style.display='none'; fill.style.width='0%'; res(); }
+          );
+        });
+      }
+
+      // Si quitaron imagen
+      if (!document.getElementById('previewImgPopup').src && !archivoImgPopup) imgUrl = '';
+
+      await setDoc(doc(db, 'config', 'popup'), { titulo, mensaje, activo, imgUrl });
+      mostrarToast('Popup guardado correctamente.', 'exito');
+      archivoImgPopup = null;
+    } catch(e) {
+      mostrarToast('Error al guardar popup: ' + e.message, 'error');
     }
   };
 

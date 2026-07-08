@@ -889,6 +889,118 @@
   }
   .btn-leermas:hover { opacity: 0.7; }
 
+
+  /* ── POPUP ── */
+  .popup-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9998; padding: 1rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .popup-overlay.visible { opacity: 1; pointer-events: all; }
+  .popup-box {
+    background: var(--blanco);
+    border-radius: 4px;
+    max-width: 520px; width: 100%;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.3s;
+  }
+  .popup-overlay.visible .popup-box { transform: scale(1); }
+  .popup-header {
+    background: #2E5F8A;
+    padding: 1.2rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .popup-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; color: white; margin: 0;
+  }
+  .popup-cerrar {
+    background: none; border: none; color: white;
+    font-size: 1.4rem; cursor: pointer; opacity: 0.8;
+    transition: opacity 0.2s; line-height: 1;
+  }
+  .popup-cerrar:hover { opacity: 1; }
+  .popup-img { width: 100%; max-height: 240px; object-fit: cover; display: block; }
+  .popup-body { padding: 1.5rem; }
+  .popup-mensaje { font-size: 0.95rem; color: #444; line-height: 1.7; white-space: pre-line; }
+  .popup-footer { padding: 0 1.5rem 1.5rem; text-align: right; }
+  .popup-btn {
+    background: #2E5F8A; color: white;
+    border: none; border-radius: 2px;
+    padding: 0.7rem 1.8rem; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .popup-btn:hover { background: #1E3F5F; }
+
+
+  /* ── POPUP ── */
+  .popup-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+    padding: 1rem;
+  }
+  .popup-overlay.visible { opacity: 1; pointer-events: all; }
+  .popup-box {
+    background: var(--blanco);
+    border-radius: 4px;
+    max-width: 520px; width: 100%;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.3s;
+  }
+  .popup-overlay.visible .popup-box { transform: scale(1); }
+  .popup-header {
+    background: #2E5F8A;
+    padding: 1.2rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .popup-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; color: white; margin: 0;
+  }
+  .popup-cerrar {
+    background: none; border: none; color: rgba(255,255,255,0.8);
+    font-size: 1.4rem; cursor: pointer; line-height: 1;
+    transition: color 0.2s;
+  }
+  .popup-cerrar:hover { color: white; }
+  .popup-img {
+    width: 100%; max-height: 240px;
+    object-fit: cover; display: block;
+  }
+  .popup-body { padding: 1.5rem; }
+  .popup-mensaje {
+    font-size: 0.95rem; color: #444; line-height: 1.7;
+    white-space: pre-line;
+  }
+  .popup-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+    display: flex; justify-content: flex-end;
+  }
+  .btn-popup-cerrar {
+    background: #2E5F8A; color: white;
+    border: none; border-radius: 2px;
+    padding: 0.65rem 1.8rem; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 0.85rem;
+    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .btn-popup-cerrar:hover { background: #1E3F5F; }
+
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -1487,6 +1599,42 @@ function toggleFaq(btn) {
 </script>
 
 
+
+<!-- POPUP -->
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-box">
+    <div class="popup-header">
+      <h3 id="popupTitulo">Comunicado</h3>
+      <button class="popup-cerrar" onclick="cerrarPopup()">✕</button>
+    </div>
+    <img id="popupImg" class="popup-img" src="" alt="" style="display:none;">
+    <div class="popup-body">
+      <p class="popup-mensaje" id="popupMensaje"></p>
+    </div>
+    <div class="popup-footer">
+      <button class="popup-btn" onclick="cerrarPopup()">Entendido</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- POPUP -->
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-box">
+    <div class="popup-header">
+      <h3 id="popupTitulo"></h3>
+      <button class="popup-cerrar" onclick="cerrarPopup()">✕</button>
+    </div>
+    <img class="popup-img" id="popupImg" src="" alt="" style="display:none;">
+    <div class="popup-body">
+      <p class="popup-mensaje" id="popupMensaje"></p>
+    </div>
+    <div class="popup-footer">
+      <button class="btn-popup-cerrar" onclick="cerrarPopup()">Entendido</button>
+    </div>
+  </div>
+</div>
+
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="cerrarLightbox()">
   <button class="lightbox-cerrar" onclick="cerrarLightbox()">✕</button>
@@ -1583,11 +1731,64 @@ function abrirLightbox(src, caption) {
   lb.classList.add('visible');
   document.body.style.overflow = 'hidden';
 }
+function cerrarPopup() {
+  document.getElementById('popupOverlay').classList.remove('visible');
+  sessionStorage.setItem('popupCerrado', '1');
+}
 function cerrarLightbox() {
   document.getElementById('lightbox').classList.remove('visible');
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarLightbox(); });
+</script>
+
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC8piyFY_dr0FQ-SCN6C_9zGtlppaJVtPQ",
+    authDomain: "sindicato-ucen.firebaseapp.com",
+    projectId: "sindicato-ucen",
+    storageBucket: "sindicato-ucen.firebasestorage.app",
+    messagingSenderId: "845293926331",
+    appId: "1:845293926331:web:b462a0c3c891c32fb0b69e"
+  };
+
+  const app = initializeApp(firebaseConfig, 'popup-app');
+  const db  = getFirestore(app);
+
+  async function cargarPopup() {
+    // No mostrar si ya se cerró en esta sesión
+    if (sessionStorage.getItem('popupCerrado')) return;
+    try {
+      const snap = await getDoc(doc(db, 'config', 'popup'));
+      if (!snap.exists()) return;
+      const d = snap.data();
+      if (!d.activo) return;
+      document.getElementById('popupTitulo').textContent  = d.titulo  || '';
+      document.getElementById('popupMensaje').textContent = d.mensaje || '';
+      if (d.imgUrl) {
+        const img = document.getElementById('popupImg');
+        img.src           = d.imgUrl;
+        img.style.display = 'block';
+      }
+      setTimeout(() => {
+        document.getElementById('popupOverlay').classList.add('visible');
+      }, 1000);
+    } catch(e) { console.error('Error cargando popup:', e); }
+  }
+
+  cargarPopup();
+</script>
+
+
+<script>
+function cerrarPopup() {
+  document.getElementById('popupOverlay').classList.remove('visible');
+  sessionStorage.setItem('popupVisto', '1');
+}
 </script>
 
 </body>
