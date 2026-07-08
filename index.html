@@ -10,11 +10,11 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --rojo:    #4A4A4A;
-    --rojo-oscuro: #2C2C2C;
-    --carbon:  #333333;
-    --gris:    #1a1a1a;
-    --gris-medio: #444444;
+    --rojo:    #2E5F8A;
+    --rojo-oscuro: #1E3F5F;
+    --carbon:  #1C2B3A;
+    --gris:    #2C3E50;
+    --gris-medio: #546E7A;
     --gris-claro: #F0F0F0;
     --blanco:  #FFFFFF;
     --borde:   #D8D8D8;
@@ -32,14 +32,14 @@
   /* ── NAV ── */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(30,30,30,0.97);
+    background: rgba(28,43,58,0.97);
     backdrop-filter: blur(8px);
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
     padding: 0 0.5rem 0 1rem;
     height: 68px;
-    border-bottom: 2px solid var(--rojo);
+    border-bottom: 2px solid #2E5F8A;
     gap: 0.3rem;
   }
   .nav-right {
@@ -66,7 +66,7 @@
 
   /* ── HERO ── */
   .hero {
-    background: var(--carbon);
+    background: #1C2B3A;
     min-height: 100vh;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center;
@@ -146,7 +146,7 @@
 
   /* ── BANDA ROJA ── */
   .banda {
-    background: var(--rojo);
+    background: #2E5F8A;
     display: grid; grid-template-columns: repeat(2, 1fr);
     gap: 0;
   }
@@ -171,7 +171,7 @@
   .container { max-width: 1100px; margin: 0 auto; }
   .section-eyebrow {
     font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
-    color: #666666; font-weight: 600; margin-bottom: 0.75rem;
+    color: #2E5F8A; font-weight: 600; margin-bottom: 0.75rem;
   }
   .section-title {
     font-family: 'Playfair Display', serif;
@@ -220,7 +220,7 @@
   .card p { font-size: 0.88rem; color: var(--gris-medio); }
 
   /* ── DIRECTIVA ── */
-  .directiva { background: var(--carbon); }
+  .directiva { background: #1C2B3A; }
   .directiva .section-title { color: var(--blanco); }
   .directiva .section-eyebrow { color: #888888; }
   .directores-grid {
@@ -281,7 +281,7 @@
   .noticia-link:hover { text-decoration: underline; }
 
   /* ── AFILIACIÓN ── */
-  .afiliacion { background: var(--rojo); }
+  .afiliacion { background: #2E5F8A; }
   .afiliacion-inner {
     display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: center;
   }
@@ -345,7 +345,7 @@
 
   /* ── FOOTER ── */
   footer {
-    background: #111; color: #bbbbbb;
+    background: #0d1b2a; color: #bbbbbb;
     padding: 3rem 2rem 2rem;
     text-align: center;
   }
@@ -449,7 +449,7 @@
   .doc-tipo.pdf  { background: #fde8e8; color: #c0242d; }
   .btn-descarga {
     display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    background: var(--carbon); color: var(--blanco);
+    background: #1C2B3A; color: var(--blanco);
     padding: 0.75rem 1.5rem; border-radius: 2px;
     font-size: 0.82rem; font-weight: 600; text-decoration: none;
     letter-spacing: 0.06em; text-transform: uppercase;
@@ -528,7 +528,7 @@
       flex-direction: column;
       padding: 1.5rem 2rem;
       gap: 0;
-      border-bottom: 2px solid var(--rojo);
+      border-bottom: 2px solid #2E5F8A;
       z-index: 99;
     }
     .nav-links.abierto { display: flex; }
@@ -551,7 +551,7 @@
       --carbon:     #ffffff;
     }
 
-    body { background: #1a1a1a; color: #f0f0f0; }
+    body { background: #0d1b2a; color: #f0f0f0; }
 
     /* Nav */
     nav { background: rgba(10,10,10,0.97); }
@@ -565,23 +565,23 @@
 
     /* Cards */
     .card {
-      background: #2a2a2a;
+      background: #1a2a3a;
       border-top-color: #4A4A4A;
     }
     .card h3 { color: #f0f0f0; }
 
     /* Noticias */
-    .noticia { border-color: #3a3a3a; background: #2a2a2a; }
-    .noticia-head { background: #333; }
+    .noticia { border-color: #2a3a4a; background: #1a2a3a; }
+    .noticia-head { background: #243344; }
     .noticia-body h3 { color: #f0f0f0; }
 
     /* Documentos */
-    .doc-card { background: #2a2a2a; border-color: #3a3a3a; }
+    .doc-card { background: #1a2a3a; border-color: #2a3a4a; }
     .doc-card h3 { color: #f0f0f0; }
     .doc-tipo { background: #333; color: #aaa; }
     .doc-tipo.word { background: #1a2a3a; color: #7aadff; }
     .doc-tipo.pdf  { background: #2a1a1a; color: #ff8080; }
-    .envio-card { background: #2a2a2a; }
+    .envio-card { background: #1a2a3a; }
     .envio-card h3 { color: #f0f0f0; }
 
     /* Títulos de sección */
@@ -591,7 +591,7 @@
     .form-group input,
     .form-group textarea,
     .form-group select {
-      background: #2a2a2a;
+      background: #1a2a3a;
       border-color: #3a3a3a;
       color: #e0e0e0;
     }
@@ -609,17 +609,17 @@
     footer { background: #0d0d0d; }
 
     /* Afiliación banda */
-    .afiliacion { background: #2a2a2a; }
+    .afiliacion { background: #1a2a3a; }
     .afiliacion .section-title { color: #f0f0f0; }
     .afiliacion .section-body { color: #dddddd; }
     .btn-blanco { background: #f0f0f0; color: #2a2a2a; }
 
     /* Sobre nosotros */
-    .sobre-img { background: #2a2a2a; }
+    .sobre-img { background: #1a2a3a; }
 
     /* Botones descarga */
-    .btn-descarga { background: #3a3a3a; }
-    .btn-descarga:hover { background: #4a4a4a; }
+    .btn-descarga { background: #2a3a4a; }
+    .btn-descarga:hover { background: #3a4a5a; }
   }
 
 
@@ -684,7 +684,7 @@
     position: fixed;
     bottom: 2rem; right: 1.5rem;
     width: 44px; height: 44px;
-    background: #4A4A4A;
+    background: #2E5F8A;
     color: white;
     border: none; border-radius: 50%;
     font-size: 1.2rem;
@@ -696,7 +696,7 @@
     z-index: 200;
   }
   .btn-subir.visible { opacity: 1; pointer-events: all; }
-  .btn-subir:hover { background: #2C2C2C; transform: translateY(-2px); }
+  .btn-subir:hover { background: #1E3F5F; transform: translateY(-2px); }
 
   @media (prefers-color-scheme: dark) {
     .btn-subir { background: #555; }
@@ -741,7 +741,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 1.2rem; color: var(--carbon);
     margin-bottom: 1.2rem; padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--rojo);
+    border-bottom: 2px solid #2E5F8A;
   }
   .derechos-item {
     display: flex; gap: 0.8rem; margin-bottom: 1rem; align-items: flex-start;
@@ -750,7 +750,7 @@
   .derechos-item p { font-size: 0.88rem; color: var(--gris-medio); line-height: 1.5; }
 
   /* ── COMISIONES ── */
-  .comisiones { background: var(--carbon); }
+  .comisiones { background: #1C2B3A; }
   .comisiones .section-title { color: var(--blanco); }
   .comisiones .section-eyebrow { color: #aaa; }
   .comisiones-grid {
@@ -807,12 +807,12 @@
 
   @media (prefers-color-scheme: dark) {
     .proceso { background: #252525; }
-    .paso-card { background: #2a2a2a; }
+    .paso-card { background: #1a2a3a; }
     .paso-card h3 { color: #f0f0f0; }
     .derechos { background: #1a1a1a; }
     .derechos-col h3 { color: #f0f0f0; }
     .faq { background: #252525; }
-    .faq-item { background: #2a2a2a; }
+    .faq-item { background: #1a2a3a; }
     .faq-pregunta { color: #f0f0f0; }
     .faq-pregunta:hover { background: #333; }
   }
