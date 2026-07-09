@@ -69,7 +69,7 @@
   .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
   .upload-text { font-size: 0.85rem; color: var(--gris-medio); }
   .upload-hint { font-size: 0.75rem; color: #aaa; margin-top: 0.3rem; }
-  .preview-img { max-width: 100%; max-height: 200px; border-radius: 2px; margin-top: 1rem; display: none; }
+  .preview-img { max-width: 100%; max-height: 200px; border-radius: 2px; margin-top: 1rem; display: none; object-fit: contain; background: #f5f5f5; }
   .progress-bar { height: 4px; background: var(--gris-claro); border-radius: 2px; margin-top: 0.8rem; display: none; }
   .progress-fill { height: 100%; background: var(--azul); border-radius: 2px; width: 0%; transition: width 0.3s; }
   .btn-quitar-img { background: none; border: 1px solid #ffcccc; color: var(--rojo); padding: 0.3rem 0.8rem; border-radius: 2px; cursor: pointer; font-size: 0.75rem; margin-top: 0.5rem; display: none; font-family: 'Inter', sans-serif; }
@@ -241,6 +241,7 @@
         </div>
         <div class="form-acciones">
           <button class="btn-guardar" onclick="guardarPopup()">Guardar popup</button>
+          <button class="btn-cancelar" onclick="limpiarPopup()">Limpiar popup</button>
         </div>
       </div>
     </div>
@@ -555,6 +556,20 @@
       }
     } catch(e) { console.error('Error popup:',e); }
   }
+
+  window.limpiarPopup = async () => {
+    if (!confirm('¿Limpiar el popup? Se desactivará y se borrará todo su contenido.')) return;
+    try {
+      await setDoc(doc(db,'config','popup'), { titulo:'', mensaje:'', activo:false, imgUrl:'' });
+      document.getElementById('popupTituloInput').value  = '';
+      document.getElementById('popupMensajeInput').value = '';
+      const chk = document.getElementById('popupActivo');
+      chk.checked = false;
+      chk.dispatchEvent(new Event('change'));
+      quitarImagenPopup();
+      mostrarToast('Popup limpiado y desactivado.', 'exito');
+    } catch(e) { mostrarToast('Error: '+e.message, 'error'); }
+  };
 
   window.guardarPopup = async () => {
     const titulo  = document.getElementById('popupTituloInput').value.trim();
