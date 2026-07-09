@@ -925,14 +925,15 @@
   }
   .popup-contenido.solo-imagen { flex-direction: column; }
   .popup-body {
-    flex: 1; padding: 1.5rem;
+    flex: 1; padding: 1.2rem 1.5rem;
     overflow-y: auto;
     display: flex; align-items: center;
+    min-width: 0;
   }
-  .popup-mensaje { font-size: 0.95rem; color: #444; line-height: 1.7; white-space: pre-line; }
+  .popup-mensaje { font-size: 0.88rem; color: #444; line-height: 1.6; white-space: pre-line; }
   .popup-img {
-    width: 240px; min-width: 240px; height: auto;
-    max-height: 55vh;
+    width: 55%; min-width: 55%; height: auto;
+    max-height: 65vh;
     object-fit: contain; background: transparent;
     display: block; flex-shrink: 0;
   }
