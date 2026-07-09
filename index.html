@@ -926,7 +926,7 @@
     transition: opacity 0.2s; line-height: 1;
   }
   .popup-cerrar:hover { opacity: 1; }
-  .popup-img { width: auto; max-width: 100%; height: auto; max-height: 60vh; object-fit: contain; background: transparent; display: block; flex-shrink: 1; margin: 0 auto; }
+  .popup-img { width: auto; max-width: 55%; height: auto; max-height: 65vh; object-fit: contain; background: transparent; display: block; flex-shrink: 0; }
   .popup-body { padding: 1.5rem; }
   .popup-mensaje { font-size: 0.95rem; color: #444; line-height: 1.7; white-space: pre-line; }
   .popup-footer { padding: 0 1.5rem 1.5rem; text-align: right; }
@@ -979,8 +979,8 @@
   }
   .popup-cerrar:hover { color: white; }
   .popup-img {
-    width: auto; max-width: 100%; height: auto; max-height: 60vh;
-    object-fit: contain; background: transparent; display: block; flex-shrink: 1; margin: 0 auto;
+    width: auto; max-width: 55%; height: auto; max-height: 65vh;
+    object-fit: contain; background: transparent; display: block; flex-shrink: 0;
   }
   .popup-body { padding: 1.5rem; }
   .popup-mensaje {
@@ -1611,9 +1611,11 @@ function toggleFaq(btn) {
       <h3 id="popupTitulo"></h3>
       <button class="popup-cerrar" onclick="cerrarPopup()">✕</button>
     </div>
-    <img id="popupImg" class="popup-img" src="" alt="" style="display:none;">
-    <div class="popup-body" id="popupBody" style="display:none;">
-      <p class="popup-mensaje" id="popupMensaje"></p>
+    <div class="popup-contenido" id="popupContenido">
+      <img id="popupImg" class="popup-img" src="" alt="" style="display:none;">
+      <div class="popup-body" id="popupBody" style="display:none;">
+        <p class="popup-mensaje" id="popupMensaje"></p>
+      </div>
     </div>
     <div class="popup-footer">
       <button class="btn-popup-cerrar" onclick="cerrarPopup()">Entendido</button>
@@ -1771,13 +1773,16 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLigh
         img.style.display = 'block';
       }
 
-      // Mensaje — ocultar body si no hay mensaje
+      // Mensaje — si hay imagen y mensaje, layout horizontal; si solo imagen, vertical
       const body = document.getElementById('popupBody');
+      const contenido = document.getElementById('popupContenido');
       if (d.mensaje) {
         document.getElementById('popupMensaje').textContent = d.mensaje;
         body.style.display = 'block';
+        contenido.classList.remove('solo-imagen');
       } else {
         body.style.display = 'none';
+        contenido.classList.add('solo-imagen');
       }
 
       // Mostrar popup con un pequeño retraso
