@@ -1731,6 +1731,7 @@ function abrirLightbox(src, caption) {
   lb.classList.add('visible');
   document.body.style.overflow = 'hidden';
 }
+window.abrirLightbox = abrirLightbox;
 function cerrarPopup() {
   document.getElementById('popupOverlay').classList.remove('visible');
   sessionStorage.setItem('popupCerrado', '1');
@@ -1739,7 +1740,8 @@ function cerrarLightbox() {
   document.getElementById('lightbox').classList.remove('visible');
   document.body.style.overflow = '';
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarLightbox(); });
+window.cerrarLightbox = cerrarLightbox;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarPopup(); } });
 </script>
 
 
