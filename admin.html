@@ -192,10 +192,10 @@
         </div>
         <div class="form-group">
           <label>Imagen (opcional)</label>
-          <div class="upload-area">
-            <input type="file" id="imgInput" accept="image/*" onchange="previsualizarImagen(this)">
+          <div class="upload-area" onclick="document.getElementById('imgInput').click()">
+            <input type="file" id="imgInput" accept="image/*" style="position:absolute; width:1px; height:1px; opacity:0;" onchange="previsualizarImagen(this)">
             <div class="upload-icon">🖼️</div>
-            <div class="upload-text">Haz clic o arrastra una imagen aquí</div>
+            <div class="upload-text">Toca aquí para seleccionar imagen</div>
             <div class="upload-hint">JPG, PNG o WEBP — máx. 5MB</div>
             <img class="preview-img" id="previewImg">
           </div>
@@ -265,10 +265,10 @@
         </div>
         <div class="form-group">
           <label>Imagen (opcional)</label>
-          <div class="upload-area">
-            <input type="file" id="imgInputPopup" accept="image/*" onchange="previsualizarImagenPopup(this)">
+          <div class="upload-area" onclick="document.getElementById('imgInputPopup').click()">
+            <input type="file" id="imgInputPopup" accept="image/*" style="position:absolute; width:1px; height:1px; opacity:0;" onchange="previsualizarImagenPopup(this)">
             <div class="upload-icon">🖼️</div>
-            <div class="upload-text">Haz clic o arrastra una imagen aquí</div>
+            <div class="upload-text">Toca aquí para seleccionar imagen</div>
             <div class="upload-hint">JPG, PNG o WEBP — máx. 5MB</div>
             <img class="preview-img" id="previewImgPopup">
           </div>
