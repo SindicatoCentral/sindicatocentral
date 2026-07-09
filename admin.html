@@ -698,24 +698,7 @@
     }
   };
 
-  // POPUP - CARGAR
-  async function cargarPopup() {
-    try {
-      const snap = await getDoc(doc(db, 'config', 'popup'));
-      if (snap.exists()) {
-        const d = snap.data();
-        document.getElementById('popupTitulo').value  = d.titulo   || '';
-        document.getElementById('popupMensaje').value = d.mensaje  || '';
-        document.getElementById('popupActivo').checked = d.activo  || false;
-        togglePopup();
-        if (d.imgUrl) {
-          const p = document.getElementById('previewImgPopup');
-          p.src = d.imgUrl; p.style.display = 'block';
-          document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
-        }
-      }
-    } catch(e) { console.error('Error cargando popup:', e); }
-  }
+
 
   // POPUP - GUARDAR
   window.guardarPopup = async () => {
