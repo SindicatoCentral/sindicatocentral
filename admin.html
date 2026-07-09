@@ -209,8 +209,37 @@
 
     <!-- POPUP -->
     <div class="seccion" id="sec-popup">
-      <div class="form-card visible">
-        <h3>Configuración del Popup</h3>
+
+      <!-- Vista del popup guardado -->
+      <div id="popupVista" style="display:none;">
+        <div class="noticia-item" style="flex-direction:column; gap:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <div>
+              <div style="font-size:0.72rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--azul); margin-bottom:0.4rem;" id="popupEstadoBadge">● Activado</div>
+              <div class="noticia-titulo-item" id="popupVistaTitulo">Sin título</div>
+              <div class="noticia-resumen-item" id="popupVistaMensaje"></div>
+            </div>
+            <img id="popupVistaImg" src="" alt="" style="width:80px; height:60px; object-fit:contain; background:#f5f5f5; border-radius:2px; display:none; flex-shrink:0;">
+          </div>
+          <div class="noticia-acciones">
+            <button class="btn-accion editar" onclick="mostrarFormularioPopup()">Editar popup</button>
+            <button class="btn-accion eliminar" onclick="limpiarPopup()">Limpiar popup</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje cuando no hay popup -->
+      <div id="popupVacio" style="display:none;">
+        <div class="vacio">
+          <div class="vacio-icon">📢</div>
+          <p>No hay ningún popup configurado.<br>Crea uno para mostrar un aviso en el sitio.</p>
+          <button class="btn-nuevo" style="margin-top:1.5rem;" onclick="mostrarFormularioPopup()">+ Crear popup</button>
+        </div>
+      </div>
+
+      <!-- Formulario popup -->
+      <div class="form-card" id="formPopup">
+        <h3 id="formPopupTitulo">Configurar Popup</h3>
         <div class="toggle-wrap">
           <label>Mostrar popup en el sitio</label>
           <label class="toggle">
@@ -241,9 +270,10 @@
         </div>
         <div class="form-acciones">
           <button class="btn-guardar" onclick="guardarPopup()">Guardar popup</button>
-          <button class="btn-cancelar" onclick="limpiarPopup()">Limpiar popup</button>
+          <button class="btn-cancelar" onclick="ocultarFormularioPopup()">Cancelar</button>
         </div>
       </div>
+
     </div>
   </div>
 </div>
@@ -541,8 +571,25 @@
   async function cargarPopup() {
     try {
       const snap = await getDoc(doc(db,'config','popup'));
-      if (snap.exists()) {
+      const vista  = document.getElementById('popupVista');
+      const vacio  = document.getElementById('popupVacio');
+      const form   = document.getElementById('formPopup');
+      form.classList.remove('visible');
+
+      if (snap.exists() && (snap.data().titulo || snap.data().mensaje || snap.data().imgUrl)) {
         const d = snap.data();
+        // Mostrar vista
+        vista.style.display = 'block';
+        vacio.style.display = 'none';
+        document.getElementById('popupVistaTitulo').textContent = d.titulo || '(Sin título)';
+        document.getElementById('popupVistaMensaje').textContent = (d.mensaje || '').substring(0,120) + ((d.mensaje||'').length > 120 ? '...' : '');
+        const badge = document.getElementById('popupEstadoBadge');
+        badge.textContent = d.activo ? '● Activado' : '○ Desactivado';
+        badge.style.color = d.activo ? 'var(--verde)' : '#888';
+        const vistaImg = document.getElementById('popupVistaImg');
+        if (d.imgUrl) { vistaImg.src = d.imgUrl; vistaImg.style.display = 'block'; }
+        else { vistaImg.style.display = 'none'; }
+        // Precargar datos en formulario
         document.getElementById('popupTituloInput').value  = d.titulo  || '';
         document.getElementById('popupMensajeInput').value = d.mensaje || '';
         const chk = document.getElementById('popupActivo');
@@ -550,12 +597,26 @@
         chk.dispatchEvent(new Event('change'));
         if (d.imgUrl) {
           const p = document.getElementById('previewImgPopup');
-          p.src=d.imgUrl; p.style.display='block';
-          document.getElementById('btnQuitarImgPopup').style.display='inline-block';
+          p.src = d.imgUrl; p.style.display = 'block';
+          document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
         }
+      } else {
+        vista.style.display = 'none';
+        vacio.style.display = 'block';
       }
     } catch(e) { console.error('Error popup:',e); }
   }
+
+  window.mostrarFormularioPopup = () => {
+    document.getElementById('popupVista').style.display = 'none';
+    document.getElementById('popupVacio').style.display = 'none';
+    document.getElementById('formPopup').classList.add('visible');
+  };
+
+  window.ocultarFormularioPopup = () => {
+    document.getElementById('formPopup').classList.remove('visible');
+    cargarPopup();
+  };
 
   window.limpiarPopup = async () => {
     if (!confirm('¿Limpiar el popup? Se desactivará y se borrará todo su contenido.')) return;
@@ -568,6 +629,8 @@
       chk.dispatchEvent(new Event('change'));
       quitarImagenPopup();
       mostrarToast('Popup limpiado y desactivado.', 'exito');
+      document.getElementById('formPopup').classList.remove('visible');
+      cargarPopup();
     } catch(e) { mostrarToast('Error: '+e.message, 'error'); }
   };
 
@@ -596,6 +659,7 @@
       await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl});
       mostrarToast('Popup guardado correctamente.','exito');
       archivoImgPop = null;
+      ocultarFormularioPopup();
     } catch(e) {
       mostrarToast('Error: '+e.message,'error');
     } finally {
