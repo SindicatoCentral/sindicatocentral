@@ -561,19 +561,31 @@
     const mensaje = document.getElementById('popupMensajeInput').value.trim();
     const activo  = document.getElementById('popupActivo').checked;
     if (activo && (!titulo||!mensaje)) { mostrarToast('Completa título y mensaje para activar el popup.','error'); return; }
+
+    const btn = document.querySelector('#sec-popup .btn-guardar');
+    btn.textContent = 'Guardando...'; btn.disabled = true;
+
     try {
       let imgUrl = '';
       const snapAct = await getDoc(doc(db,'config','popup'));
       if (snapAct.exists()) imgUrl = snapAct.data().imgUrl || '';
+
       if (archivoImgPop) {
         const r = await subirImagen(archivoImgPop,'popup','progressBarPopup','progressFillPopup');
         imgUrl = r.url;
       }
-      if (!document.getElementById('previewImgPopup').src && !archivoImgPop) imgUrl='';
+
+      const preview = document.getElementById('previewImgPopup');
+      if (!preview.src || preview.style.display === 'none') imgUrl = '';
+
       await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl});
-      mostrarToast('Popup guardado.','exito');
+      mostrarToast('Popup guardado correctamente.','exito');
       archivoImgPop = null;
-    } catch(e) { mostrarToast('Error: '+e.message,'error'); }
+    } catch(e) {
+      mostrarToast('Error: '+e.message,'error');
+    } finally {
+      btn.textContent = 'Guardar popup'; btn.disabled = false;
+    }
   };
 
   // ── TOAST ──
