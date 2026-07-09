@@ -1601,33 +1601,18 @@ function toggleFaq(btn) {
 
 
 
-<!-- POPUP -->
-<div class="popup-overlay" id="popupOverlay">
-  <div class="popup-box">
-    <div class="popup-header">
-      <h3 id="popupTitulo">Comunicado</h3>
-      <button class="popup-cerrar" onclick="cerrarPopup()">✕</button>
-    </div>
-    <img id="popupImg" class="popup-img" src="" alt="" style="display:none;">
-    <div class="popup-body">
-      <p class="popup-mensaje" id="popupMensaje"></p>
-    </div>
-    <div class="popup-footer">
-      <button class="popup-btn" onclick="cerrarPopup()">Entendido</button>
-    </div>
-  </div>
-</div>
+
 
 
 <!-- POPUP -->
 <div class="popup-overlay" id="popupOverlay">
   <div class="popup-box">
-    <div class="popup-header">
+    <div class="popup-header" id="popupHeader">
       <h3 id="popupTitulo"></h3>
       <button class="popup-cerrar" onclick="cerrarPopup()">✕</button>
     </div>
-    <img class="popup-img" id="popupImg" src="" alt="" style="display:none;">
-    <div class="popup-body">
+    <img id="popupImg" class="popup-img" src="" alt="" style="display:none;">
+    <div class="popup-body" id="popupBody" style="display:none;">
       <p class="popup-mensaje" id="popupMensaje"></p>
     </div>
     <div class="popup-footer">
@@ -1763,23 +1748,42 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLigh
   const db  = getFirestore(app);
 
   async function cargarPopup() {
-    // No mostrar si ya se cerró en esta sesión
     if (sessionStorage.getItem('popupCerrado')) return;
     try {
       const snap = await getDoc(doc(db, 'config', 'popup'));
       if (!snap.exists()) return;
       const d = snap.data();
       if (!d.activo) return;
-      document.getElementById('popupTitulo').textContent  = d.titulo  || '';
-      document.getElementById('popupMensaje').textContent = d.mensaje || '';
+
+      // Título — ocultar header si no hay título
+      const header = document.getElementById('popupHeader');
+      if (d.titulo) {
+        document.getElementById('popupTitulo').textContent = d.titulo;
+        header.style.display = 'flex';
+      } else {
+        header.style.display = 'none';
+      }
+
+      // Imagen
       if (d.imgUrl) {
         const img = document.getElementById('popupImg');
-        img.src           = d.imgUrl;
+        img.src = d.imgUrl;
         img.style.display = 'block';
       }
+
+      // Mensaje — ocultar body si no hay mensaje
+      const body = document.getElementById('popupBody');
+      if (d.mensaje) {
+        document.getElementById('popupMensaje').textContent = d.mensaje;
+        body.style.display = 'block';
+      } else {
+        body.style.display = 'none';
+      }
+
+      // Mostrar popup con un pequeño retraso
       setTimeout(() => {
         document.getElementById('popupOverlay').classList.add('visible');
-      }, 1000);
+      }, 800);
     } catch(e) { console.error('Error cargando popup:', e); }
   }
 
