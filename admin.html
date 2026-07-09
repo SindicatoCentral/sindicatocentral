@@ -396,7 +396,7 @@
     const titulo    = document.getElementById('nTitulo').value.trim();
     const contenido = document.getElementById('nContenido').value.trim();
     const imgUrlAct = document.getElementById('noticiaImgUrl').value;
-    if (!titulo || !contenido) { mostrarToast('Completa título y contenido.', 'error'); return; }
+    if (!titulo && !archivoImg && !imgUrlAct) { mostrarToast('Agrega un título o una imagen.', 'error'); return; }
     const btn = document.getElementById('btnGuardar');
     btn.textContent = 'Guardando...'; btn.disabled = true;
     try {
@@ -575,7 +575,7 @@
     const titulo  = document.getElementById('popupTituloInput').value.trim();
     const mensaje = document.getElementById('popupMensajeInput').value.trim();
     const activo  = document.getElementById('popupActivo').checked;
-    if (activo && (!titulo||!mensaje)) { mostrarToast('Completa título y mensaje para activar el popup.','error'); return; }
+    if (activo && !titulo && !mensaje && !archivoImgPop) { mostrarToast('Agrega título, mensaje o imagen para activar el popup.','error'); return; }
 
     const btn = document.querySelector('#sec-popup .btn-guardar');
     btn.textContent = 'Guardando...'; btn.disabled = true;
