@@ -8,28 +8,30 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --gris-oscuro: #1C2B3A; --gris: #2C2C2C; --gris-medio: #4A4A4A;
-    --gris-claro: #F5F5F5; --borde: #D8D8D8; --blanco: #FFFFFF;
-    --acento: #2E5F8A; --acento-hover: #2C2C2C; --rojo: #C0242D; --verde: #2E7D32;
+    --azul: #2E5F8A; --azul-oscuro: #1E3F5F; --carbon: #1C2B3A;
+    --gris: #2C3E50; --gris-medio: #546E7A; --gris-claro: #F5F5F5;
+    --borde: #D8D8D8; --blanco: #FFFFFF; --rojo: #C0242D; --verde: #2E7D32;
   }
   body { font-family: 'Inter', sans-serif; background: var(--gris-claro); color: var(--gris); min-height: 100vh; }
 
-  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--gris-oscuro); }
+  /* LOGIN */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--carbon); }
   .login-box { background: var(--blanco); border-radius: 4px; padding: 3rem 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
   .login-logo { text-align: center; margin-bottom: 2rem; }
-  .login-logo h1 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--gris-oscuro); }
+  .login-logo h1 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--carbon); }
   .login-logo p { font-size: 0.82rem; color: #888; margin-top: 0.3rem; }
   .form-group { margin-bottom: 1.2rem; }
   .form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--gris-medio); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.4rem; }
-  .form-group input, .form-group textarea { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--borde); border-radius: 2px; font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--gris-oscuro); outline: none; transition: border-color 0.2s; }
-  .form-group input:focus, .form-group textarea:focus { border-color: var(--acento); }
+  .form-group input, .form-group textarea { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--borde); border-radius: 2px; font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--carbon); outline: none; transition: border-color 0.2s; }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--azul); }
   .form-group textarea { resize: vertical; min-height: 180px; }
-  .btn-login { width: 100%; padding: 0.85rem; background: var(--acento); color: var(--blanco); border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; margin-top: 0.5rem; }
-  .btn-login:hover { background: var(--acento-hover); }
+  .btn-login { width: 100%; padding: 0.85rem; background: var(--azul); color: var(--blanco); border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; margin-top: 0.5rem; }
+  .btn-login:hover { background: var(--azul-oscuro); }
   .login-error { background: #fff3f3; border: 1px solid #e06068; color: var(--rojo); padding: 0.75rem 1rem; border-radius: 2px; font-size: 0.85rem; margin-top: 1rem; display: none; }
 
+  /* PANEL */
   .panel-wrap { display: none; }
-  .topbar { background: var(--gris-oscuro); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 60px; border-bottom: 2px solid var(--acento); position: sticky; top: 0; z-index: 100; }
+  .topbar { background: var(--carbon); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 60px; border-bottom: 2px solid var(--azul); position: sticky; top: 0; z-index: 100; }
   .topbar-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--blanco); }
   .topbar-right { display: flex; align-items: center; gap: 1rem; }
   .topbar-user { font-size: 0.82rem; color: #aaa; }
@@ -38,54 +40,72 @@
 
   .panel-content { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem; }
   .seccion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-  .seccion-header h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--gris-oscuro); }
-  .btn-nuevo { background: var(--acento); color: var(--blanco); padding: 0.65rem 1.5rem; border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; }
-  .btn-nuevo:hover { background: var(--acento-hover); }
+  .seccion-header h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--carbon); }
+  .btn-nuevo { background: var(--azul); color: var(--blanco); padding: 0.65rem 1.5rem; border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; }
+  .btn-nuevo:hover { background: var(--azul-oscuro); }
 
-  .tabs-noticias { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .tab-n { padding: 0.55rem 1.3rem; border-radius: 2px; cursor: pointer; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border: 1.5px solid var(--borde); background: var(--blanco); color: var(--gris-medio); transition: all 0.2s; }
-  .tab-n.activo { background: var(--acento); color: var(--blanco); border-color: var(--acento); }
-  .tab-n:hover:not(.activo) { border-color: var(--acento); color: var(--acento); }
+  .tabs-panel { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .tab-p { padding: 0.55rem 1.3rem; border-radius: 2px; cursor: pointer; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border: 1.5px solid var(--borde); background: var(--blanco); color: var(--gris-medio); transition: all 0.2s; }
+  .tab-p.activo { background: var(--azul); color: var(--blanco); border-color: var(--azul); }
+  .tab-p:hover:not(.activo) { border-color: var(--azul); color: var(--azul); }
 
-  .form-noticia { background: var(--blanco); border-radius: 2px; padding: 2rem; border: 1px solid var(--borde); margin-bottom: 2rem; display: none; }
-  .form-noticia.visible { display: block; }
-  .form-noticia h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gris-oscuro); margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--borde); }
+  .seccion { display: none; }
+  .seccion.activa { display: block; }
+
+  /* FORMULARIO */
+  .form-card { background: var(--blanco); border-radius: 2px; padding: 2rem; border: 1px solid var(--borde); margin-bottom: 2rem; display: none; }
+  .form-card.visible { display: block; }
+  .form-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--carbon); margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--borde); }
   .form-acciones { display: flex; gap: 1rem; margin-top: 1rem; }
-  .btn-guardar { background: var(--acento); color: var(--blanco); padding: 0.7rem 1.8rem; border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; }
-  .btn-guardar:hover { background: var(--acento-hover); }
+  .btn-guardar { background: var(--azul); color: var(--blanco); padding: 0.7rem 1.8rem; border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; }
+  .btn-guardar:hover { background: var(--azul-oscuro); }
   .btn-cancelar { background: none; border: 1.5px solid var(--borde); color: var(--gris-medio); padding: 0.7rem 1.8rem; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; transition: all 0.2s; }
   .btn-cancelar:hover { border-color: var(--gris-medio); }
 
-  /* IMAGEN UPLOAD */
+  /* UPLOAD */
   .upload-area { border: 2px dashed var(--borde); border-radius: 2px; padding: 1.5rem; text-align: center; cursor: pointer; transition: border-color 0.2s; margin-top: 0.4rem; position: relative; }
-  .upload-area:hover { border-color: var(--acento); }
+  .upload-area:hover { border-color: var(--azul); }
   .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
   .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
   .upload-text { font-size: 0.85rem; color: var(--gris-medio); }
   .upload-hint { font-size: 0.75rem; color: #aaa; margin-top: 0.3rem; }
   .preview-img { max-width: 100%; max-height: 200px; border-radius: 2px; margin-top: 1rem; display: none; }
   .progress-bar { height: 4px; background: var(--gris-claro); border-radius: 2px; margin-top: 0.8rem; display: none; }
-  .progress-fill { height: 100%; background: var(--acento); border-radius: 2px; width: 0%; transition: width 0.3s; }
+  .progress-fill { height: 100%; background: var(--azul); border-radius: 2px; width: 0%; transition: width 0.3s; }
   .btn-quitar-img { background: none; border: 1px solid #ffcccc; color: var(--rojo); padding: 0.3rem 0.8rem; border-radius: 2px; cursor: pointer; font-size: 0.75rem; margin-top: 0.5rem; display: none; font-family: 'Inter', sans-serif; }
 
+  /* LISTA NOTICIAS */
   .noticias-lista { display: flex; flex-direction: column; gap: 1rem; }
   .noticia-item { background: var(--blanco); border-radius: 2px; border: 1px solid var(--borde); padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; transition: box-shadow 0.2s; }
   .noticia-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
   .noticia-item-img { width: 80px; height: 60px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
   .noticia-info { flex: 1; }
-  .noticia-titulo { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gris-oscuro); margin-bottom: 0.4rem; }
-  .noticia-resumen { font-size: 0.85rem; color: #666; line-height: 1.5; }
+  .noticia-titulo-item { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--carbon); margin-bottom: 0.4rem; }
+  .noticia-resumen-item { font-size: 0.85rem; color: #666; line-height: 1.5; }
   .historial-badge { display: inline-block; font-size: 0.7rem; background: #f5f5f5; color: #888; padding: 0.2rem 0.5rem; border-radius: 2px; margin-left: 0.5rem; }
   .noticia-acciones { display: flex; gap: 0.5rem; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
-  .btn-editar { background: none; border: 1px solid var(--borde); color: var(--gris-medio); padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-  .btn-editar:hover { border-color: var(--acento); color: var(--acento); }
-  .btn-archivar { background: none; border: 1px solid #ffe0b2; color: #e65100; padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-  .btn-archivar:hover { background: #fff3e0; }
-  .btn-restaurar { background: none; border: 1px solid #c8e6c9; color: var(--verde); padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-  .btn-restaurar:hover { background: #f0fff4; }
-  .btn-eliminar { background: none; border: 1px solid #ffcccc; color: var(--rojo); padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-  .btn-eliminar:hover { background: #fff3f3; }
+  .btn-accion { padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer; font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s; background: none; }
+  .btn-accion.editar { border: 1px solid var(--borde); color: var(--gris-medio); }
+  .btn-accion.editar:hover { border-color: var(--azul); color: var(--azul); }
+  .btn-accion.archivar { border: 1px solid #ffe0b2; color: #e65100; }
+  .btn-accion.archivar:hover { background: #fff3e0; }
+  .btn-accion.restaurar { border: 1px solid #c8e6c9; color: var(--verde); }
+  .btn-accion.restaurar:hover { background: #f0fff4; }
+  .btn-accion.eliminar { border: 1px solid #ffcccc; color: var(--rojo); }
+  .btn-accion.eliminar:hover { background: #fff3f3; }
 
+  /* TOGGLE */
+  .toggle-wrap { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+  .toggle-wrap label { font-size: 0.95rem; font-weight: 600; color: var(--carbon); }
+  .toggle { position: relative; display: inline-block; width: 48px; height: 26px; cursor: pointer; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: #ccc; border-radius: 26px; transition: 0.3s; }
+  .toggle-slider::before { content: ''; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s; }
+  .toggle input:checked + .toggle-slider { background: var(--azul); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(22px); }
+  .toggle-label { font-size: 0.85rem; color: #888; }
+
+  /* TOAST */
   .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 2px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: none; z-index: 999; }
   .toast.exito { background: #f0fff4; border: 1px solid #4caf50; color: var(--verde); }
   .toast.error { background: #fff3f3; border: 1px solid #e06068; color: var(--rojo); }
@@ -139,40 +159,77 @@
 
   <div class="panel-content">
     <div class="seccion-header">
-      <h2>Noticias y comunicados</h2>
-      <button class="btn-nuevo" id="seccion-header-btn" onclick="mostrarFormulario()">+ Nueva noticia</button>
+      <h2 id="seccionTitulo">Noticias y comunicados</h2>
+      <button class="btn-nuevo" id="btnNuevo" onclick="mostrarFormulario()">+ Nueva noticia</button>
     </div>
 
-    <div class="tabs-noticias">
-      <button class="tab-n activo" id="tabNoticias" onclick="mostrarSeccion('noticias', this)">Noticias</button>
-      <button class="tab-n" onclick="mostrarSeccion('historial', this)">Historial</button>
-      <button class="tab-n" onclick="mostrarSeccion('popup', this)">Popup</button>
+    <div class="tabs-panel">
+      <button class="tab-p activo" onclick="cambiarTab('publicadas', this)">Publicadas</button>
+      <button class="tab-p" onclick="cambiarTab('historial', this)">Historial</button>
+      <button class="tab-p" onclick="cambiarTab('popup', this)">Popup</button>
     </div>
 
-    <!-- SECCIÓN POPUP -->
-    <div id="secPopup" style="display:none;">
-      <div class="form-noticia visible" style="margin-bottom:0;">
-        <h3>Configuración del Popup</h3>
-        <div class="form-group" style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
-          <label style="margin:0; text-transform:none; font-size:0.95rem; font-weight:600; color:var(--gris-oscuro);">Mostrar popup en el sitio</label>
-          <label style="position:relative; display:inline-block; width:48px; height:26px; cursor:pointer;">
-            <input type="checkbox" id="popupActivo" style="opacity:0; width:0; height:0;" onchange="togglePopup()">
-            <span id="toggleSpan" style="position:absolute; inset:0; background:#ccc; border-radius:26px; transition:0.3s;"></span>
-            <span id="toggleCircle" style="position:absolute; left:3px; top:3px; width:20px; height:20px; background:white; border-radius:50%; transition:0.3s;"></span>
-          </label>
-          <span id="popupEstadoLabel" style="font-size:0.85rem; color:#888;">Desactivado</span>
+    <!-- NOTICIAS PUBLICADAS / HISTORIAL -->
+    <div class="seccion activa" id="sec-publicadas">
+      <div class="form-card" id="formNoticia">
+        <h3 id="formTitulo">Nueva noticia</h3>
+        <input type="hidden" id="noticiaId">
+        <input type="hidden" id="noticiaImgUrl">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" id="nTitulo" placeholder="Título de la noticia o comunicado">
         </div>
         <div class="form-group">
-          <label>Título del popup</label>
-          <input type="text" id="popupTitulo" placeholder="Ej: Comunicado importante">
-        </div>
-        <div class="form-group">
-          <label>Mensaje</label>
-          <textarea id="popupMensaje" placeholder="Escribe el mensaje del popup..." style="min-height:120px;"></textarea>
+          <label>Contenido</label>
+          <textarea id="nContenido" placeholder="Escribe aquí el contenido completo..."></textarea>
         </div>
         <div class="form-group">
           <label>Imagen (opcional)</label>
-          <div class="upload-area" id="uploadAreaPopup">
+          <div class="upload-area">
+            <input type="file" id="imgInput" accept="image/*" onchange="previsualizarImagen(this)">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">Haz clic o arrastra una imagen aquí</div>
+            <div class="upload-hint">JPG, PNG o WEBP — máx. 5MB</div>
+            <img class="preview-img" id="previewImg">
+          </div>
+          <button class="btn-quitar-img" id="btnQuitarImg" onclick="quitarImagen()">✕ Quitar imagen</button>
+          <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+        <div class="form-acciones">
+          <button class="btn-guardar" id="btnGuardar" onclick="guardarNoticia()">Guardar noticia</button>
+          <button class="btn-cancelar" onclick="ocultarFormulario()">Cancelar</button>
+        </div>
+      </div>
+      <div class="noticias-lista" id="noticiasList"><div class="loading">Cargando...</div></div>
+    </div>
+
+    <div class="seccion" id="sec-historial">
+      <div class="noticias-lista" id="historialList"><div class="loading">Cargando...</div></div>
+    </div>
+
+    <!-- POPUP -->
+    <div class="seccion" id="sec-popup">
+      <div class="form-card visible">
+        <h3>Configuración del Popup</h3>
+        <div class="toggle-wrap">
+          <label>Mostrar popup en el sitio</label>
+          <label class="toggle">
+            <input type="checkbox" id="popupActivo">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label" id="popupEstadoLabel">Desactivado</span>
+        </div>
+        <div class="form-group">
+          <label>Título del popup</label>
+          <input type="text" id="popupTituloInput" placeholder="Ej: Comunicado importante">
+        </div>
+        <div class="form-group">
+          <label>Mensaje</label>
+          <textarea id="popupMensajeInput" placeholder="Escribe el mensaje del popup..." style="min-height:120px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Imagen (opcional)</label>
+          <div class="upload-area">
             <input type="file" id="imgInputPopup" accept="image/*" onchange="previsualizarImagenPopup(this)">
             <div class="upload-icon">🖼️</div>
             <div class="upload-text">Haz clic o arrastra una imagen aquí</div>
@@ -180,64 +237,20 @@
             <img class="preview-img" id="previewImgPopup">
           </div>
           <button class="btn-quitar-img" id="btnQuitarImgPopup" onclick="quitarImagenPopup()">✕ Quitar imagen</button>
-          <div class="progress-bar" id="progressBarPopup">
-            <div class="progress-fill" id="progressFillPopup"></div>
-          </div>
+          <div class="progress-bar" id="progressBarPopup"><div class="progress-fill" id="progressFillPopup"></div></div>
         </div>
         <div class="form-acciones">
           <button class="btn-guardar" onclick="guardarPopup()">Guardar popup</button>
         </div>
       </div>
     </div>
-
-    <!-- SECCIÓN NOTICIAS -->
-    <div id="secNoticias">
-
-    <!-- Formulario -->
-    <div class="form-noticia" id="formNoticia">
-      <h3 id="formTitulo">Nueva noticia</h3>
-      <input type="hidden" id="noticiaId">
-      <input type="hidden" id="noticiaImgUrl">
-      <div class="form-group">
-        <label>Título</label>
-        <input type="text" id="nTitulo" placeholder="Título de la noticia o comunicado">
-      </div>
-      <div class="form-group">
-        <label>Contenido</label>
-        <textarea id="nContenido" placeholder="Escribe aquí el contenido completo..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Imagen (opcional)</label>
-        <div class="upload-area" id="uploadArea">
-          <input type="file" id="imgInput" accept="image/*" onchange="previsualizarImagen(this)">
-          <div class="upload-icon">🖼️</div>
-          <div class="upload-text">Haz clic o arrastra una imagen aquí</div>
-          <div class="upload-hint">JPG, PNG o WEBP — máx. 5MB</div>
-          <img class="preview-img" id="previewImg">
-        </div>
-        <button class="btn-quitar-img" id="btnQuitarImg" onclick="quitarImagen()">✕ Quitar imagen</button>
-        <div class="progress-bar" id="progressBar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-      </div>
-      <div class="form-acciones">
-        <button class="btn-guardar" id="btnGuardar" onclick="guardarNoticia()">Guardar noticia</button>
-        <button class="btn-cancelar" onclick="ocultarFormulario()">Cancelar</button>
-      </div>
-    </div>
-
-    <!-- Lista -->
-    <div class="noticias-lista" id="noticiasList">
-      <div class="loading">Cargando noticias...</div>
-    </div>
-    </div><!-- /secNoticias -->
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc }
@@ -259,49 +272,25 @@
   const db      = getFirestore(app);
   const storage = getStorage(app);
 
-  let tabActual      = 'publicada';
-  let archivoImg     = null;
-  let archivoImgPopup= null;
+  let tabActual    = 'publicada';
+  let archivoImg   = null;
+  let archivoImgPop= null;
 
-  window.mostrarSeccion = (sec, el) => {
-    document.querySelectorAll('.tab-n').forEach(t => t.classList.remove('activo'));
-    el.classList.add('activo');
-    document.getElementById('secNoticias').style.display = 'none';
-    document.getElementById('secPopup').style.display    = 'none';
-    document.getElementById('formNoticia').classList.remove('visible');
-    if (sec === 'popup') {
-      document.getElementById('secPopup').style.display = 'block';
-      document.getElementById('seccion-header-btn').style.display = 'none';
-      cargarPopup();
-    } else {
-      document.getElementById('secNoticias').style.display = 'block';
-      document.getElementById('seccion-header-btn').style.display = 'inline-block';
-      tabActual = sec === 'noticias' ? 'publicada' : 'archivada';
-      cargarNoticias();
-    }
-  };
-
-  // AUTH
+  // ── AUTH ──
   onAuthStateChanged(auth, user => {
     if (user) {
-      document.getElementById('loginWrap').style.display  = 'none';
-      document.getElementById('panelWrap').style.display  = 'block';
-      document.getElementById('topbarUser').textContent   = user.email;
-      limpiarLogin();
-      document.getElementById('secNoticias').style.display = 'block';
-      document.getElementById('secPopup').style.display = 'none';
-      cargarNoticias();
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('panelWrap').style.display = 'block';
+      document.getElementById('topbarUser').textContent  = user.email;
+      document.getElementById('loginEmail').value    = '';
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('loginError').style.display = 'none';
+      cargarNoticias('publicada', 'noticiasList');
     } else {
-      document.getElementById('loginWrap').style.display  = 'flex';
-      document.getElementById('panelWrap').style.display  = 'none';
+      document.getElementById('loginWrap').style.display = 'flex';
+      document.getElementById('panelWrap').style.display = 'none';
     }
   });
-
-  function limpiarLogin() {
-    document.getElementById('loginEmail').value    = '';
-    document.getElementById('loginPassword').value = '';
-    document.getElementById('loginError').style.display = 'none';
-  }
 
   window.iniciarSesion = async () => {
     const email    = document.getElementById('loginEmail').value.trim();
@@ -311,128 +300,42 @@
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch(e) {
-      errDiv.style.display  = 'block';
-      errDiv.textContent    = 'Correo o contraseña incorrectos.';
+      errDiv.style.display = 'block';
+      errDiv.textContent   = 'Correo o contraseña incorrectos.';
     }
   };
 
   window.cerrarSesion = async () => {
     await signOut(auth);
-    limpiarLogin();
+    document.getElementById('loginEmail').value    = '';
+    document.getElementById('loginPassword').value = '';
     window.location.href = 'index.html';
   };
 
-  let archivoImgPopup = null;
-
-  // MOSTRAR SECCIÓN
-  window.mostrarSeccion = (seccion, el) => {
-    document.querySelectorAll('.tab-n').forEach(t => t.classList.remove('activo'));
+  // ── TABS ──
+  window.cambiarTab = (tab, el) => {
+    document.querySelectorAll('.tab-p').forEach(t => t.classList.remove('activo'));
     el.classList.add('activo');
-    document.getElementById('secNoticias').style.display = 'none';
-    document.getElementById('secPopup').style.display    = 'none';
-    document.getElementById('formNoticia').classList.remove('visible');
-    if (seccion === 'popup') {
-      document.getElementById('secPopup').style.display = 'block';
-      cargarPopup();
-    } else {
-      document.getElementById('secNoticias').style.display = 'block';
-      tabActual = seccion === 'historial' ? 'archivada' : 'publicada';
-      cargarNoticias();
-    }
+    document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
+    document.getElementById('sec-' + tab).classList.add('activa');
+    document.getElementById('btnNuevo').style.display  = tab === 'publicadas' ? 'inline-block' : 'none';
+    document.getElementById('seccionTitulo').textContent =
+      tab === 'publicadas' ? 'Noticias y comunicados' :
+      tab === 'historial'  ? 'Historial de noticias' : 'Configuración del Popup';
+    ocultarFormulario();
+    if (tab === 'publicadas') cargarNoticias('publicada', 'noticiasList');
+    if (tab === 'historial')  cargarNoticias('archivada', 'historialList');
+    if (tab === 'popup')      cargarPopup();
   };
 
-  // CARGAR POPUP
-  async function cargarPopup() {
-    try {
-      const snap = await getDoc(doc(db, 'config', 'popup'));
-      if (snap.exists()) {
-        const d = snap.data();
-        document.getElementById('popupTitulo').value   = d.titulo   || '';
-        document.getElementById('popupMensaje').value  = d.mensaje  || '';
-        const activo = d.activo || false;
-        document.getElementById('popupActivo').checked = activo;
-        actualizarToggle(activo);
-        if (d.imgUrl) {
-          const preview = document.getElementById('previewImgPopup');
-          preview.src           = d.imgUrl;
-          preview.style.display = 'block';
-          document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
-        }
-      }
-    } catch(e) { console.error('Error cargando popup:', e); }
-  }
-
-  function actualizarToggle(activo) {
-    const span   = document.getElementById('toggleSpan');
-    const circle = document.getElementById('toggleCircle');
-    const label  = document.getElementById('popupEstadoLabel');
-    span.style.background     = activo ? '#2E5F8A' : '#ccc';
-    circle.style.left         = activo ? '25px' : '3px';
-    label.textContent         = activo ? 'Activado' : 'Desactivado';
-    label.style.color         = activo ? '#2E5F8A' : '#888';
-  }
-
-  window.togglePopup = () => {
-    actualizarToggle(document.getElementById('popupActivo').checked);
-  };
-
-  // IMAGEN POPUP
-  window.previsualizarImagenPopup = (input) => {
-    const file = input.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { mostrarToast('La imagen no debe superar los 5MB.', 'error'); input.value = ''; return; }
-    archivoImgPopup = file;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const preview = document.getElementById('previewImgPopup');
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-      document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
-    };
-    reader.readAsDataURL(file);
-  };
-
-  window.quitarImagenPopup = () => {
-    archivoImgPopup = null;
-    document.getElementById('imgInputPopup').value = '';
-    document.getElementById('previewImgPopup').style.display = 'none';
-    document.getElementById('previewImgPopup').src = '';
-    document.getElementById('btnQuitarImgPopup').style.display = 'none';
-  };
-
-  // GUARDAR POPUP
-  window.guardarPopup = async () => {
-    const titulo  = document.getElementById('popupTitulo').value.trim();
-    const mensaje = document.getElementById('popupMensaje').value.trim();
-    const activo  = document.getElementById('popupActivo').checked;
-    if (!titulo || !mensaje) { mostrarToast('Completa el título y el mensaje.', 'error'); return; }
-    try {
-      let imgUrl = '';
-      // Obtener imgUrl actual si existe
-      const snap = await getDoc(doc(db, 'config', 'popup'));
-      if (snap.exists()) imgUrl = snap.data().imgUrl || '';
-      if (archivoImgPopup) {
-        const res = await subirImagen(archivoImgPopup);
-        imgUrl = res.url;
-      }
-      await setDoc(doc(db, 'config', 'popup'), { titulo, mensaje, activo, imgUrl });
-      mostrarToast('Popup guardado correctamente.', 'exito');
-    } catch(e) { mostrarToast('Error al guardar: ' + e.message, 'error'); }
-  };
-
-  window.cambiarTabNoticias = (estado, el) => {
-    tabActual = estado;
-    cargarNoticias();
-  };
-
-  // FORMULARIO
+  // ── FORMULARIO NOTICIAS ──
   window.mostrarFormulario = () => {
     document.getElementById('formNoticia').classList.add('visible');
-    document.getElementById('formTitulo').textContent    = 'Nueva noticia';
-    document.getElementById('noticiaId').value           = '';
-    document.getElementById('noticiaImgUrl').value       = '';
-    document.getElementById('nTitulo').value             = '';
-    document.getElementById('nContenido').value          = '';
+    document.getElementById('formTitulo').textContent  = 'Nueva noticia';
+    document.getElementById('noticiaId').value         = '';
+    document.getElementById('noticiaImgUrl').value     = '';
+    document.getElementById('nTitulo').value           = '';
+    document.getElementById('nContenido').value        = '';
     quitarImagen();
   };
 
@@ -441,20 +344,16 @@
     archivoImg = null;
   };
 
-  // IMAGEN
+  // ── IMAGEN NOTICIAS ──
   window.previsualizarImagen = (input) => {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      mostrarToast('La imagen no debe superar los 5MB.', 'error');
-      input.value = ''; return;
-    }
+    if (file.size > 5*1024*1024) { mostrarToast('Imagen máx. 5MB.', 'error'); input.value=''; return; }
     archivoImg = file;
     const reader = new FileReader();
     reader.onload = e => {
-      const preview = document.getElementById('previewImg');
-      preview.src   = e.target.result;
-      preview.style.display = 'block';
+      const p = document.getElementById('previewImg');
+      p.src = e.target.result; p.style.display = 'block';
       document.getElementById('btnQuitarImg').style.display = 'inline-block';
     };
     reader.readAsDataURL(file);
@@ -462,93 +361,78 @@
 
   window.quitarImagen = () => {
     archivoImg = null;
-    document.getElementById('imgInput').value           = '';
-    document.getElementById('previewImg').style.display = 'none';
-    document.getElementById('previewImg').src           = '';
-    document.getElementById('btnQuitarImg').style.display = 'none';
-    document.getElementById('noticiaImgUrl').value      = '';
+    const inp = document.getElementById('imgInput');
+    if (inp) inp.value = '';
+    const p = document.getElementById('previewImg');
+    if (p) { p.style.display='none'; p.src=''; }
+    const b = document.getElementById('btnQuitarImg');
+    if (b) b.style.display = 'none';
+    document.getElementById('noticiaImgUrl').value = '';
   };
 
-  async function subirImagen(file) {
+  async function subirImagen(file, carpeta, barraId, fillId) {
     return new Promise((resolve, reject) => {
-      const nombre   = Date.now() + '_' + file.name.replace(/\s/g, '_');
-      const storageRef = ref(storage, 'noticias/' + nombre);
-      const tarea    = uploadBytesResumable(storageRef, file);
-      const barra    = document.getElementById('progressBar');
-      const fill     = document.getElementById('progressFill');
-      barra.style.display = 'block';
+      const nombre = Date.now() + '_' + file.name.replace(/\s/g,'_');
+      const storRef = ref(storage, carpeta + '/' + nombre);
+      const tarea   = uploadBytesResumable(storRef, file);
+      document.getElementById(barraId).style.display = 'block';
       tarea.on('state_changed',
-        snap => { fill.style.width = (snap.bytesTransferred / snap.totalBytes * 100) + '%'; },
-        err  => reject(err),
+        s => document.getElementById(fillId).style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
+        reject,
         async () => {
           const url = await getDownloadURL(tarea.snapshot.ref);
-          barra.style.display = 'none';
-          fill.style.width    = '0%';
-          resolve({ url, path: 'noticias/' + nombre });
+          document.getElementById(barraId).style.display = 'none';
+          document.getElementById(fillId).style.width = '0%';
+          resolve({ url, path: carpeta+'/'+nombre });
         }
       );
     });
   }
 
-  // GUARDAR
+  // ── GUARDAR NOTICIA ──
   window.guardarNoticia = async () => {
-    const id       = document.getElementById('noticiaId').value;
-    const titulo   = document.getElementById('nTitulo').value.trim();
-    const contenido= document.getElementById('nContenido').value.trim();
-    const imgUrlActual = document.getElementById('noticiaImgUrl').value;
-
-    if (!titulo || !contenido) {
-      mostrarToast('Completa el título y el contenido.', 'error'); return;
-    }
-
+    const id        = document.getElementById('noticiaId').value;
+    const titulo    = document.getElementById('nTitulo').value.trim();
+    const contenido = document.getElementById('nContenido').value.trim();
+    const imgUrlAct = document.getElementById('noticiaImgUrl').value;
+    if (!titulo || !contenido) { mostrarToast('Completa título y contenido.', 'error'); return; }
     const btn = document.getElementById('btnGuardar');
-    btn.textContent = 'Guardando...';
-    btn.disabled    = true;
-
+    btn.textContent = 'Guardando...'; btn.disabled = true;
     try {
-      let imgUrl  = imgUrlActual;
-      let imgPath = '';
-
+      let imgUrl = imgUrlAct, imgPath = '';
       if (archivoImg) {
-        const resultado = await subirImagen(archivoImg);
-        imgUrl  = resultado.url;
-        imgPath = resultado.path;
+        const r = await subirImagen(archivoImg, 'noticias', 'progressBar', 'progressFill');
+        imgUrl = r.url; imgPath = r.path;
       }
-
-      const datos = { titulo, contenido, imgUrl: imgUrl || '', imgPath: imgPath || '' };
-
+      const datos = { titulo, contenido, imgUrl: imgUrl||'', imgPath: imgPath||'' };
       if (id) {
-        await updateDoc(doc(db, 'noticias', id), datos);
-        mostrarToast('Noticia actualizada correctamente.', 'exito');
+        await updateDoc(doc(db,'noticias',id), datos);
+        mostrarToast('Noticia actualizada.', 'exito');
       } else {
-        await addDoc(collection(db, 'noticias'), { ...datos, createdAt: serverTimestamp(), estado: 'publicada' });
-        mostrarToast('Noticia publicada correctamente.', 'exito');
+        await addDoc(collection(db,'noticias'), { ...datos, createdAt: serverTimestamp(), estado: 'publicada' });
+        mostrarToast('Noticia publicada.', 'exito');
       }
       ocultarFormulario();
-      cargarNoticias();
+      cargarNoticias('publicada', 'noticiasList');
     } catch(e) {
-      mostrarToast('Error al guardar: ' + e.message, 'error');
+      mostrarToast('Error: ' + e.message, 'error');
     } finally {
-      btn.textContent = 'Guardar noticia';
-      btn.disabled    = false;
+      btn.textContent = 'Guardar noticia'; btn.disabled = false;
     }
   };
 
-  // CARGAR
-  async function cargarNoticias() {
-    const lista = document.getElementById('noticiasList');
+  // ── CARGAR NOTICIAS ──
+  async function cargarNoticias(estado, listaId) {
+    const lista = document.getElementById(listaId);
     lista.innerHTML = '<div class="loading">Cargando...</div>';
     try {
-      const q    = query(collection(db, 'noticias'), where('estado', '==', tabActual), orderBy('createdAt', 'desc'));
+      const q    = query(collection(db,'noticias'), where('estado','==',estado), orderBy('createdAt','desc'));
       const snap = await getDocs(q);
-      const esHistorial = tabActual === 'archivada';
-
+      const esHistorial = estado === 'archivada';
       if (snap.empty) {
-        const msg = esHistorial ? 'No hay noticias archivadas.' : 'No hay noticias publicadas aún.<br>Haz clic en "Nueva noticia" para agregar la primera.';
-        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">' + (esHistorial ? '🗄️' : '📰') + '</div><p>' + msg + '</p></div>';
+        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">'+(esHistorial?'🗄️':'📰')+'</div><p>'+(esHistorial?'No hay noticias archivadas.':'No hay noticias publicadas aún.')+'</p></div>';
         return;
       }
-
       lista.innerHTML = '';
       snap.forEach(d => {
         const n    = d.data();
@@ -558,197 +442,145 @@
         item.dataset.titulo   = n.titulo    || '';
         item.dataset.contenido= n.contenido || '';
         item.dataset.imgUrl   = n.imgUrl    || '';
-        const resumen  = (n.contenido || '').substring(0, 100) + ((n.contenido || '').length > 100 ? '...' : '');
-        const fechaStr = n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' }) : '';
-        const imgHtml  = n.imgUrl ? '<img class="noticia-item-img" src="' + n.imgUrl + '" alt="">' : '';
-
+        const resumen  = (n.contenido||'').substring(0,100) + ((n.contenido||'').length>100?'...':'');
+        const fechaStr = n.createdAt ? new Date(n.createdAt.seconds*1000).toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'}) : '';
         item.innerHTML =
-          (imgHtml ? imgHtml : '') +
+          (n.imgUrl ? '<img class="noticia-item-img" src="'+n.imgUrl+'" alt="">' : '') +
           '<div class="noticia-info">' +
-            '<div class="noticia-titulo">' + (n.titulo || '') + (fechaStr ? '<span class="historial-badge">' + fechaStr + '</span>' : '') + '</div>' +
-            '<div class="noticia-resumen">' + resumen + '</div>' +
-          '</div>' +
-          '<div class="noticia-acciones">' +
-            (!esHistorial ? '<button class="btn-editar">Editar</button>' : '') +
-            (!esHistorial ? '<button class="btn-archivar">Archivar</button>' : '') +
-            (esHistorial  ? '<button class="btn-restaurar">Restaurar</button>' : '') +
-            (esHistorial  ? '<button class="btn-eliminar">Eliminar</button>' : '') +
+            '<div class="noticia-titulo-item">'+(n.titulo||'')+(fechaStr?'<span class="historial-badge">'+fechaStr+'</span>':'')+'</div>'+
+            '<div class="noticia-resumen-item">'+resumen+'</div>'+
+          '</div>'+
+          '<div class="noticia-acciones">'+
+            (!esHistorial ? '<button class="btn-accion editar">Editar</button><button class="btn-accion archivar">Archivar</button>' : '')+
+            (esHistorial  ? '<button class="btn-accion restaurar">Restaurar</button><button class="btn-accion eliminar">Eliminar</button>' : '')+
           '</div>';
-
         if (!esHistorial) {
-          item.querySelector('.btn-editar').addEventListener('click', () => editarNoticia(item.dataset.id, item.dataset.titulo, item.dataset.contenido, item.dataset.imgUrl));
-          item.querySelector('.btn-archivar').addEventListener('click', () => archivarNoticia(item.dataset.id));
+          item.querySelector('.editar').addEventListener('click', () => editarNoticia(item.dataset.id, item.dataset.titulo, item.dataset.contenido, item.dataset.imgUrl));
+          item.querySelector('.archivar').addEventListener('click', () => archivarNoticia(item.dataset.id));
         } else {
-          item.querySelector('.btn-restaurar').addEventListener('click', () => restaurarNoticia(item.dataset.id));
-          item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarNoticia(item.dataset.id, item.dataset.imgUrl));
+          item.querySelector('.restaurar').addEventListener('click', () => restaurarNoticia(item.dataset.id));
+          item.querySelector('.eliminar').addEventListener('click', () => eliminarNoticia(item.dataset.id, item.dataset.imgUrl));
         }
         lista.appendChild(item);
       });
     } catch(e) {
-      console.error('Error:', e);
-      lista.innerHTML = '<div class="loading">Error al cargar: ' + e.message + '</div>';
+      lista.innerHTML = '<div class="loading">Error: '+e.message+'</div>';
     }
   }
 
-  // EDITAR
+  // ── EDITAR ──
   function editarNoticia(id, titulo, contenido, imgUrl) {
     document.getElementById('formNoticia').classList.add('visible');
-    document.getElementById('formTitulo').textContent    = 'Editar noticia';
-    document.getElementById('noticiaId').value           = id;
-    document.getElementById('nTitulo').value             = titulo;
-    document.getElementById('nContenido').value          = contenido;
-    document.getElementById('noticiaImgUrl').value       = imgUrl || '';
+    document.getElementById('formTitulo').textContent  = 'Editar noticia';
+    document.getElementById('noticiaId').value         = id;
+    document.getElementById('nTitulo').value           = titulo;
+    document.getElementById('nContenido').value        = contenido;
+    document.getElementById('noticiaImgUrl').value     = imgUrl||'';
     archivoImg = null;
-    const preview = document.getElementById('previewImg');
-    if (imgUrl) {
-      preview.src           = imgUrl;
-      preview.style.display = 'block';
-      document.getElementById('btnQuitarImg').style.display = 'inline-block';
-    } else {
-      preview.style.display = 'none';
-      document.getElementById('btnQuitarImg').style.display = 'none';
-    }
-    document.getElementById('formNoticia').scrollIntoView({ behavior: 'smooth' });
+    const p = document.getElementById('previewImg');
+    if (imgUrl) { p.src=imgUrl; p.style.display='block'; document.getElementById('btnQuitarImg').style.display='inline-block'; }
+    else { p.style.display='none'; document.getElementById('btnQuitarImg').style.display='none'; }
+    document.getElementById('formNoticia').scrollIntoView({behavior:'smooth'});
   }
 
-  // ARCHIVAR
+  // ── ARCHIVAR / RESTAURAR / ELIMINAR ──
   window.archivarNoticia = async (id) => {
-    if (!confirm('¿Archivar esta noticia? Dejará de mostrarse en el sitio pero quedará en el historial.')) return;
-    try {
-      await updateDoc(doc(db, 'noticias', id), { estado: 'archivada' });
-      mostrarToast('Noticia archivada correctamente.', 'exito');
-      cargarNoticias();
-    } catch(e) {
-      mostrarToast('Error al archivar: ' + e.message, 'error');
-    }
+    if (!confirm('¿Archivar esta noticia?')) return;
+    try { await updateDoc(doc(db,'noticias',id),{estado:'archivada'}); mostrarToast('Noticia archivada.','exito'); cargarNoticias('publicada','noticiasList'); }
+    catch(e) { mostrarToast('Error: '+e.message,'error'); }
   };
 
-  // RESTAURAR
   window.restaurarNoticia = async (id) => {
-    try {
-      await updateDoc(doc(db, 'noticias', id), { estado: 'publicada' });
-      mostrarToast('Noticia restaurada y publicada nuevamente.', 'exito');
-      cargarNoticias();
-    } catch(e) {
-      mostrarToast('Error al restaurar: ' + e.message, 'error');
-    }
+    try { await updateDoc(doc(db,'noticias',id),{estado:'publicada'}); mostrarToast('Noticia restaurada.','exito'); cargarNoticias('archivada','historialList'); }
+    catch(e) { mostrarToast('Error: '+e.message,'error'); }
   };
 
-  // ELIMINAR (con borrado de imagen en Storage)
   window.eliminarNoticia = async (id, imgUrl) => {
-    if (!confirm('¿Eliminar definitivamente esta noticia? Esta acción no se puede deshacer.')) return;
+    if (!confirm('¿Eliminar definitivamente esta noticia?')) return;
     try {
-      // Eliminar imagen de Storage si existe
       if (imgUrl) {
-        try {
-          const snap = await getDocs(query(collection(db, 'noticias'), where('imgUrl', '==', imgUrl)));
-          snap.forEach(async d => {
-            const imgPath = d.data().imgPath;
-            if (imgPath) await deleteObject(ref(storage, imgPath));
-          });
-        } catch(e) { console.warn('No se pudo eliminar la imagen:', e); }
+        const snap = await getDocs(query(collection(db,'noticias'),where('imgUrl','==',imgUrl)));
+        snap.forEach(async d => { const p=d.data().imgPath; if(p) await deleteObject(ref(storage,p)); });
       }
-      await deleteDoc(doc(db, 'noticias', id));
-      mostrarToast('Noticia eliminada definitivamente.', 'exito');
-      cargarNoticias();
-    } catch(e) {
-      mostrarToast('Error al eliminar: ' + e.message, 'error');
-    }
+      await deleteDoc(doc(db,'noticias',id));
+      mostrarToast('Noticia eliminada.','exito');
+      cargarNoticias('archivada','historialList');
+    } catch(e) { mostrarToast('Error: '+e.message,'error'); }
   };
 
-  // POPUP - IMAGEN
+  // ── POPUP ──
   window.previsualizarImagenPopup = (input) => {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { mostrarToast('La imagen no debe superar 5MB.', 'error'); input.value=''; return; }
-    archivoImgPopup = file;
+    if (file.size > 5*1024*1024) { mostrarToast('Imagen máx. 5MB.','error'); input.value=''; return; }
+    archivoImgPop = file;
     const reader = new FileReader();
     reader.onload = e => {
       const p = document.getElementById('previewImgPopup');
-      p.src = e.target.result; p.style.display = 'block';
-      document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
+      p.src=e.target.result; p.style.display='block';
+      document.getElementById('btnQuitarImgPopup').style.display='inline-block';
     };
     reader.readAsDataURL(file);
   };
 
   window.quitarImagenPopup = () => {
-    archivoImgPopup = null;
-    document.getElementById('imgInputPopup').value = '';
-    document.getElementById('previewImgPopup').style.display = 'none';
-    document.getElementById('previewImgPopup').src = '';
-    document.getElementById('btnQuitarImgPopup').style.display = 'none';
+    archivoImgPop = null;
+    document.getElementById('imgInputPopup').value='';
+    const p = document.getElementById('previewImgPopup');
+    p.style.display='none'; p.src='';
+    document.getElementById('btnQuitarImgPopup').style.display='none';
   };
 
-  // POPUP - TOGGLE
-  window.togglePopup = () => {
-    const activo = document.getElementById('popupActivo').checked;
-    const span   = document.getElementById('toggleSpan');
-    const circle = document.getElementById('toggleCircle');
-    const label  = document.getElementById('popupEstadoLabel');
-    if (activo) {
-      span.style.background   = '#2E5F8A';
-      circle.style.left       = '25px';
-      label.textContent       = 'Activado';
-      label.style.color       = '#2E5F8A';
-    } else {
-      span.style.background   = '#ccc';
-      circle.style.left       = '3px';
-      label.textContent       = 'Desactivado';
-      label.style.color       = '#888';
-    }
-  };
+  document.getElementById('popupActivo').addEventListener('change', function() {
+    const label = document.getElementById('popupEstadoLabel');
+    label.textContent = this.checked ? 'Activado' : 'Desactivado';
+    label.style.color = this.checked ? 'var(--azul)' : '#888';
+  });
 
+  async function cargarPopup() {
+    try {
+      const snap = await getDoc(doc(db,'config','popup'));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('popupTituloInput').value  = d.titulo  || '';
+        document.getElementById('popupMensajeInput').value = d.mensaje || '';
+        const chk = document.getElementById('popupActivo');
+        chk.checked = d.activo || false;
+        chk.dispatchEvent(new Event('change'));
+        if (d.imgUrl) {
+          const p = document.getElementById('previewImgPopup');
+          p.src=d.imgUrl; p.style.display='block';
+          document.getElementById('btnQuitarImgPopup').style.display='inline-block';
+        }
+      }
+    } catch(e) { console.error('Error popup:',e); }
+  }
 
-
-  // POPUP - GUARDAR
   window.guardarPopup = async () => {
-    const titulo  = document.getElementById('popupTitulo').value.trim();
-    const mensaje = document.getElementById('popupMensaje').value.trim();
+    const titulo  = document.getElementById('popupTituloInput').value.trim();
+    const mensaje = document.getElementById('popupMensajeInput').value.trim();
     const activo  = document.getElementById('popupActivo').checked;
-
-    if (activo && (!titulo || !mensaje)) {
-      mostrarToast('Completa título y mensaje para activar el popup.', 'error'); return;
-    }
-
+    if (activo && (!titulo||!mensaje)) { mostrarToast('Completa título y mensaje para activar el popup.','error'); return; }
     try {
       let imgUrl = '';
-      const snapActual = await getDoc(doc(db, 'config', 'popup'));
-      if (snapActual.exists()) imgUrl = snapActual.data().imgUrl || '';
-
-      if (archivoImgPopup) {
-        const nombre = Date.now() + '_popup_' + archivoImgPopup.name.replace(/\s/g,'_');
-        const storageRef = ref(storage, 'popup/' + nombre);
-        const bar  = document.getElementById('progressBarPopup');
-        const fill = document.getElementById('progressFillPopup');
-        bar.style.display = 'block';
-        await new Promise((res, rej) => {
-          const tarea = uploadBytesResumable(storageRef, archivoImgPopup);
-          tarea.on('state_changed',
-            s => fill.style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
-            rej,
-            async () => { imgUrl = await getDownloadURL(tarea.snapshot.ref); bar.style.display='none'; fill.style.width='0%'; res(); }
-          );
-        });
+      const snapAct = await getDoc(doc(db,'config','popup'));
+      if (snapAct.exists()) imgUrl = snapAct.data().imgUrl || '';
+      if (archivoImgPop) {
+        const r = await subirImagen(archivoImgPop,'popup','progressBarPopup','progressFillPopup');
+        imgUrl = r.url;
       }
-
-      // Si quitaron imagen
-      if (!document.getElementById('previewImgPopup').src && !archivoImgPopup) imgUrl = '';
-
-      await setDoc(doc(db, 'config', 'popup'), { titulo, mensaje, activo, imgUrl });
-      mostrarToast('Popup guardado correctamente.', 'exito');
-      archivoImgPopup = null;
-    } catch(e) {
-      mostrarToast('Error al guardar popup: ' + e.message, 'error');
-    }
+      if (!document.getElementById('previewImgPopup').src && !archivoImgPop) imgUrl='';
+      await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl});
+      mostrarToast('Popup guardado.','exito');
+      archivoImgPop = null;
+    } catch(e) { mostrarToast('Error: '+e.message,'error'); }
   };
 
-  // TOAST
+  // ── TOAST ──
   function mostrarToast(msg, tipo) {
     const t = document.getElementById('toast');
-    t.textContent   = msg;
-    t.className     = 'toast ' + tipo;
-    t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3500);
+    t.textContent=msg; t.className='toast '+tipo; t.style.display='block';
+    setTimeout(()=>t.style.display='none',3500);
   }
 </script>
 </body>
