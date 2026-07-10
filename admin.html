@@ -435,11 +435,8 @@
         reader.readAsDataURL(file);
       });
     } catch(e) {
-      console.warn('Compresión falló:', e);
-      // Si la imagen original es menor a 2MB, subir de todas formas
-      if (file.size <= 2*1024*1024) return file;
-      // Si es muy pesada, lanzar error claro
-      throw new Error('No se pudo procesar la imagen. Intenta con una foto más pequeña o desde WiFi.');
+      console.warn('Compresión falló, subiendo original:', e);
+      return file;
     }
   }
 
