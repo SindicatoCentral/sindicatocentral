@@ -196,7 +196,7 @@
             <input type="file" id="imgInput" accept="image/*" style="position:absolute; width:1px; height:1px; opacity:0;" onchange="previsualizarImagen(this)">
             <div class="upload-icon">🖼️</div>
             <div class="upload-text">Toca aquí para seleccionar imagen</div>
-            <div class="upload-hint">JPG, PNG o WEBP — máx. 5MB</div>
+            <div class="upload-hint">JPG, PNG o WEBP — se comprime automáticamente</div>
             <img class="preview-img" id="previewImg">
           </div>
           <button class="btn-quitar-img" id="btnQuitarImg" onclick="quitarImagen()">✕ Quitar imagen</button>
@@ -269,7 +269,7 @@
             <input type="file" id="imgInputPopup" accept="image/*" style="position:absolute; width:1px; height:1px; opacity:0;" onchange="previsualizarImagenPopup(this)">
             <div class="upload-icon">🖼️</div>
             <div class="upload-text">Toca aquí para seleccionar imagen</div>
-            <div class="upload-hint">JPG, PNG o WEBP — máx. 5MB</div>
+            <div class="upload-hint">JPG, PNG o WEBP — se comprime automáticamente</div>
             <img class="preview-img" id="previewImgPopup">
           </div>
           <button class="btn-quitar-img" id="btnQuitarImgPopup" onclick="quitarImagenPopup()">✕ Quitar imagen</button>
@@ -386,7 +386,7 @@
   window.previsualizarImagen = (input) => {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 5*1024*1024) { mostrarToast('Imagen máx. 5MB.', 'error'); input.value=''; return; }
+    if (file.size > 15*1024*1024) { mostrarToast('Imagen demasiado grande. Máx. 15MB.', 'error'); input.value=''; return; }
     archivoImg = file;
     const reader = new FileReader();
     reader.onload = e => {
@@ -408,7 +408,28 @@
     document.getElementById('noticiaImgUrl').value = '';
   };
 
+  // COMPRIMIR IMAGEN ANTES DE SUBIR
+  async function comprimirImagen(file, maxWidth=1200, calidad=0.8) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob(blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', calidad);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function subirImagen(file, carpeta, barraId, fillId) {
+    file = await comprimirImagen(file);
     return new Promise((resolve, reject) => {
       const nombre = Date.now() + '_' + file.name.replace(/\s/g,'_');
       const storRef = ref(storage, carpeta + '/' + nombre);
@@ -550,7 +571,7 @@
   window.previsualizarImagenPopup = (input) => {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 5*1024*1024) { mostrarToast('Imagen máx. 5MB.','error'); input.value=''; return; }
+    if (file.size > 15*1024*1024) { mostrarToast('Imagen demasiado grande. Máx. 15MB.','error'); input.value=''; return; }
     archivoImgPop = file;
     const reader = new FileReader();
     reader.onload = e => {
