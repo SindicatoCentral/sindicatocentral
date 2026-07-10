@@ -393,9 +393,7 @@
     archivoImg = file;
     const preview = document.getElementById('previewImg');
     const btn = document.getElementById('btnQuitarImg');
-    // Usar createObjectURL es más liviano que FileReader para imágenes grandes
-    const url = URL.createObjectURL(file);
-    preview.src = url;
+    preview.src = URL.createObjectURL(file);
     preview.style.display = 'block';
     btn.style.display = 'inline-block';
   };
@@ -414,31 +412,29 @@
   // COMPRIMIR IMAGEN ANTES DE SUBIR
   async function comprimirImagen(file, maxWidth=1200, calidad=0.8) {
     try {
+      // Usar createObjectURL para cargar imagen en canvas sin FileReader
       const resultado = await Promise.race([
         new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onerror = reject;
-          reader.onload = e => {
-            const img = new Image();
-            img.onerror = reject;
-            img.onload = () => {
-              try {
-                const canvas = document.createElement('canvas');
-                let w = img.width, h = img.height;
-                if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
-                canvas.width = w; canvas.height = h;
-                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                canvas.toBlob(blob => {
-                  if (blob) resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
-                  else reject(new Error('Canvas blob falló'));
-                }, 'image/jpeg', calidad);
-              } catch(e) { reject(e); }
-            };
-            img.src = e.target.result;
+          const img = new Image();
+          const url = URL.createObjectURL(file);
+          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Error cargando imagen')); };
+          img.onload = () => {
+            try {
+              URL.revokeObjectURL(url);
+              const canvas = document.createElement('canvas');
+              let w = img.width, h = img.height;
+              if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+              canvas.width = w; canvas.height = h;
+              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+              canvas.toBlob(blob => {
+                if (blob) resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+                else reject(new Error('Canvas blob falló'));
+              }, 'image/jpeg', calidad);
+            } catch(e) { reject(e); }
           };
-          reader.readAsDataURL(file);
+          img.src = url;
         }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
       ]);
       return resultado;
     } catch(e) {
@@ -593,9 +589,13 @@
     if (file.size > 15*1024*1024) { mostrarToast('Imagen demasiado grande. Máx. 15MB.','error'); input.value=''; return; }
     archivoImgPop = file;
     const p = document.getElementById('previewImgPopup');
-    p.src = URL.createObjectURL(file);
     p.style.display = 'block';
+    p.src = '';
     document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
+    const reader = new FileReader();
+    reader.onload = e => { p.src = e.target.result; };
+    reader.onerror = () => { p.style.display = 'none'; mostrarToast('No se pudo previsualizar, pero la imagen se subirá igual.', 'exito'); };
+    reader.readAsDataURL(file);
   };
 
   window.quitarImagenPopup = () => {
