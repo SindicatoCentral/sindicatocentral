@@ -393,17 +393,11 @@
     archivoImg = file;
     const preview = document.getElementById('previewImg');
     const btn = document.getElementById('btnQuitarImg');
+    // Usar createObjectURL es más liviano que FileReader para imágenes grandes
+    const url = URL.createObjectURL(file);
+    preview.src = url;
     preview.style.display = 'block';
-    preview.src = '';
-    preview.alt = 'Cargando imagen...';
-    const reader = new FileReader();
-    reader.onload = e => {
-      preview.src = e.target.result;
-      preview.alt = '';
-      btn.style.display = 'inline-block';
-    };
-    reader.onerror = () => mostrarToast('Error al cargar la imagen. Intenta con otra foto.', 'error');
-    reader.readAsDataURL(file);
+    btn.style.display = 'inline-block';
   };
 
   window.quitarImagen = () => {
@@ -598,13 +592,10 @@
     if (!file) return;
     if (file.size > 15*1024*1024) { mostrarToast('Imagen demasiado grande. Máx. 15MB.','error'); input.value=''; return; }
     archivoImgPop = file;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const p = document.getElementById('previewImgPopup');
-      p.src=e.target.result; p.style.display='block';
-      document.getElementById('btnQuitarImgPopup').style.display='inline-block';
-    };
-    reader.readAsDataURL(file);
+    const p = document.getElementById('previewImgPopup');
+    p.src = URL.createObjectURL(file);
+    p.style.display = 'block';
+    document.getElementById('btnQuitarImgPopup').style.display = 'inline-block';
   };
 
   window.quitarImagenPopup = () => {
