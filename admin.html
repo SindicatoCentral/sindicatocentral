@@ -393,9 +393,21 @@
     archivoImg = file;
     const preview = document.getElementById('previewImg');
     const btn = document.getElementById('btnQuitarImg');
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = 'block';
     btn.style.display = 'inline-block';
+    // Intentar con FileReader para el preview
+    try {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.onerror = () => {
+        // Si FileReader falla, usar createObjectURL como fallback
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    } catch(e) {
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    }
   };
 
   window.quitarImagen = () => {
