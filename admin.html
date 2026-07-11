@@ -671,6 +671,11 @@
 
   window.ocultarFormularioPopup = () => {
     document.getElementById('formPopup').classList.remove('visible');
+    // Resetear botón guardar
+    const btn = document.querySelector('#sec-popup .btn-guardar');
+    if (btn) { btn.textContent = 'Guardar popup'; btn.disabled = false; }
+    // Limpiar imagen temporal
+    archivoImgPop = null;
     cargarPopup();
   };
 
