@@ -198,6 +198,11 @@
   .sobre-img img { width: 100%; max-width: 340px; filter: grayscale(20%); }
   .sobre-text p { color: #333333; margin-top: 1.2rem; font-size: 0.95rem; }
 
+  @media (prefers-color-scheme: dark) {
+    .sobre-text p { color: #eeeeee; }
+    .sobre-text .section-title { color: #ffffff; }
+  }
+
   /* ── BENEFICIOS ── */
   .beneficios { background: var(--gris-claro); }
   .cards-grid {
