@@ -13,8 +13,8 @@
     --rojo:    #2E5F8A;
     --rojo-oscuro: #1E3F5F;
     --carbon:  #1C2B3A;
-    --gris:    #2C3E50;
-    --gris-medio: #444444;
+    --gris:    #1a1a1a;
+    --gris-medio: #333333;
     --gris-claro: #F0F0F0;
     --blanco:  #FFFFFF;
     --borde:   #D8D8D8;
@@ -49,7 +49,7 @@
   .nav-logo-ucen { height: 58px; opacity: 0.9; flex-shrink: 0; margin-right: 0.4rem; }
   .nav-links { display: flex; gap: 2rem; list-style: none; justify-content: center; }
   .nav-links a {
-    color: #e0e0e0; text-decoration: none;
+    color: #ffffff; text-decoration: none;
     font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase;
     font-weight: 500;
     transition: color 0.2s;
@@ -110,7 +110,7 @@
   }
   .hero h1 em { color: var(--rojo); font-style: normal; }
   .hero-sub {
-    color: #555555; font-size: 1rem; max-width: 480px;
+    color: #dddddd; font-size: 1rem; max-width: 480px;
     margin: 0 auto 2.5rem;
     animation: fadeUp 0.9s 0.3s ease both;
     position: relative;
@@ -162,8 +162,8 @@
     color: var(--blanco); line-height: 1;
   }
   .banda-label {
-    font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
-    color: rgba(255,255,255,0.75); margin-top: 0.4rem;
+    font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.92); margin-top: 0.4rem;
   }
 
   /* ── SECCIONES COMUNES ── */
@@ -171,14 +171,14 @@
   .container { max-width: 1100px; margin: 0 auto; }
   .section-eyebrow {
     font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
-    color: #2E5F8A; font-weight: 600; margin-bottom: 0.75rem;
+    color: #1E3F5F; font-weight: 700; margin-bottom: 0.75rem;
   }
   .section-title {
     font-family: 'Playfair Display', serif;
     font-size: clamp(1.7rem, 3vw, 2.4rem);
     color: var(--carbon); line-height: 1.2; margin-bottom: 1rem;
   }
-  .section-body { color: #444444; max-width: 600px; font-size: 0.96rem; }
+  .section-body { color: #222222; max-width: 600px; font-size: 0.96rem; }
 
   /* ── SOBRE NOSOTROS ── */
   .sobre { background: var(--blanco); }
@@ -196,7 +196,7 @@
     width: 100%;
   }
   .sobre-img img { width: 100%; max-width: 340px; filter: grayscale(20%); }
-  .sobre-text p { color: var(--gris-medio); margin-top: 1.2rem; font-size: 0.95rem; }
+  .sobre-text p { color: #333333; margin-top: 1.2rem; font-size: 0.95rem; }
 
   /* ── BENEFICIOS ── */
   .beneficios { background: var(--gris-claro); }
@@ -217,7 +217,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 1.05rem; color: var(--carbon); margin-bottom: 0.5rem;
   }
-  .card p { font-size: 0.88rem; color: var(--gris-medio); }
+  .card p { font-size: 0.9rem; color: #333333; }
 
   /* ── DIRECTIVA ── */
   .directiva { background: #1C2B3A; }
@@ -243,7 +243,7 @@
     margin-bottom: 1rem;
   }
   .director-card h3 { font-size: 0.95rem; color: var(--blanco); margin-bottom: 0.25rem; }
-  .director-card span { font-size: 0.78rem; color: #bbbbbb; letter-spacing: 0.05em; text-transform: uppercase; }
+  .director-card span { font-size: 0.8rem; color: #dddddd; letter-spacing: 0.05em; text-transform: uppercase; }
 
   /* ── NOTICIAS ── */
   .noticias { background: var(--blanco); }
@@ -287,7 +287,7 @@
   }
   .afiliacion .section-eyebrow { color: rgba(255,255,255,0.6); }
   .afiliacion .section-title { color: var(--blanco); }
-  .afiliacion .section-body { color: rgba(255,255,255,0.78); }
+  .afiliacion .section-body { color: rgba(255,255,255,0.95); }
   .btn-blanco {
     background: var(--blanco); color: var(--rojo);
     padding: 0.9rem 2.4rem; border-radius: 2px;
@@ -345,14 +345,14 @@
 
   /* ── FOOTER ── */
   footer {
-    background: #0d1b2a; color: #bbbbbb;
+    background: #0d1b2a; color: #dddddd;
     padding: 3rem 2rem 2rem;
     text-align: center;
   }
   .footer-logo { height: 48px; filter: brightness(0) invert(0.4); margin-bottom: 1rem; }
   .footer-text { font-size: 0.8rem; line-height: 1.7; }
   .footer-divider { border: none; border-top: 1px solid #2a2a2a; margin: 1.5rem auto; max-width: 400px; }
-  .footer-copy { font-size: 0.72rem; color: #888; }
+  .footer-copy { font-size: 0.78rem; color: #aaaaaa; }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
@@ -544,8 +544,8 @@
   @media (prefers-color-scheme: dark) {
     :root {
       --blanco:     #1a1a1a;
-      --gris:       #f0f0f0;
-      --gris-medio: #cccccc;
+      --gris:       #ffffff;
+      --gris-medio: #eeeeee;
       --gris-claro: #252525;
       --borde:      #3a3a3a;
       --carbon:     #ffffff;
@@ -729,7 +729,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 1rem; color: var(--carbon); margin-bottom: 0.5rem;
   }
-  .paso-card p { font-size: 0.88rem; color: var(--gris-medio); }
+  .paso-card p { font-size: 0.9rem; color: #333333; }
 
   /* ── DERECHOS Y OBLIGACIONES ── */
   .derechos { background: var(--blanco); }
@@ -747,7 +747,7 @@
     display: flex; gap: 0.8rem; margin-bottom: 1rem; align-items: flex-start;
   }
   .derechos-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
-  .derechos-item p { font-size: 0.88rem; color: var(--gris-medio); line-height: 1.5; }
+  .derechos-item p { font-size: 0.9rem; color: #333333; line-height: 1.6; }
 
   /* ── COMISIONES ── */
   .comisiones { background: #1C2B3A; }
@@ -770,7 +770,7 @@
   }
   .comision-card ul { list-style: none; padding: 0; }
   .comision-card ul li {
-    font-size: 0.85rem; color: #dddddd; padding: 0.3rem 0;
+    font-size: 0.88rem; color: #eeeeee; padding: 0.3rem 0;
     padding-left: 1rem; position: relative;
   }
   .comision-card ul li::before {
@@ -790,14 +790,14 @@
     padding: 1.2rem 1.5rem; text-align: left;
     display: flex; justify-content: space-between; align-items: center;
     font-family: 'Inter', sans-serif; font-size: 0.95rem;
-    font-weight: 600; color: var(--carbon);
+    font-weight: 600; color: #111111;
   }
   .faq-pregunta:hover { background: var(--gris-claro); }
   .faq-icono { font-size: 1.2rem; transition: transform 0.3s; flex-shrink: 0; }
   .faq-item.abierto .faq-icono { transform: rotate(45deg); }
   .faq-respuesta {
     display: none; padding: 0 1.5rem 1.2rem;
-    font-size: 0.9rem; color: var(--gris-medio); line-height: 1.7;
+    font-size: 0.92rem; color: #333333; line-height: 1.7;
   }
   .faq-item.abierto .faq-respuesta { display: block; }
 
