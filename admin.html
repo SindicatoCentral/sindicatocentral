@@ -191,6 +191,16 @@
           <textarea id="nContenido" placeholder="Escribe aquí el contenido completo..."></textarea>
         </div>
         <div class="form-group">
+          <label>Enlace de video (opcional)</label>
+          <input type="text" id="nVideo" placeholder="Ej: https://youtu.be/xxx o enlace de Google Drive">
+          <div style="font-size:0.75rem; color:#888; margin-top:0.3rem;">Pega el enlace de YouTube o Google Drive. Si hay imagen y video, se mostrará el video.</div>
+        </div>
+        <div class="form-group">
+          <label>Enlace de video (opcional)</label>
+          <input type="url" id="nVideo" placeholder="https://www.youtube.com/watch?v=... o enlace de Google Drive">
+          <div style="font-size:0.75rem; color:#888; margin-top:0.3rem;">Pega un enlace de YouTube o Google Drive</div>
+        </div>
+        <div class="form-group">
           <label>Imagen (opcional)</label>
           <div class="upload-area" onclick="document.getElementById('imgInput').click()">
             <input type="file" id="imgInput" accept="image/*" style="position:absolute; width:1px; height:1px; opacity:0;" onchange="previsualizarImagen(this)">
@@ -262,6 +272,21 @@
         <div class="form-group">
           <label>Mensaje</label>
           <textarea id="popupMensajeInput" placeholder="Escribe el mensaje del popup..." style="min-height:120px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Enlace de video (opcional)</label>
+          <input type="text" id="nVideo" placeholder="Ej: https://youtu.be/xxx o enlace de Google Drive">
+          <div style="font-size:0.75rem; color:#888; margin-top:0.3rem;">Pega el enlace de YouTube o Google Drive. Si hay imagen y video, se mostrará el video.</div>
+        </div>
+        <div class="form-group">
+          <label>Enlace de video (opcional)</label>
+          <input type="text" id="popupVideo" placeholder="Ej: https://youtu.be/xxx o enlace de Google Drive">
+          <div style="font-size:0.75rem; color:#888; margin-top:0.3rem;">Pega el enlace de YouTube o Google Drive. Si hay imagen y video, se mostrará el video.</div>
+        </div>
+        <div class="form-group">
+          <label>Enlace de video (opcional)</label>
+          <input type="url" id="popupVideo" placeholder="https://www.youtube.com/watch?v=... o enlace de Google Drive">
+          <div style="font-size:0.75rem; color:#888; margin-top:0.3rem;">Pega un enlace de YouTube o Google Drive</div>
         </div>
         <div class="form-group">
           <label>Imagen (opcional)</label>
@@ -374,6 +399,7 @@
     document.getElementById('noticiaImgUrl').value     = '';
     document.getElementById('nTitulo').value           = '';
     document.getElementById('nContenido').value        = '';
+    document.getElementById('nVideo').value            = '';
     quitarImagen();
   };
 
@@ -476,12 +502,25 @@
   }
 
   // ── GUARDAR NOTICIA ──
+  function obtenerEmbedUrl(url) {
+    if (!url) return '';
+    // YouTube
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+    if (ytMatch) return 'https://www.youtube.com/embed/' + ytMatch[1];
+    // Google Drive
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+    if (driveMatch) return 'https://drive.google.com/file/d/' + driveMatch[1] + '/preview';
+    return url;
+  }
+
   window.guardarNoticia = async () => {
     const id        = document.getElementById('noticiaId').value;
     const titulo    = document.getElementById('nTitulo').value.trim();
     const contenido = document.getElementById('nContenido').value.trim();
     const imgUrlAct = document.getElementById('noticiaImgUrl').value;
-    if (!titulo && !archivoImg && !imgUrlAct) { mostrarToast('Agrega un título o una imagen.', 'error'); return; }
+    const videoUrl  = obtenerEmbedUrl(document.getElementById('nVideo').value.trim());
+    const videoUrl  = document.getElementById('nVideo').value.trim();
+    if (!titulo && !archivoImg && !imgUrlAct && !videoUrl) { mostrarToast('Agrega un título, imagen o video.', 'error'); return; }
     const btn = document.getElementById('btnGuardar');
     btn.textContent = 'Guardando...'; btn.disabled = true;
     try {
@@ -490,7 +529,7 @@
         const r = await subirImagen(archivoImg, 'noticias', 'progressBar', 'progressFill');
         imgUrl = r.url; imgPath = r.path;
       }
-      const datos = { titulo, contenido, imgUrl: imgUrl||'', imgPath: imgPath||'' };
+      const datos = { titulo, contenido, imgUrl: imgUrl||'', imgPath: imgPath||'', videoUrl: videoUrl||'' };
       if (id) {
         await updateDoc(doc(db,'noticias',id), datos);
         mostrarToast('Noticia actualizada.', 'exito');
@@ -528,6 +567,7 @@
         item.dataset.titulo   = n.titulo    || '';
         item.dataset.contenido= n.contenido || '';
         item.dataset.imgUrl   = n.imgUrl    || '';
+        item.dataset.videoUrl = n.videoUrl  || '';
         const resumen  = (n.contenido||'').substring(0,100) + ((n.contenido||'').length>100?'...':'');
         const fechaStr = n.createdAt ? new Date(n.createdAt.seconds*1000).toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'}) : '';
         item.innerHTML =
@@ -541,7 +581,7 @@
             (esHistorial  ? '<button class="btn-accion restaurar">Restaurar</button><button class="btn-accion eliminar">Eliminar</button>' : '')+
           '</div>';
         if (!esHistorial) {
-          item.querySelector('.editar').addEventListener('click', () => editarNoticia(item.dataset.id, item.dataset.titulo, item.dataset.contenido, item.dataset.imgUrl));
+          item.querySelector('.editar').addEventListener('click', () => editarNoticia(item.dataset.id, item.dataset.titulo, item.dataset.contenido, item.dataset.imgUrl, item.dataset.videoUrl));
           item.querySelector('.archivar').addEventListener('click', () => archivarNoticia(item.dataset.id));
         } else {
           item.querySelector('.restaurar').addEventListener('click', () => restaurarNoticia(item.dataset.id));
@@ -555,13 +595,15 @@
   }
 
   // ── EDITAR ──
-  function editarNoticia(id, titulo, contenido, imgUrl) {
+  function editarNoticia(id, titulo, contenido, imgUrl, videoUrl) {
     document.getElementById('formNoticia').classList.add('visible');
     document.getElementById('formTitulo').textContent  = 'Editar noticia';
     document.getElementById('noticiaId').value         = id;
     document.getElementById('nTitulo').value           = titulo;
     document.getElementById('nContenido').value        = contenido;
     document.getElementById('noticiaImgUrl').value     = imgUrl||'';
+    document.getElementById('nVideo').value            = videoUrl||'';
+    document.getElementById('nVideo').value            = '';
     archivoImg = null;
     const p = document.getElementById('previewImg');
     if (imgUrl) { p.src=imgUrl; p.style.display='block'; document.getElementById('btnQuitarImg').style.display='inline-block'; }
@@ -648,6 +690,7 @@
         // Precargar datos en formulario
         document.getElementById('popupTituloInput').value  = d.titulo  || '';
         document.getElementById('popupMensajeInput').value = d.mensaje || '';
+        document.getElementById('popupVideo').value         = d.videoUrl || '';
         const chk = document.getElementById('popupActivo');
         chk.checked = d.activo || false;
         chk.dispatchEvent(new Event('change'));
@@ -696,10 +739,11 @@
   };
 
   window.guardarPopup = async () => {
-    const titulo  = document.getElementById('popupTituloInput').value.trim();
-    const mensaje = document.getElementById('popupMensajeInput').value.trim();
-    const activo  = document.getElementById('popupActivo').checked;
-    if (activo && !titulo && !mensaje && !archivoImgPop) { mostrarToast('Agrega título, mensaje o imagen para activar el popup.','error'); return; }
+    const titulo    = document.getElementById('popupTituloInput').value.trim();
+    const mensaje   = document.getElementById('popupMensajeInput').value.trim();
+    const activo    = document.getElementById('popupActivo').checked;
+    const videoUrl  = document.getElementById('popupVideo').value.trim();
+    if (activo && !titulo && !mensaje && !archivoImgPop && !videoUrl) { mostrarToast('Agrega título, mensaje, imagen o video para activar el popup.','error'); return; }
 
     const btn = document.querySelector('#sec-popup .btn-guardar');
     btn.textContent = 'Guardando...'; btn.disabled = true;
@@ -717,7 +761,7 @@
       const preview = document.getElementById('previewImgPopup');
       if (!preview.src || preview.style.display === 'none') imgUrl = '';
 
-      await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl});
+      await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl,videoUrl:videoUrl||''});
       mostrarToast('Popup guardado correctamente.','exito');
       archivoImgPop = null;
       ocultarFormularioPopup();

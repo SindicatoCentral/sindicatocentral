@@ -865,6 +865,21 @@
   }
 
 
+
+  /* ── VIDEO NOTICIA ── */
+  .noticia-video {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: none;
+    display: block;
+  }
+  .popup-video {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: none;
+    display: block;
+  }
+
   /* ── LEER MÁS ── */
   .noticia-body p {
     display: -webkit-box;
@@ -1582,6 +1597,20 @@ function toggleFaq(btn) {
   <div class="lightbox-caption" id="lightboxCaption"></div>
 </div>
 
+
+<script>
+function convertirUrlVideo(url) {
+  if (!url) return null;
+  // YouTube
+  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return 'https://www.youtube.com/embed/' + ytMatch[1];
+  // Google Drive
+  const drMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (drMatch) return 'https://drive.google.com/file/d/' + drMatch[1] + '/preview';
+  return null;
+}
+</script>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs, query, orderBy, where }
@@ -1619,8 +1648,16 @@ function toggleFaq(btn) {
         const div = document.createElement('div');
         div.className = 'noticia';
 
-        // Imagen si existe
-        if (n.imgUrl) {
+        // Video si existe (tiene prioridad sobre imagen)
+        const embedUrl = typeof convertirUrlVideo === 'function' ? convertirUrlVideo(n.videoUrl) : null;
+        if (embedUrl) {
+          const iframe = document.createElement('iframe');
+          iframe.className = 'noticia-video';
+          iframe.src = embedUrl;
+          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+          iframe.allowFullscreen = true;
+          div.appendChild(iframe);
+        } else if (n.imgUrl) {
           const img = document.createElement('img');
           img.className = 'noticia-img';
           img.src = n.imgUrl;
@@ -1685,6 +1722,20 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLigh
 </script>
 
 
+
+<script>
+function convertirUrlVideo(url) {
+  if (!url) return null;
+  // YouTube
+  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return 'https://www.youtube.com/embed/' + ytMatch[1];
+  // Google Drive
+  const drMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (drMatch) return 'https://drive.google.com/file/d/' + drMatch[1] + '/preview';
+  return null;
+}
+</script>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -1718,8 +1769,18 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLigh
         header.style.display = 'none';
       }
 
-      // Imagen
-      if (d.imgUrl) {
+      // Video o imagen
+      const embedUrlPopup = typeof convertirUrlVideo === 'function' ? convertirUrlVideo(d.videoUrl) : null;
+      if (embedUrlPopup) {
+        // Mostrar video en lugar de imagen
+        const popupContenido = document.getElementById('popupContenido');
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;aspect-ratio:16/9;border:none;display:block;';
+        iframe.src = embedUrlPopup;
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        popupContenido.insertBefore(iframe, popupContenido.firstChild);
+      } else if (d.imgUrl) {
         const img = document.getElementById('popupImg');
         img.src = d.imgUrl;
         img.style.display = 'block';
