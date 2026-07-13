@@ -947,10 +947,10 @@
   }
   .popup-mensaje { font-size: 0.88rem; color: #444; line-height: 1.6; white-space: pre-line; }
   .popup-img {
-    width: 55%; min-width: 55%; height: auto;
-    max-height: 65vh;
+    width: 55%; min-width: 320px; height: auto;
+    min-height: 320px; max-height: 65vh;
     object-fit: contain; background: transparent;
-    display: block; flex-shrink: 0;
+    display: block; flex-shrink: 0; align-self: center;
   }
   .popup-contenido.solo-imagen .popup-img {
     width: 100%; min-width: unset; max-height: 65vh; margin: 0 auto;
