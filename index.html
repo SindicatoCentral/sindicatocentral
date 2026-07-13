@@ -1712,6 +1712,9 @@ window.abrirLightbox = abrirLightbox;
 function cerrarPopup() {
   document.getElementById('popupOverlay').classList.remove('visible');
   sessionStorage.setItem('popupCerrado', '1');
+  // Detener video si existe
+  const iframes = document.getElementById('popupContenido').querySelectorAll('iframe');
+  iframes.forEach(f => { f.src = f.src; });
 }
 function cerrarLightbox() {
   document.getElementById('lightbox').classList.remove('visible');
@@ -1813,6 +1816,9 @@ function convertirUrlVideo(url) {
 function cerrarPopup() {
   document.getElementById('popupOverlay').classList.remove('visible');
   sessionStorage.setItem('popupVisto', '1');
+  // Detener video si existe
+  const contenido = document.getElementById('popupContenido');
+  if (contenido) contenido.querySelectorAll('iframe').forEach(f => { f.src = f.src; });
 }
 </script>
 
