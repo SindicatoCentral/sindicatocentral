@@ -152,7 +152,10 @@
     </div>
     <div class="form-group">
       <label>Contraseña</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter') iniciarSesion()">
+      <div style="position:relative;">
+        <input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter') iniciarSesion()" style="padding-right:2.8rem; width:100%;">
+        <button type="button" onclick="togglePassword()" style="position:absolute; right:0.8rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#888; font-size:1rem;" id="btnVerPassword" title="Mostrar contraseña">👁</button>
+      </div>
     </div>
     <button class="btn-login" onclick="iniciarSesion()">Ingresar</button>
     <div class="login-error" id="loginError"></div>
@@ -356,6 +359,20 @@
       document.getElementById('panelWrap').style.display = 'none';
     }
   });
+
+  window.togglePassword = () => {
+    const input = document.getElementById('loginPassword');
+    const btn   = document.getElementById('btnVerPassword');
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+      btn.title = 'Ocultar contraseña';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁';
+      btn.title = 'Mostrar contraseña';
+    }
+  };
 
   window.iniciarSesion = async () => {
     const email    = document.getElementById('loginEmail').value.trim();
