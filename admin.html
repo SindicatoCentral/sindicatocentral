@@ -519,7 +519,6 @@
     const contenido = document.getElementById('nContenido').value.trim();
     const imgUrlAct = document.getElementById('noticiaImgUrl').value;
     const videoUrl  = obtenerEmbedUrl(document.getElementById('nVideo').value.trim());
-    const videoUrl  = document.getElementById('nVideo').value.trim();
     if (!titulo && !archivoImg && !imgUrlAct && !videoUrl) { mostrarToast('Agrega un título, imagen o video.', 'error'); return; }
     const btn = document.getElementById('btnGuardar');
     btn.textContent = 'Guardando...'; btn.disabled = true;
