@@ -936,14 +936,25 @@
     flex-shrink: 0;
   }
   .popup-header h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: white; margin: 0; }
-  .popup-cerrar { background: none; border: none; color: rgba(255,255,255,0.8); font-size: 1.4rem; cursor: pointer; line-height: 1; transition: color 0.2s; flex-shrink: 0; margin-left: 1rem; }
-  .popup-cerrar:hover { color: white; }
+  .popup-cerrar { background: rgba(0,0,0,0.3); border: none; color: white; font-size: 1.2rem; cursor: pointer; line-height: 1; transition: all 0.2s; flex-shrink: 0; margin-left: 1rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+  .popup-cerrar-flotante {
+    position: absolute; top: 0.8rem; right: 0.8rem;
+    background: rgba(0,0,0,0.5); border: none; color: white;
+    font-size: 1.1rem; cursor: pointer; width: 32px; height: 32px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s; z-index: 10;
+  }
+  .popup-cerrar-flotante:hover { background: rgba(0,0,0,0.75); }
+  .popup-box { position: relative; }
+
+  .popup-cerrar:hover { background: rgba(0,0,0,0.5); }
   .popup-contenido {
     display: flex; flex-direction: row;
     align-items: stretch;
     flex: 1; overflow: hidden;
   }
-  .popup-contenido.solo-imagen { flex-direction: column; }
+  .popup-contenido.solo-imagen { flex-direction: column; padding: 0; }
   .popup-body {
     flex: 1; padding: 1.2rem 1.5rem;
     overflow-y: auto;
@@ -958,21 +969,11 @@
     display: block; flex-shrink: 0; align-self: center;
   }
   .popup-contenido.solo-imagen .popup-img {
-    width: 100%; min-width: unset; max-height: 80vh; margin: 0 auto;
+    width: 100%; min-width: unset; height: auto; max-height: 82vh;
+    object-fit: cover; margin: 0 auto; display: block;
   }
-  .popup-footer {
-    padding: 0.8rem 1.5rem; border-top: 1px solid #eee;
-    display: flex; justify-content: flex-end; flex-shrink: 0;
-    background: var(--blanco);
-  }
-  .btn-popup-cerrar {
-    background: #2E5F8A; color: white; border: none; border-radius: 2px;
-    padding: 0.65rem 1.8rem; cursor: pointer;
-    font-family: 'Inter', sans-serif; font-size: 0.85rem;
-    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
-    transition: background 0.2s;
-  }
-  .btn-popup-cerrar:hover { background: #1E3F5F; }
+
+
 
 
   @media (prefers-color-scheme: dark) {
@@ -1039,7 +1040,7 @@
     .popup-mensaje { color: #eeeeee !important; }
     .popup-box { background: #1C2B3A !important; }
     .popup-body { background: #1C2B3A !important; }
-    .popup-footer { background: #1C2B3A !important; border-top-color: #2E5F8A !important; }
+
   }
 
 </style>
@@ -1647,6 +1648,7 @@ function toggleFaq(btn) {
 <!-- POPUP -->
 <div class="popup-overlay" id="popupOverlay">
   <div class="popup-box">
+    <button class="popup-cerrar-flotante" onclick="cerrarPopup()" title="Cerrar">✕</button>
     <div class="popup-header" id="popupHeader">
       <h3 id="popupTitulo"></h3>
       <button class="popup-cerrar" onclick="cerrarPopup()">✕</button>
@@ -1657,9 +1659,7 @@ function toggleFaq(btn) {
       </div>
       <img id="popupImg" class="popup-img" src="" alt="" style="display:none;">
     </div>
-    <div class="popup-footer">
-      <button class="btn-popup-cerrar" onclick="cerrarPopup()">Entendido</button>
-    </div>
+
   </div>
 </div>
 
