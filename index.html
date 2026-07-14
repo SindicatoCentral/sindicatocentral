@@ -1053,6 +1053,55 @@
 
   }
 
+
+  /* ── INDICADOR NOTICIAS NUEVAS ── */
+  .nav-notif {
+    position: relative; display: inline-block;
+  }
+  .nav-notif::after {
+    content: '';
+    position: absolute; top: -4px; right: -8px;
+    width: 7px; height: 7px;
+    background: #e53935; border-radius: 50%;
+    display: none;
+  }
+  .nav-notif.nueva::after { display: block; }
+
+  /* ── BUSCADOR FAQ ── */
+  .faq-buscador-wrap {
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .faq-buscador {
+    width: 100%; padding: 0.75rem 1rem 0.75rem 2.8rem;
+    border: 1.5px solid var(--borde); border-radius: 2px;
+    font-family: 'Inter', sans-serif; font-size: 0.95rem;
+    color: var(--gris); outline: none; transition: border-color 0.2s;
+    background: var(--blanco);
+  }
+  .faq-buscador:focus { border-color: #2E5F8A; }
+  .faq-buscador-icon {
+    position: absolute; left: 0.9rem; top: 50%;
+    transform: translateY(-50%); color: #888; font-size: 1rem;
+    pointer-events: none;
+  }
+  .faq-sin-resultados {
+    text-align: center; padding: 2rem;
+    color: #888; font-size: 0.92rem; display: none;
+  }
+
+  /* ── FECHA NOTICIA ── */
+  .noticia-fecha-pub {
+    font-size: 0.75rem; color: #2E5F8A;
+    font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .faq-buscador { background: #1a2a3a; color: #f0f0f0; border-color: #2a3a4a; }
+    .noticia-fecha-pub { color: #7aaad4; }
+  }
+
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -1755,6 +1804,13 @@ function convertirUrlVideo(url) {
         h3.textContent = n.titulo;
         const body = document.createElement('div');
         body.className = 'noticia-body';
+        // Fecha de publicación
+        if (n.createdAt) {
+          const fechaSpan = document.createElement('span');
+          fechaSpan.className = 'noticia-fecha-pub';
+          fechaSpan.textContent = new Date(n.createdAt.seconds * 1000).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+          body.appendChild(fechaSpan);
+        }
         body.appendChild(h3);
         body.appendChild(p);
 
@@ -1903,6 +1959,28 @@ function cerrarPopup() {
   // Detener video si existe
   const contenido = document.getElementById('popupContenido');
   if (contenido) contenido.querySelectorAll('iframe').forEach(f => { f.src = f.src; });
+}
+</script>
+
+
+<script>
+function filtrarFaq(texto) {
+  const items = document.querySelectorAll('.faq-item');
+  const sinResultados = document.getElementById('faqSinResultados');
+  const termino = texto.toLowerCase().trim();
+  let encontrados = 0;
+  items.forEach(item => {
+    const pregunta = item.querySelector('.faq-pregunta').textContent.toLowerCase();
+    const respuesta = item.querySelector('.faq-respuesta').textContent.toLowerCase();
+    if (!termino || pregunta.includes(termino) || respuesta.includes(termino)) {
+      item.style.display = 'block';
+      encontrados++;
+    } else {
+      item.style.display = 'none';
+      item.classList.remove('abierto');
+    }
+  });
+  sinResultados.style.display = encontrados === 0 ? 'block' : 'none';
 }
 </script>
 
