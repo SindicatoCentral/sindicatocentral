@@ -951,8 +951,13 @@
     backdrop-filter: blur(4px);
   }
   .popup-box.solo-img-box .popup-img {
-    width: auto; max-width: 92vw;
-    max-height: 85vh; display: block;
+    width: auto; min-width: 500px; max-width: 92vw;
+    height: auto; max-height: none;
+    display: block;
+  }
+  .popup-box.solo-img-box .popup-contenido {
+    overflow-y: auto;
+    max-height: 85vh;
   }
   .popup-contenido {
     display: flex; flex-direction: row;
