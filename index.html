@@ -940,6 +940,20 @@
   .popup-cerrar { background: rgba(0,0,0,0.3); border: none; color: white; font-size: 1.2rem; cursor: pointer; line-height: 1; transition: all 0.2s; flex-shrink: 0; margin-left: 1rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
   .popup-cerrar:hover { background: rgba(0,0,0,0.5); }
+  .popup-box.solo-img-box {
+    width: auto !important;
+    max-width: 92vw !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .popup-box.solo-img-box .popup-header {
+    background: rgba(28,43,58,0.85);
+    backdrop-filter: blur(4px);
+  }
+  .popup-box.solo-img-box .popup-img {
+    width: auto; max-width: 92vw;
+    max-height: 85vh; display: block;
+  }
   .popup-contenido {
     display: flex; flex-direction: row;
     align-items: stretch;
@@ -1848,6 +1862,10 @@ function convertirUrlVideo(url) {
         const img = document.getElementById('popupImg');
         img.src = d.imgUrl;
         img.style.display = 'block';
+        // Si solo hay imagen (sin mensaje), ajustar popup al ancho de la imagen
+        if (!d.mensaje) {
+          document.querySelector('.popup-box').classList.add('solo-img-box');
+        }
       }
 
       // Mensaje — si hay imagen y mensaje, layout horizontal; si solo imagen, vertical
