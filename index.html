@@ -1835,28 +1835,28 @@ function convertirUrlVideo(url) {
   }
 
   cargarNoticias();
-  verificarNoticiasNuevas();
-}
 
-async function verificarNoticiasNuevas() {
-  try {
-    const hace7dias = new Date();
-    hace7dias.setDate(hace7dias.getDate() - 7);
-    const q = query(collection(db, 'noticias'), where('estado', '==', 'publicada'));
-    const snap = await getDocs(q);
-    let hayNuevas = false;
-    snap.forEach(d => {
-      const n = d.data();
-      if (n.createdAt && new Date(n.createdAt.seconds * 1000) > hace7dias) {
-        hayNuevas = true;
+  async function verificarNoticiasNuevas() {
+    try {
+      const hace7dias = new Date();
+      hace7dias.setDate(hace7dias.getDate() - 7);
+      const q = query(collection(db, 'noticias'), where('estado', '==', 'publicada'));
+      const snap = await getDocs(q);
+      let hayNuevas = false;
+      snap.forEach(d => {
+        const n = d.data();
+        if (n.createdAt && new Date(n.createdAt.seconds * 1000) > hace7dias) {
+          hayNuevas = true;
+        }
+      });
+      if (hayNuevas) {
+        const navNotif = document.getElementById('navNoticias');
+        if (navNotif) navNotif.classList.add('nueva');
       }
-    });
-    if (hayNuevas) {
-      const navNotif = document.getElementById('navNoticias');
-      if (navNotif) navNotif.classList.add('nueva');
-    }
-  } catch(e) { console.error('Error verificando noticias:', e); }
-}</script>
+    } catch(e) { console.error('Error verificando noticias:', e); }
+  }
+  verificarNoticiasNuevas();
+</script>
 
 
 <script>
