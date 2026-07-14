@@ -1813,25 +1813,23 @@ function convertirUrlVideo(url) {
 </script>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initializeApp as initApp2 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore as getFS2, doc as doc2, getDoc as getDoc2 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {
+  const app2 = initApp2({
     apiKey: "AIzaSyC8piyFY_dr0FQ-SCN6C_9zGtlppaJVtPQ",
     authDomain: "sindicato-ucen.firebaseapp.com",
     projectId: "sindicato-ucen",
     storageBucket: "sindicato-ucen.firebasestorage.app",
     messagingSenderId: "845293926331",
     appId: "1:845293926331:web:b462a0c3c891c32fb0b69e"
-  };
-
-  const app = initializeApp(firebaseConfig, 'popup-app');
-  const db  = getFirestore(app);
+  }, 'popup-app');
+  const db2 = getFS2(app2);
 
   async function cargarPopup() {
     if (sessionStorage.getItem('popupCerrado')) return;
     try {
-      const snap = await getDoc(doc(db, 'config', 'popup'));
+      const snap = await getDoc2(doc2(db2, 'config', 'popup'));
       if (!snap.exists()) return;
       const d = snap.data();
       if (!d.activo) return;
