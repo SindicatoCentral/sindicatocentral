@@ -1125,6 +1125,59 @@
     } catch(e) { mostrarToast('Error al eliminar foto: ' + e.message, 'error'); }
   };
 
+  window.verFotosEvento = async (eventoId, eventoNombre) => {
+    const modal = document.getElementById('modalVerFotos');
+    const grid  = document.getElementById('modalVerFotosGrid');
+    document.getElementById('modalVerFotosTitulo').textContent = eventoNombre;
+    grid.innerHTML = '<div style="color:#aaa; text-align:center; padding:2rem; grid-column:1/-1;">Cargando fotos...</div>';
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    try {
+      const snap = await getDocs(collection(db, 'galeria', eventoId, 'fotos'));
+      document.getElementById('modalVerFotosCount').textContent = snap.size + ' foto' + (snap.size !== 1 ? 's' : '');
+      if (snap.empty) {
+        grid.innerHTML = '<p style="color:#aaa; text-align:center; padding:2rem; grid-column:1/-1;">Sin fotos en este evento.</p>';
+        return;
+      }
+      grid.innerHTML = '';
+      snap.forEach(d => {
+        const f = d.data();
+        const item = document.createElement('div');
+        item.style.cssText = 'position:relative; aspect-ratio:1; overflow:hidden; border-radius:2px;';
+        const img = document.createElement('img');
+        img.src = f.url;
+        img.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
+        const btnDel = document.createElement('button');
+        btnDel.innerHTML = '✕';
+        btnDel.style.cssText = 'position:absolute; top:4px; right:4px; background:rgba(192,36,45,0.85); border:none; color:white; width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:0.85rem;';
+        btnDel.addEventListener('click', () => eliminarFotoModal(eventoId, d.id, f.path, item));
+        item.appendChild(img);
+        item.appendChild(btnDel);
+        grid.appendChild(item);
+      });
+    } catch(e) {
+      grid.innerHTML = '<p style="color:#aaa; text-align:center; padding:2rem; grid-column:1/-1;">Error al cargar fotos: ' + e.message + '</p>';
+    }
+  };
+
+  window.cerrarModalVerFotos = () => {
+    document.getElementById('modalVerFotos').style.display = 'none';
+    document.body.style.overflow = '';
+    cargarGaleria();
+  };
+
+  async function eliminarFotoModal(eventoId, fotoId, path, item) {
+    if (!confirm('¿Eliminar esta foto?')) return;
+    try {
+      await deleteDoc(doc(db, 'galeria', eventoId, 'fotos', fotoId));
+      if (path) { try { await deleteObject(ref(storage, path)); } catch(e) {} }
+      item.remove();
+      const count = document.getElementById('modalVerFotosGrid').children.length;
+      document.getElementById('modalVerFotosCount').textContent = count + ' foto' + (count !== 1 ? 's' : '');
+      mostrarToast('Foto eliminada.', 'exito');
+    } catch(e) { mostrarToast('Error al eliminar foto.', 'error'); }
+  }
+
   window.eliminarEvento = async (eventoId) => {
     if (!confirm('¿Eliminar este evento y todas sus fotos? Esta acción no se puede deshacer.')) return;
     try {
