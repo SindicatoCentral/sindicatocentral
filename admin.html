@@ -1011,27 +1011,15 @@
         const fotos = fotosSnap.docs.map(f => ({ id: f.id, ...f.data() }));
 
         const card = document.createElement('div');
-        card.className = 'evento-card';
+        card.className = 'noticia-item';
         card.innerHTML = `
-          <div class="evento-header">
-            <div class="evento-header-info">
-              <h3>${e.nombre}</h3>
-              <span>${fechaStr} · ${fotos.length} foto${fotos.length !== 1 ? 's' : ''}</span>
-            </div>
-            <div class="evento-header-acciones">
-              <button class="btn-add-fotos" onclick="abrirFormFotos('${d.id}', '${e.nombre.replace(/'/g, "\'")}')">+ Agregar fotos</button>
-              <button class="btn-del-evento" onclick="eliminarEvento('${d.id}')">Eliminar</button>
-            </div>
+          <div class="noticia-info">
+            <div class="noticia-titulo-item">${e.nombre}</div>
+            <div class="noticia-resumen-item">📅 ${fechaStr} &nbsp;·&nbsp; 📷 ${fotos.length} foto${fotos.length !== 1 ? 's' : ''}</div>
           </div>
-          <div class="fotos-grid" id="fotos-${d.id}">
-            ${fotos.length === 0 ? '<div class="evento-sin-fotos" style="grid-column:1/-1;">Sin fotos aún — agrega fotos a este evento.</div>' :
-              fotos.map(f => `
-                <div class="foto-item">
-                  <img src="${f.url}" alt="${f.nombre || ''}">
-                  <button class="btn-del-foto" onclick="eliminarFoto('${d.id}', '${f.id}', '${f.path}')">✕</button>
-                </div>
-              `).join('')
-            }
+          <div class="noticia-acciones">
+            <button class="btn-accion editar" onclick="abrirFormFotos('${d.id}', '${e.nombre.replace(/'/g, "\'")}')">+ Fotos</button>
+            <button class="btn-accion eliminar" onclick="eliminarEvento('${d.id}')">Eliminar</button>
           </div>
         `;
         lista.appendChild(card);
