@@ -466,6 +466,19 @@
   </div>
 </div>
 
+
+<!-- MODAL VER FOTOS EVENTO -->
+<div id="modalVerFotos" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; flex-direction:column;">
+  <div style="background:#1C2B3A; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+    <div>
+      <h3 id="modalVerFotosTitulo" style="font-family:'Playfair Display',serif; font-size:1.1rem; color:white; margin:0;"></h3>
+      <span id="modalVerFotosCount" style="font-size:0.82rem; color:#aaa;"></span>
+    </div>
+    <button onclick="cerrarModalVerFotos()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
+  </div>
+  <div id="modalVerFotosGrid" style="flex:1; overflow-y:auto; padding:1rem; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:0.5rem; align-content:start;"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -1019,6 +1032,7 @@
           </div>
           <div class="noticia-acciones">
             <button class="btn-accion editar" onclick="abrirFormFotos('${d.id}', '${e.nombre.replace(/'/g, "\'")}')">+ Fotos</button>
+            <button class="btn-accion restaurar" onclick="verFotosEvento('${d.id}', '${e.nombre.replace(/'/g, "\'")}')">Ver fotos</button>
             <button class="btn-accion eliminar" onclick="eliminarEvento('${d.id}')">Eliminar</button>
           </div>
         `;
