@@ -1181,13 +1181,15 @@
   window.eliminarEvento = async (eventoId) => {
     if (!confirm('¿Eliminar este evento y todas sus fotos? Esta acción no se puede deshacer.')) return;
     try {
+      mostrarToast('Eliminando evento...', 'exito');
       // Eliminar fotos de Storage y Firestore
       const fotosSnap = await getDocs(collection(db, 'galeria', eventoId, 'fotos'));
-      for (const f of fotosSnap.docs) {
+      const promesas = fotosSnap.docs.map(async f => {
         const data = f.data();
         if (data.path) { try { await deleteObject(ref(storage, data.path)); } catch(e) {} }
         await deleteDoc(f.ref);
-      }
+      });
+      await Promise.all(promesas);
       await deleteDoc(doc(db, 'galeria', eventoId));
       mostrarToast('Evento eliminado correctamente.', 'exito');
       cargarGaleria();
