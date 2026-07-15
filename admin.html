@@ -69,6 +69,58 @@
   .upload-area { border: 2px dashed var(--borde); border-radius: 2px; padding: 1.5rem; text-align: center; cursor: pointer; transition: border-color 0.2s; margin-top: 0.4rem; position: relative; }
   .upload-area:hover { border-color: var(--azul); }
   .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+  /* ── GALERÍA ADMIN ── */
+  .evento-card {
+    background: var(--blanco); border: 1px solid var(--borde);
+    border-radius: 2px; margin-bottom: 1.5rem;
+    overflow: hidden; transition: box-shadow 0.2s;
+  }
+  .evento-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .evento-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--borde);
+    background: var(--gris-claro);
+  }
+  .evento-header-info h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--carbon); margin-bottom: 0.2rem; }
+  .evento-header-info span { font-size: 0.78rem; color: var(--gris-medio); }
+  .evento-header-acciones { display: flex; gap: 0.5rem; }
+  .btn-add-fotos {
+    background: var(--azul); color: white; border: none;
+    padding: 0.4rem 1rem; border-radius: 2px; cursor: pointer;
+    font-size: 0.78rem; font-family: 'Inter', sans-serif; font-weight: 600;
+    transition: background 0.2s;
+  }
+  .btn-add-fotos:hover { background: var(--azul-oscuro); }
+  .btn-del-evento {
+    background: none; border: 1px solid #ffcccc; color: var(--rojo);
+    padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer;
+    font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s;
+  }
+  .btn-del-evento:hover { background: #fff3f3; }
+  .fotos-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem; padding: 1rem 1.5rem;
+  }
+  .foto-item { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 2px; }
+  .foto-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .foto-item .btn-del-foto {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0,0,0,0.6); border: none; color: white;
+    width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+    font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .foto-item:hover .btn-del-foto { opacity: 1; }
+  .fotos-preview-thumb {
+    width: 80px; height: 80px; object-fit: cover;
+    border-radius: 2px; border: 1px solid var(--borde);
+  }
+  .evento-sin-fotos {
+    padding: 1.5rem; text-align: center;
+    color: #888; font-size: 0.85rem;
+  }
+
   @media (max-width: 600px) {
     .tab-media { padding: 0.45rem 1rem; border-radius: 2px; cursor: pointer; font-size: 0.8rem; font-weight: 600; border: 1.5px solid var(--borde); background: var(--blanco); color: var(--gris-medio); transition: all 0.2s; font-family: 'Inter', sans-serif; }
   .tab-media.activo { background: var(--azul); color: var(--blanco); border-color: var(--azul); }
@@ -124,6 +176,58 @@
   .vacio-icon { font-size: 3rem; margin-bottom: 1rem; }
   .vacio p { color: #888; font-size: 0.92rem; }
   .loading { text-align: center; padding: 3rem; color: #888; font-size: 0.9rem; }
+
+
+  /* ── GALERÍA ADMIN ── */
+  .evento-card {
+    background: var(--blanco); border: 1px solid var(--borde);
+    border-radius: 2px; margin-bottom: 1.5rem;
+    overflow: hidden; transition: box-shadow 0.2s;
+  }
+  .evento-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .evento-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--borde);
+    background: var(--gris-claro);
+  }
+  .evento-header-info h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--carbon); margin-bottom: 0.2rem; }
+  .evento-header-info span { font-size: 0.78rem; color: var(--gris-medio); }
+  .evento-header-acciones { display: flex; gap: 0.5rem; }
+  .btn-add-fotos {
+    background: var(--azul); color: white; border: none;
+    padding: 0.4rem 1rem; border-radius: 2px; cursor: pointer;
+    font-size: 0.78rem; font-family: 'Inter', sans-serif; font-weight: 600;
+    transition: background 0.2s;
+  }
+  .btn-add-fotos:hover { background: var(--azul-oscuro); }
+  .btn-del-evento {
+    background: none; border: 1px solid #ffcccc; color: var(--rojo);
+    padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer;
+    font-size: 0.78rem; font-family: 'Inter', sans-serif; transition: all 0.2s;
+  }
+  .btn-del-evento:hover { background: #fff3f3; }
+  .fotos-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem; padding: 1rem 1.5rem;
+  }
+  .foto-item { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 2px; }
+  .foto-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .foto-item .btn-del-foto {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0,0,0,0.6); border: none; color: white;
+    width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+    font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .foto-item:hover .btn-del-foto { opacity: 1; }
+  .fotos-preview-thumb {
+    width: 80px; height: 80px; object-fit: cover;
+    border-radius: 2px; border: 1px solid var(--borde);
+  }
+  .evento-sin-fotos {
+    padding: 1.5rem; text-align: center;
+    color: #888; font-size: 0.85rem;
+  }
 
   @media (max-width: 600px) {
     .panel-content { padding: 1.5rem 1rem; }
@@ -183,6 +287,7 @@
       <button class="tab-p activo" onclick="cambiarTab('publicadas', this)">Publicadas</button>
       <button class="tab-p" onclick="cambiarTab('historial', this)">Historial</button>
       <button class="tab-p" onclick="cambiarTab('popup', this)">Popup</button>
+      <button class="tab-p" onclick="cambiarTab('galeria', this)">Galería</button>
     </div>
 
     <!-- NOTICIAS PUBLICADAS / HISTORIAL -->
@@ -312,6 +417,52 @@
       </div>
 
     </div>
+    <!-- GALERÍA -->
+    <div class="seccion" id="sec-galeria">
+
+      <!-- Formulario nuevo evento -->
+      <div class="form-card" id="formEvento">
+        <h3>Nuevo evento</h3>
+        <div class="form-group">
+          <label>Nombre del evento</label>
+          <input type="text" id="eventoNombre" placeholder="Ej: Asamblea Junio 2026">
+        </div>
+        <div class="form-group">
+          <label>Fecha del evento</label>
+          <input type="date" id="eventoFecha">
+        </div>
+        <div class="form-acciones">
+          <button class="btn-guardar" onclick="crearEvento()">Crear evento</button>
+          <button class="btn-cancelar" onclick="ocultarFormEvento()">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Lista de eventos -->
+      <div id="eventosList"><div class="loading">Cargando galería...</div></div>
+
+      <!-- Formulario subir fotos -->
+      <div class="form-card" id="formFotos" style="display:none;">
+        <h3 id="formFotosTitulo">Subir fotos</h3>
+        <input type="hidden" id="eventoIdActivo">
+        <div class="form-group">
+          <label>Seleccionar fotos (puedes elegir varias)</label>
+          <div class="upload-area" onclick="document.getElementById('fotosInput').click()">
+            <input type="file" id="fotosInput" accept="image/*" multiple style="position:absolute; width:1px; height:1px; opacity:0;" onchange="previsualizarFotos(this)">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">Toca aquí para seleccionar fotos</div>
+            <div class="upload-hint">Puedes seleccionar múltiples fotos — se comprimen automáticamente</div>
+          </div>
+          <div id="fotosPreview" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem;"></div>
+          <div class="progress-bar" id="progressBarFotos"><div class="progress-fill" id="progressFillFotos"></div></div>
+          <div id="fotosStatus" style="font-size:0.85rem; color:#666; margin-top:0.5rem;"></div>
+        </div>
+        <div class="form-acciones">
+          <button class="btn-guardar" id="btnSubirFotos" onclick="subirFotos()">Subir fotos</button>
+          <button class="btn-cancelar" onclick="cerrarFormFotos()">Cerrar</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -321,9 +472,9 @@
   import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc }
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc, writeBatch }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
+  import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject, listAll }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const firebaseConfig = {
@@ -400,7 +551,9 @@
     el.classList.add('activo');
     document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
     document.getElementById('sec-' + tab).classList.add('activa');
-    document.getElementById('btnNuevo').style.display  = tab === 'publicadas' ? 'inline-block' : 'none';
+    document.getElementById('btnNuevo').style.display  = (tab === 'publicadas' || tab === 'galeria') ? 'inline-block' : 'none';
+    document.getElementById('btnNuevo').textContent = tab === 'galeria' ? '+ Nuevo evento' : '+ Nueva noticia';
+    document.getElementById('btnNuevo').onclick = tab === 'galeria' ? mostrarFormEvento : mostrarFormulario;
     document.getElementById('seccionTitulo').textContent =
       tab === 'publicadas' ? 'Noticias y comunicados' :
       tab === 'historial'  ? 'Historial de noticias' : 'Configuración del Popup';
@@ -408,6 +561,7 @@
     if (tab === 'publicadas') cargarNoticias('publicada', 'noticiasList');
     if (tab === 'historial')  cargarNoticias('archivada', 'historialList');
     if (tab === 'popup')      cargarPopup();
+    if (tab === 'galeria')    cargarGaleria();
   };
 
   // ── FORMULARIO NOTICIAS ──
@@ -808,6 +962,183 @@
       btn.textContent = 'Guardar popup'; btn.disabled = false;
     }
   };
+
+
+  // ── GALERÍA ──
+  let fotosSeleccionadas = [];
+
+  window.mostrarFormEvento = () => {
+    document.getElementById('formEvento').classList.add('visible');
+    document.getElementById('eventoNombre').value = '';
+    document.getElementById('eventoFecha').value = '';
+  };
+
+  window.ocultarFormEvento = () => {
+    document.getElementById('formEvento').classList.remove('visible');
+  };
+
+  window.crearEvento = async () => {
+    const nombre = document.getElementById('eventoNombre').value.trim();
+    const fecha  = document.getElementById('eventoFecha').value;
+    if (!nombre || !fecha) { mostrarToast('Completa nombre y fecha del evento.', 'error'); return; }
+    try {
+      await addDoc(collection(db, 'galeria'), {
+        nombre, fecha,
+        createdAt: serverTimestamp()
+      });
+      mostrarToast('Evento creado correctamente.', 'exito');
+      ocultarFormEvento();
+      cargarGaleria();
+    } catch(e) { mostrarToast('Error al crear evento: ' + e.message, 'error'); }
+  };
+
+  async function cargarGaleria() {
+    const lista = document.getElementById('eventosList');
+    lista.innerHTML = '<div class="loading">Cargando galería...</div>';
+    try {
+      const q    = query(collection(db, 'galeria'), orderBy('fecha', 'desc'));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">🖼️</div><p>No hay eventos aún.<br>Crea el primer evento para comenzar.</p></div>';
+        return;
+      }
+      lista.innerHTML = '';
+      for (const d of snap.docs) {
+        const e = d.data();
+        const fechaStr = e.fecha ? new Date(e.fecha + 'T12:00:00').toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' }) : '';
+        // Cargar fotos del evento
+        const fotosSnap = await getDocs(collection(db, 'galeria', d.id, 'fotos'));
+        const fotos = fotosSnap.docs.map(f => ({ id: f.id, ...f.data() }));
+
+        const card = document.createElement('div');
+        card.className = 'evento-card';
+        card.innerHTML = `
+          <div class="evento-header">
+            <div class="evento-header-info">
+              <h3>${e.nombre}</h3>
+              <span>${fechaStr} · ${fotos.length} foto${fotos.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="evento-header-acciones">
+              <button class="btn-add-fotos" onclick="abrirFormFotos('${d.id}', '${e.nombre.replace(/'/g, "\'")}')">+ Agregar fotos</button>
+              <button class="btn-del-evento" onclick="eliminarEvento('${d.id}')">Eliminar</button>
+            </div>
+          </div>
+          <div class="fotos-grid" id="fotos-${d.id}">
+            ${fotos.length === 0 ? '<div class="evento-sin-fotos" style="grid-column:1/-1;">Sin fotos aún — agrega fotos a este evento.</div>' :
+              fotos.map(f => `
+                <div class="foto-item">
+                  <img src="${f.url}" alt="${f.nombre || ''}">
+                  <button class="btn-del-foto" onclick="eliminarFoto('${d.id}', '${f.id}', '${f.path}')">✕</button>
+                </div>
+              `).join('')
+            }
+          </div>
+        `;
+        lista.appendChild(card);
+      }
+    } catch(e) {
+      lista.innerHTML = '<div class="loading">Error al cargar galería: ' + e.message + '</div>';
+    }
+  }
+
+  window.abrirFormFotos = (eventoId, eventoNombre) => {
+    document.getElementById('eventoIdActivo').value = eventoId;
+    document.getElementById('formFotosTitulo').textContent = 'Subir fotos — ' + eventoNombre;
+    document.getElementById('formFotos').style.display = 'block';
+    document.getElementById('fotosPreview').innerHTML = '';
+    document.getElementById('fotosInput').value = '';
+    document.getElementById('fotosStatus').textContent = '';
+    fotosSeleccionadas = [];
+    document.getElementById('formFotos').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.cerrarFormFotos = () => {
+    document.getElementById('formFotos').style.display = 'none';
+    fotosSeleccionadas = [];
+  };
+
+  window.previsualizarFotos = (input) => {
+    const archivos = Array.from(input.files);
+    fotosSeleccionadas = archivos;
+    const preview = document.getElementById('fotosPreview');
+    preview.innerHTML = '';
+    archivos.forEach(f => {
+      const img = document.createElement('img');
+      img.className = 'fotos-preview-thumb';
+      img.src = URL.createObjectURL(f);
+      preview.appendChild(img);
+    });
+    document.getElementById('fotosStatus').textContent = archivos.length + ' foto' + (archivos.length !== 1 ? 's' : '') + ' seleccionada' + (archivos.length !== 1 ? 's' : '');
+  };
+
+  window.subirFotos = async () => {
+    const eventoId = document.getElementById('eventoIdActivo').value;
+    if (fotosSeleccionadas.length === 0) { mostrarToast('Selecciona al menos una foto.', 'error'); return; }
+    const btn = document.getElementById('btnSubirFotos');
+    btn.textContent = 'Subiendo...'; btn.disabled = true;
+    const barra = document.getElementById('progressBarFotos');
+    const fill  = document.getElementById('progressFillFotos');
+    const status = document.getElementById('fotosStatus');
+    barra.style.display = 'block';
+    let subidas = 0;
+    for (const file of fotosSeleccionadas) {
+      try {
+        const fileComprimido = await comprimirImagen(file);
+        const nombre = Date.now() + '_' + file.name.replace(/\s/g, '_');
+        const storRef = ref(storage, 'galeria/' + eventoId + '/' + nombre);
+        await new Promise((resolve, reject) => {
+          const tarea = uploadBytesResumable(storRef, fileComprimido);
+          tarea.on('state_changed',
+            s => fill.style.width = (s.bytesTransferred / s.totalBytes * 100) + '%',
+            reject,
+            async () => {
+              const url = await getDownloadURL(tarea.snapshot.ref);
+              await addDoc(collection(db, 'galeria', eventoId, 'fotos'), {
+                url, path: 'galeria/' + eventoId + '/' + nombre,
+                nombre: file.name, createdAt: serverTimestamp()
+              });
+              subidas++;
+              status.textContent = subidas + ' de ' + fotosSeleccionadas.length + ' subida' + (subidas !== 1 ? 's' : '');
+              resolve();
+            }
+          );
+        });
+      } catch(e) { console.error('Error subiendo foto:', e); }
+    }
+    barra.style.display = 'none';
+    fill.style.width = '0%';
+    btn.textContent = 'Subir fotos'; btn.disabled = false;
+    mostrarToast(subidas + ' foto' + (subidas !== 1 ? 's' : '') + ' subida' + (subidas !== 1 ? 's' : '') + ' correctamente.', 'exito');
+    cerrarFormFotos();
+    cargarGaleria();
+  };
+
+  window.eliminarFoto = async (eventoId, fotoId, path) => {
+    if (!confirm('¿Eliminar esta foto?')) return;
+    try {
+      await deleteDoc(doc(db, 'galeria', eventoId, 'fotos', fotoId));
+      if (path) await deleteObject(ref(storage, path));
+      mostrarToast('Foto eliminada.', 'exito');
+      cargarGaleria();
+    } catch(e) { mostrarToast('Error al eliminar foto: ' + e.message, 'error'); }
+  };
+
+  window.eliminarEvento = async (eventoId) => {
+    if (!confirm('¿Eliminar este evento y todas sus fotos? Esta acción no se puede deshacer.')) return;
+    try {
+      // Eliminar fotos de Storage y Firestore
+      const fotosSnap = await getDocs(collection(db, 'galeria', eventoId, 'fotos'));
+      for (const f of fotosSnap.docs) {
+        const data = f.data();
+        if (data.path) { try { await deleteObject(ref(storage, data.path)); } catch(e) {} }
+        await deleteDoc(f.ref);
+      }
+      await deleteDoc(doc(db, 'galeria', eventoId));
+      mostrarToast('Evento eliminado correctamente.', 'exito');
+      cargarGaleria();
+    } catch(e) { mostrarToast('Error al eliminar evento: ' + e.message, 'error'); }
+  };
+
 
   // ── TOAST ──
   function mostrarToast(msg, tipo) {
