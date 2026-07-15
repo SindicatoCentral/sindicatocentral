@@ -1189,6 +1189,25 @@
     .evento-thumb { background: #1a2a3a; }
   }
 
+
+  /* ── NAVEGACIÓN LIGHTBOX ── */
+  .lightbox-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.15); border: none; color: white;
+    font-size: 2rem; cursor: pointer; padding: 0.5rem 1rem;
+    border-radius: 2px; transition: background 0.2s; z-index: 10;
+    user-select: none;
+  }
+  .lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+  .lightbox-prev { left: 1rem; }
+  .lightbox-next { right: 1rem; }
+  .lightbox-counter {
+    position: absolute; bottom: 3.5rem; left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.7); font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+  }
+
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -1839,10 +1858,13 @@ function toggleFaq(btn) {
 </div>
 
 <!-- LIGHTBOX -->
-<div class="lightbox" id="lightbox" onclick="cerrarLightbox()">
+<div class="lightbox" id="lightbox">
   <button class="lightbox-cerrar" onclick="cerrarLightbox()">✕</button>
-  <img id="lightboxImg" src="" alt="">
+  <button class="lightbox-nav lightbox-prev" onclick="navegarLightbox(-1)" id="lightboxPrev">‹</button>
+  <img id="lightboxImg" src="" alt="" onclick="cerrarLightbox()">
+  <button class="lightbox-nav lightbox-next" onclick="navegarLightbox(1)" id="lightboxNext">›</button>
   <div class="lightbox-caption" id="lightboxCaption"></div>
+  <div class="lightbox-counter" id="lightboxCounter"></div>
 </div>
 
 
@@ -1977,14 +1999,43 @@ function convertirUrlVideo(url) {
 
 
 <script>
-function abrirLightbox(src, caption) {
+let lightboxFotos = [];
+let lightboxIndex = 0;
+
+function abrirLightbox(src, caption, fotos, index) {
   const lb = document.getElementById('lightbox');
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('lightboxCaption').textContent = caption || '';
+  // Si se pasa array de fotos, habilitar navegación
+  if (fotos && fotos.length > 1) {
+    lightboxFotos = fotos;
+    lightboxIndex = index || 0;
+    actualizarLightbox();
+    document.getElementById('lightboxPrev').style.display = 'block';
+    document.getElementById('lightboxNext').style.display = 'block';
+  } else {
+    lightboxFotos = [];
+    lightboxIndex = 0;
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxCaption').textContent = caption || '';
+    document.getElementById('lightboxCounter').textContent = '';
+    document.getElementById('lightboxPrev').style.display = 'none';
+    document.getElementById('lightboxNext').style.display = 'none';
+  }
   lb.classList.add('visible');
   document.body.style.overflow = 'hidden';
 }
 window.abrirLightbox = abrirLightbox;
+
+function actualizarLightbox() {
+  const foto = lightboxFotos[lightboxIndex];
+  document.getElementById('lightboxImg').src = foto.url || foto;
+  document.getElementById('lightboxCaption').textContent = foto.caption || '';
+  document.getElementById('lightboxCounter').textContent = (lightboxIndex + 1) + ' / ' + lightboxFotos.length;
+}
+
+window.navegarLightbox = (direccion) => {
+  lightboxIndex = (lightboxIndex + direccion + lightboxFotos.length) % lightboxFotos.length;
+  actualizarLightbox();
+};
 function cerrarPopup() {
   document.getElementById('popupOverlay').classList.remove('visible');
   sessionStorage.setItem('popupCerrado', '1');
@@ -1995,9 +2046,10 @@ function cerrarPopup() {
 function cerrarLightbox() {
   document.getElementById('lightbox').classList.remove('visible');
   document.body.style.overflow = '';
+  lightboxFotos = [];
 }
 window.cerrarLightbox = cerrarLightbox;
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarPopup(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarPopup(); } if (e.key === 'ArrowRight') navegarLightbox(1); if (e.key === 'ArrowLeft') navegarLightbox(-1); });
 </script>
 
 
@@ -2190,12 +2242,15 @@ function filtrarFaq(texto) {
     document.getElementById('modalEventoNombre').textContent = nombre;
     document.getElementById('modalEventoFecha').textContent = fecha;
     const contenedor = document.getElementById('modalFotos');
-    contenedor.innerHTML = fotos.length === 0
-      ? '<p style="color:#aaa; grid-column:1/-1; text-align:center; padding:2rem;">Este evento aún no tiene fotos.</p>'
-      : fotos.map(f => `
-          <div class="galeria-modal-foto" onclick="abrirLightbox('${f.url}', '${nombre}')">
-            <img src="${f.url}" alt="${nombre}" loading="lazy">
-          </div>`).join('');
+    if (fotos.length === 0) {
+      contenedor.innerHTML = '<p style="color:#aaa; grid-column:1/-1; text-align:center; padding:2rem;">Este evento aún no tiene fotos.</p>';
+    } else {
+      const fotosData = fotos.map(f => ({ url: f.url, caption: nombre }));
+      contenedor.innerHTML = fotos.map((f, i) => `
+        <div class="galeria-modal-foto" onclick="abrirLightbox('${f.url}', '${nombre}', ${JSON.stringify(fotosData).replace(/'/g, "\'")}, ${i})">
+          <img src="${f.url}" alt="${nombre}" loading="lazy">
+        </div>`).join('');
+    }
     document.getElementById('galeriaModal').classList.add('visible');
     document.body.style.overflow = 'hidden';
   };
