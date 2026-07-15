@@ -2245,11 +2245,21 @@ function filtrarFaq(texto) {
     if (fotos.length === 0) {
       contenedor.innerHTML = '<p style="color:#aaa; grid-column:1/-1; text-align:center; padding:2rem;">Este evento aún no tiene fotos.</p>';
     } else {
-      const fotosData = fotos.map(f => ({ url: f.url, caption: nombre }));
-      contenedor.innerHTML = fotos.map((f, i) => `
-        <div class="galeria-modal-foto" onclick="abrirLightbox('${f.url}', '${nombre}', ${JSON.stringify(fotosData).replace(/'/g, "\'")}, ${i})">
-          <img src="${f.url}" alt="${nombre}" loading="lazy">
-        </div>`).join('');
+      window._galeriaFotosActivas = fotos.map(f => ({ url: f.url, caption: nombre }));
+      contenedor.innerHTML = '';
+      fotos.forEach((f, i) => {
+        const div = document.createElement('div');
+        div.className = 'galeria-modal-foto';
+        const img = document.createElement('img');
+        img.src = f.url;
+        img.alt = nombre;
+        img.loading = 'lazy';
+        div.appendChild(img);
+        div.addEventListener('click', () => {
+          abrirLightbox(f.url, nombre, window._galeriaFotosActivas, i);
+        });
+        contenedor.appendChild(div);
+      });
     }
     document.getElementById('galeriaModal').classList.add('visible');
     document.body.style.overflow = 'hidden';
