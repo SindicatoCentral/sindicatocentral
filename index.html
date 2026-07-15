@@ -1102,6 +1102,93 @@
     .noticia-fecha-pub { color: #7aaad4; }
   }
 
+
+  /* ── GALERÍA PÚBLICA ── */
+  .galeria { background: var(--gris-claro); }
+  .eventos-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .evento-pub {
+    background: var(--blanco); border-radius: 2px;
+    border: 1px solid var(--borde);
+    overflow: hidden; cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .evento-pub:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .evento-thumb {
+    width: 100%; height: 200px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+    background: var(--gris-claro);
+    overflow: hidden;
+  }
+  .evento-thumb.una-foto { grid-template-columns: 1fr; }
+  .evento-thumb.tres-fotos .thumb-1 { grid-row: 1 / 3; }
+  .evento-thumb img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .evento-thumb-vacio {
+    width: 100%; height: 200px; background: var(--gris-claro);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; color: #ccc;
+  }
+  .evento-pub-info { padding: 1.2rem 1.5rem; }
+  .evento-pub-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; color: var(--carbon); margin-bottom: 0.3rem;
+  }
+  .evento-pub-meta {
+    font-size: 0.78rem; color: #666;
+    display: flex; gap: 1rem;
+  }
+
+  /* Modal fotos evento */
+  .galeria-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+    z-index: 9000; display: none; flex-direction: column;
+  }
+  .galeria-modal.visible { display: flex; }
+  .galeria-modal-header {
+    background: #1C2B3A; padding: 1rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-shrink: 0;
+  }
+  .galeria-modal-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; color: white; margin: 0;
+  }
+  .galeria-modal-header span { font-size: 0.82rem; color: #aaa; margin-top: 0.2rem; display: block; }
+  .galeria-modal-cerrar {
+    background: none; border: none; color: white;
+    font-size: 1.5rem; cursor: pointer; padding: 0.3rem;
+  }
+  .galeria-modal-fotos {
+    flex: 1; overflow-y: auto; padding: 1rem;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem; align-content: start;
+  }
+  .galeria-modal-foto {
+    aspect-ratio: 1; overflow: hidden; border-radius: 2px; cursor: zoom-in;
+  }
+  .galeria-modal-foto img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.2s;
+  }
+  .galeria-modal-foto:hover img { transform: scale(1.03); }
+
+  @media (max-width: 768px) {
+    .eventos-grid { grid-template-columns: 1fr; }
+    .galeria-modal-fotos { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .galeria { background: #252525; }
+    .evento-pub { background: #1a2a3a; border-color: #2a3a4a; }
+    .evento-pub-info h3 { color: #ffffff; }
+    .evento-pub-meta { color: #aaaaaa; }
+    .evento-thumb { background: #1a2a3a; }
+  }
+
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -1120,6 +1207,7 @@
     <li><a href="#directiva" onclick="ocultarSecciones(); cerrarMenu()">Directiva</a></li>
     <li><a href="#documentos" onclick="mostrarSeccion('documentos'); cerrarMenu()">Documentos</a></li>
     <li><a href="#noticias" onclick="ocultarSecciones(); cerrarMenu()" class="nav-notif" id="navNoticias">Noticias</a></li>
+    <li><a href="#galeria" onclick="ocultarSecciones(); cerrarMenu()">Galería</a></li>
     <li><a href="#contacto" onclick="ocultarSecciones(); cerrarMenu()">Contacto</a></li>
 
   </ul>
@@ -1429,6 +1517,30 @@
     </div>
   </div>
 </section>
+
+<!-- GALERÍA -->
+<section class="galeria" id="galeria">
+  <div class="container">
+    <p class="section-eyebrow">Eventos del sindicato</p>
+    <h2 class="section-title">Galería</h2>
+    <p class="section-body">Revive los momentos más importantes de nuestra organización.</p>
+    <div class="eventos-grid" id="eventosGrid">
+      <p class="section-body" style="grid-column:1/-1; color:#666;">Cargando galería...</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL GALERÍA -->
+<div class="galeria-modal" id="galeriaModal">
+  <div class="galeria-modal-header">
+    <div>
+      <h3 id="modalEventoNombre"></h3>
+      <span id="modalEventoFecha"></span>
+    </div>
+    <button class="galeria-modal-cerrar" onclick="cerrarGaleriaModal()">✕</button>
+  </div>
+  <div class="galeria-modal-fotos" id="modalFotos"></div>
+</div>
 
 <!-- AFILIACIÓN -->
 <!-- DOCUMENTOS -->
@@ -2008,6 +2120,96 @@ function filtrarFaq(texto) {
   });
   sinResultados.style.display = encontrados === 0 ? 'block' : 'none';
 }
+</script>
+
+
+<script type="module">
+  import { initializeApp as initApp3 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore as getFS3, collection as col3, getDocs as getDocs3, query as q3, orderBy as orderBy3 }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const app3 = initApp3({
+    apiKey: "AIzaSyC8piyFY_dr0FQ-SCN6C_9zGtlppaJVtPQ",
+    authDomain: "sindicato-ucen.firebaseapp.com",
+    projectId: "sindicato-ucen",
+    storageBucket: "sindicato-ucen.firebasestorage.app",
+    messagingSenderId: "845293926331",
+    appId: "1:845293926331:web:b462a0c3c891c32fb0b69e"
+  }, 'galeria-app');
+  const db3 = getFS3(app3);
+
+  async function cargarGaleria() {
+    const grid = document.getElementById('eventosGrid');
+    try {
+      const snap = await getDocs3(q3(col3(db3, 'galeria'), orderBy3('fecha', 'desc')));
+      if (snap.empty) {
+        grid.innerHTML = '<p class="section-body" style="grid-column:1/-1; color:#666;">Próximamente compartiremos fotos de nuestros eventos.</p>';
+        return;
+      }
+      grid.innerHTML = '';
+      for (const d of snap.docs) {
+        const e = d.data();
+        const fechaStr = e.fecha ? new Date(e.fecha + 'T12:00:00').toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' }) : '';
+        // Cargar fotos
+        const fotosSnap = await getDocs3(col3(db3, 'galeria', d.id, 'fotos'));
+        const fotos = fotosSnap.docs.map(f => ({ id: f.id, ...f.data() }));
+        const card = document.createElement('div');
+        card.className = 'evento-pub';
+        card.onclick = () => abrirGaleriaModal(d.id, e.nombre, fechaStr, fotos);
+        // Thumbnail
+        let thumbHtml = '';
+        if (fotos.length === 0) {
+          thumbHtml = '<div class="evento-thumb-vacio">🖼️</div>';
+        } else if (fotos.length === 1) {
+          thumbHtml = `<div class="evento-thumb una-foto"><img src="${fotos[0].url}" alt=""></div>`;
+        } else if (fotos.length === 2) {
+          thumbHtml = `<div class="evento-thumb"><img src="${fotos[0].url}" alt=""><img src="${fotos[1].url}" alt=""></div>`;
+        } else {
+          thumbHtml = `<div class="evento-thumb tres-fotos">
+            <img src="${fotos[0].url}" alt="" class="thumb-1">
+            <img src="${fotos[1].url}" alt="">
+            <img src="${fotos[2].url}" alt="">
+          </div>`;
+        }
+        card.innerHTML = thumbHtml + `
+          <div class="evento-pub-info">
+            <h3>${e.nombre}</h3>
+            <div class="evento-pub-meta">
+              <span>📅 ${fechaStr}</span>
+              <span>📷 ${fotos.length} foto${fotos.length !== 1 ? 's' : ''}</span>
+            </div>
+          </div>`;
+        grid.appendChild(card);
+      }
+    } catch(err) {
+      grid.innerHTML = '<p class="section-body" style="grid-column:1/-1;">Próximamente compartiremos fotos de nuestros eventos.</p>';
+    }
+  }
+
+  window.abrirGaleriaModal = (id, nombre, fecha, fotos) => {
+    document.getElementById('modalEventoNombre').textContent = nombre;
+    document.getElementById('modalEventoFecha').textContent = fecha;
+    const contenedor = document.getElementById('modalFotos');
+    contenedor.innerHTML = fotos.length === 0
+      ? '<p style="color:#aaa; grid-column:1/-1; text-align:center; padding:2rem;">Este evento aún no tiene fotos.</p>'
+      : fotos.map(f => `
+          <div class="galeria-modal-foto" onclick="abrirLightbox('${f.url}', '${nombre}')">
+            <img src="${f.url}" alt="${nombre}" loading="lazy">
+          </div>`).join('');
+    document.getElementById('galeriaModal').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.cerrarGaleriaModal = () => {
+    document.getElementById('galeriaModal').classList.remove('visible');
+    document.body.style.overflow = '';
+  };
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') cerrarGaleriaModal();
+  });
+
+  cargarGaleria();
 </script>
 
 </body>
