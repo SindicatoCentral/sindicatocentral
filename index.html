@@ -1883,7 +1883,7 @@ function convertirUrlVideo(url) {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, orderBy, where }
+  import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -1995,96 +1995,12 @@ function convertirUrlVideo(url) {
     } catch(e) { console.error('Error verificando noticias:', e); }
   }
   verificarNoticiasNuevas();
-</script>
 
-
-<script>
-let lightboxFotos = [];
-let lightboxIndex = 0;
-
-function abrirLightbox(src, caption, fotos, index) {
-  const lb = document.getElementById('lightbox');
-  // Si se pasa array de fotos, habilitar navegación
-  if (fotos && fotos.length > 1) {
-    lightboxFotos = fotos;
-    lightboxIndex = index || 0;
-    actualizarLightbox();
-    document.getElementById('lightboxPrev').style.display = 'block';
-    document.getElementById('lightboxNext').style.display = 'block';
-  } else {
-    lightboxFotos = [];
-    lightboxIndex = 0;
-    document.getElementById('lightboxImg').src = src;
-    document.getElementById('lightboxCaption').textContent = caption || '';
-    document.getElementById('lightboxCounter').textContent = '';
-    document.getElementById('lightboxPrev').style.display = 'none';
-    document.getElementById('lightboxNext').style.display = 'none';
-  }
-  lb.classList.add('visible');
-  document.body.style.overflow = 'hidden';
-}
-window.abrirLightbox = abrirLightbox;
-
-function actualizarLightbox() {
-  const foto = lightboxFotos[lightboxIndex];
-  document.getElementById('lightboxImg').src = foto.url || foto;
-  document.getElementById('lightboxCaption').textContent = foto.caption || '';
-  document.getElementById('lightboxCounter').textContent = (lightboxIndex + 1) + ' / ' + lightboxFotos.length;
-}
-
-window.navegarLightbox = (direccion) => {
-  lightboxIndex = (lightboxIndex + direccion + lightboxFotos.length) % lightboxFotos.length;
-  actualizarLightbox();
-};
-function cerrarPopup() {
-  document.getElementById('popupOverlay').classList.remove('visible');
-  sessionStorage.setItem('popupCerrado', '1');
-  // Detener video si existe
-  const iframes = document.getElementById('popupContenido').querySelectorAll('iframe');
-  iframes.forEach(f => { f.src = f.src; });
-}
-function cerrarLightbox() {
-  document.getElementById('lightbox').classList.remove('visible');
-  document.body.style.overflow = '';
-  lightboxFotos = [];
-}
-window.cerrarLightbox = cerrarLightbox;
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarPopup(); } if (e.key === 'ArrowRight') navegarLightbox(1); if (e.key === 'ArrowLeft') navegarLightbox(-1); });
-</script>
-
-
-
-<script>
-function convertirUrlVideo(url) {
-  if (!url) return null;
-  // YouTube
-  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
-  if (ytMatch) return 'https://www.youtube.com/embed/' + ytMatch[1];
-  // Google Drive
-  const drMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (drMatch) return 'https://drive.google.com/file/d/' + drMatch[1] + '/preview';
-  return null;
-}
-</script>
-
-<script type="module">
-  import { initializeApp as initApp2 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore as getFS2, doc as doc2, getDoc as getDoc2 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const app2 = initApp2({
-    apiKey: "AIzaSyC8piyFY_dr0FQ-SCN6C_9zGtlppaJVtPQ",
-    authDomain: "sindicato-ucen.firebaseapp.com",
-    projectId: "sindicato-ucen",
-    storageBucket: "sindicato-ucen.firebasestorage.app",
-    messagingSenderId: "845293926331",
-    appId: "1:845293926331:web:b462a0c3c891c32fb0b69e"
-  }, 'popup-app');
-  const db2 = getFS2(app2);
-
+  // ── POPUP ──
   async function cargarPopup() {
     if (sessionStorage.getItem('popupCerrado')) return;
     try {
-      const snap = await getDoc2(doc2(db2, 'config', 'popup'));
+      const snap = await getDoc(doc(db, 'config', 'popup'));
       if (!snap.exists()) return;
       const d = snap.data();
       if (!d.activo) return;
@@ -2139,61 +2055,12 @@ function convertirUrlVideo(url) {
   }
 
   cargarPopup();
-</script>
 
-
-<script>
-function cerrarPopup() {
-  document.getElementById('popupOverlay').classList.remove('visible');
-  sessionStorage.setItem('popupVisto', '1');
-  // Detener video si existe
-  const contenido = document.getElementById('popupContenido');
-  if (contenido) contenido.querySelectorAll('iframe').forEach(f => { f.src = f.src; });
-}
-</script>
-
-
-<script>
-function filtrarFaq(texto) {
-  const items = document.querySelectorAll('.faq-item');
-  const sinResultados = document.getElementById('faqSinResultados');
-  const termino = texto.toLowerCase().trim();
-  let encontrados = 0;
-  items.forEach(item => {
-    const pregunta = item.querySelector('.faq-pregunta').textContent.toLowerCase();
-    const respuesta = item.querySelector('.faq-respuesta').textContent.toLowerCase();
-    if (!termino || pregunta.includes(termino) || respuesta.includes(termino)) {
-      item.style.display = 'block';
-      encontrados++;
-    } else {
-      item.style.display = 'none';
-      item.classList.remove('abierto');
-    }
-  });
-  sinResultados.style.display = encontrados === 0 ? 'block' : 'none';
-}
-</script>
-
-
-<script type="module">
-  import { initializeApp as initApp3 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore as getFS3, collection as col3, getDocs as getDocs3, query as q3, orderBy as orderBy3 }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const app3 = initApp3({
-    apiKey: "AIzaSyC8piyFY_dr0FQ-SCN6C_9zGtlppaJVtPQ",
-    authDomain: "sindicato-ucen.firebaseapp.com",
-    projectId: "sindicato-ucen",
-    storageBucket: "sindicato-ucen.firebasestorage.app",
-    messagingSenderId: "845293926331",
-    appId: "1:845293926331:web:b462a0c3c891c32fb0b69e"
-  }, 'galeria-app');
-  const db3 = getFS3(app3);
-
+  // ── GALERÍA ──
   async function cargarGaleria() {
     const grid = document.getElementById('eventosGrid');
     try {
-      const snap = await getDocs3(q3(col3(db3, 'galeria'), orderBy3('fecha', 'desc')));
+      const snap = await getDocs(query(collection(db, 'galeria'), orderBy('fecha', 'desc')));
       if (snap.empty) {
         grid.innerHTML = '<p class="section-body" style="grid-column:1/-1; color:#666;">Próximamente compartiremos fotos de nuestros eventos.</p>';
         return;
@@ -2203,7 +2070,7 @@ function filtrarFaq(texto) {
         const e = d.data();
         const fechaStr = e.fecha ? new Date(e.fecha + 'T12:00:00').toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' }) : '';
         // Cargar fotos
-        const fotosSnap = await getDocs3(col3(db3, 'galeria', d.id, 'fotos'));
+        const fotosSnap = await getDocs(collection(db, 'galeria', d.id, 'fotos'));
         const fotos = fotosSnap.docs.map(f => ({ id: f.id, ...f.data() }));
         const card = document.createElement('div');
         card.className = 'evento-pub';
@@ -2276,6 +2143,114 @@ function filtrarFaq(texto) {
 
   cargarGaleria();
 </script>
+
+
+<script>
+let lightboxFotos = [];
+let lightboxIndex = 0;
+
+function abrirLightbox(src, caption, fotos, index) {
+  const lb = document.getElementById('lightbox');
+  // Si se pasa array de fotos, habilitar navegación
+  if (fotos && fotos.length > 1) {
+    lightboxFotos = fotos;
+    lightboxIndex = index || 0;
+    actualizarLightbox();
+    document.getElementById('lightboxPrev').style.display = 'block';
+    document.getElementById('lightboxNext').style.display = 'block';
+  } else {
+    lightboxFotos = [];
+    lightboxIndex = 0;
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxCaption').textContent = caption || '';
+    document.getElementById('lightboxCounter').textContent = '';
+    document.getElementById('lightboxPrev').style.display = 'none';
+    document.getElementById('lightboxNext').style.display = 'none';
+  }
+  lb.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+window.abrirLightbox = abrirLightbox;
+
+function actualizarLightbox() {
+  const foto = lightboxFotos[lightboxIndex];
+  document.getElementById('lightboxImg').src = foto.url || foto;
+  document.getElementById('lightboxCaption').textContent = foto.caption || '';
+  document.getElementById('lightboxCounter').textContent = (lightboxIndex + 1) + ' / ' + lightboxFotos.length;
+}
+
+window.navegarLightbox = (direccion) => {
+  lightboxIndex = (lightboxIndex + direccion + lightboxFotos.length) % lightboxFotos.length;
+  actualizarLightbox();
+};
+function cerrarPopup() {
+  document.getElementById('popupOverlay').classList.remove('visible');
+  sessionStorage.setItem('popupCerrado', '1');
+  // Detener video si existe
+  const iframes = document.getElementById('popupContenido').querySelectorAll('iframe');
+  iframes.forEach(f => { f.src = f.src; });
+}
+function cerrarLightbox() {
+  document.getElementById('lightbox').classList.remove('visible');
+  document.body.style.overflow = '';
+  lightboxFotos = [];
+}
+window.cerrarLightbox = cerrarLightbox;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarLightbox(); cerrarPopup(); } if (e.key === 'ArrowRight') navegarLightbox(1); if (e.key === 'ArrowLeft') navegarLightbox(-1); });
+</script>
+
+
+
+<script>
+function convertirUrlVideo(url) {
+  if (!url) return null;
+  // YouTube
+  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return 'https://www.youtube.com/embed/' + ytMatch[1];
+  // Google Drive
+  const drMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (drMatch) return 'https://drive.google.com/file/d/' + drMatch[1] + '/preview';
+  return null;
+}
+</script>
+
+
+
+
+<script>
+function cerrarPopup() {
+  document.getElementById('popupOverlay').classList.remove('visible');
+  sessionStorage.setItem('popupVisto', '1');
+  // Detener video si existe
+  const contenido = document.getElementById('popupContenido');
+  if (contenido) contenido.querySelectorAll('iframe').forEach(f => { f.src = f.src; });
+}
+</script>
+
+
+<script>
+function filtrarFaq(texto) {
+  const items = document.querySelectorAll('.faq-item');
+  const sinResultados = document.getElementById('faqSinResultados');
+  const termino = texto.toLowerCase().trim();
+  let encontrados = 0;
+  items.forEach(item => {
+    const pregunta = item.querySelector('.faq-pregunta').textContent.toLowerCase();
+    const respuesta = item.querySelector('.faq-respuesta').textContent.toLowerCase();
+    if (!termino || pregunta.includes(termino) || respuesta.includes(termino)) {
+      item.style.display = 'block';
+      encontrados++;
+    } else {
+      item.style.display = 'none';
+      item.classList.remove('abierto');
+    }
+  });
+  sinResultados.style.display = encontrados === 0 ? 'block' : 'none';
+}
+</script>
+
+
+
 
 </body>
 </html>
