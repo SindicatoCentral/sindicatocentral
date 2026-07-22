@@ -976,11 +976,10 @@
       const vista  = document.getElementById('popupVista');
       const vacio  = document.getElementById('popupVacio');
       const form   = document.getElementById('formPopup');
-      form.classList.remove('visible');
+      form.style.display = 'none';
 
       if (snap.exists() && (snap.data().titulo || snap.data().mensaje || snap.data().imgUrl)) {
         const d = snap.data();
-        // Mostrar vista
         vista.style.display = 'block';
         vacio.style.display = 'none';
         document.getElementById('popupVistaTitulo').textContent = d.titulo || '(Sin título)';
@@ -991,10 +990,9 @@
         const vistaImg = document.getElementById('popupVistaImg');
         if (d.imgUrl) { vistaImg.src = d.imgUrl; vistaImg.style.display = 'block'; }
         else { vistaImg.style.display = 'none'; }
-        // Precargar datos en formulario
         document.getElementById('popupTituloInput').value  = d.titulo  || '';
         document.getElementById('popupMensajeInput').value = d.mensaje || '';
-        document.getElementById('popupVideo').value         = d.videoUrl || '';
+        document.getElementById('popupVideo').value        = d.videoUrl || '';
         const chk = document.getElementById('popupActivo');
         chk.checked = d.activo || false;
         chk.dispatchEvent(new Event('change'));
