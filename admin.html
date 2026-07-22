@@ -464,6 +464,102 @@
       </div>
 
     </div>
+
+    <!-- DOCUMENTOS -->
+    <div class="seccion" id="sec-documentos">
+
+      <!-- Formulario de inscripción -->
+      <div class="form-card visible" style="margin-bottom:1.5rem;">
+        <h3>Formulario de inscripción</h3>
+        <div id="docFormularioVista" style="display:none;">
+          <div class="noticia-item" style="margin-bottom:1rem;">
+            <div class="noticia-info">
+              <div class="noticia-titulo-item" id="docFormularioNombre"></div>
+              <div class="noticia-resumen-item" id="docFormularioFecha"></div>
+            </div>
+            <div class="noticia-acciones">
+              <button class="btn-accion editar" onclick="mostrarUploadDoc('Formulario')">Reemplazar</button>
+            </div>
+          </div>
+        </div>
+        <div id="docFormularioUpload">
+          <div class="form-group">
+            <label>Subir formulario</label>
+            <div class="upload-area" onclick="document.getElementById('inputFormulario').click()">
+              <input type="file" id="inputFormulario" accept=".pdf,.doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="subirDocSimple('formulario', this)">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">Toca aquí para seleccionar el archivo</div>
+              <div class="upload-hint">PDF o Word</div>
+            </div>
+            <div class="progress-bar" id="progressFormulario"><div class="progress-fill" id="fillFormulario"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estatuto -->
+      <div class="form-card visible" style="margin-bottom:1.5rem;">
+        <h3>Estatuto del sindicato</h3>
+        <div id="docEstatutoVista" style="display:none;">
+          <div class="noticia-item" style="margin-bottom:1rem;">
+            <div class="noticia-info">
+              <div class="noticia-titulo-item" id="docEstatutoNombre"></div>
+              <div class="noticia-resumen-item" id="docEstatutoFecha"></div>
+            </div>
+            <div class="noticia-acciones">
+              <button class="btn-accion editar" onclick="mostrarUploadDoc('Estatuto')">Reemplazar</button>
+            </div>
+          </div>
+        </div>
+        <div id="docEstatutoUpload">
+          <div class="form-group">
+            <label>Subir estatuto</label>
+            <div class="upload-area" onclick="document.getElementById('inputEstatuto').click()">
+              <input type="file" id="inputEstatuto" accept=".pdf,.doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="subirDocSimple('estatuto', this)">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">Toca aquí para seleccionar el archivo</div>
+              <div class="upload-hint">PDF o Word</div>
+            </div>
+            <div class="progress-bar" id="progressEstatuto"><div class="progress-fill" id="fillEstatuto"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contratos colectivos -->
+      <div class="form-card visible">
+        <h3>Contratos colectivos</h3>
+        <div class="form-card" id="formNuevoContrato" style="margin-bottom:1.5rem;">
+          <h3>Agregar contrato colectivo</h3>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label>Año inicio</label>
+              <input type="number" id="contratoAnoInicio" placeholder="2024" min="1990" max="2100">
+            </div>
+            <div class="form-group">
+              <label>Año fin</label>
+              <input type="number" id="contratoAnoFin" placeholder="2027" min="1990" max="2100">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Archivo del contrato</label>
+            <div class="upload-area" onclick="document.getElementById('inputContrato').click()">
+              <input type="file" id="inputContrato" accept=".pdf,.doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="previsualizarContrato(this)">
+              <div class="upload-icon">📋</div>
+              <div class="upload-text" id="contratoArchivoNombre">Toca aquí para seleccionar el archivo</div>
+              <div class="upload-hint">PDF o Word</div>
+            </div>
+            <div class="progress-bar" id="progressContrato"><div class="progress-fill" id="fillContrato"></div></div>
+          </div>
+          <div class="form-acciones">
+            <button class="btn-guardar" onclick="subirContrato()">Subir contrato</button>
+            <button class="btn-cancelar" onclick="document.getElementById('formNuevoContrato').classList.remove('visible')">Cancelar</button>
+          </div>
+        </div>
+        <button class="btn-nuevo" style="margin-bottom:1.5rem;" onclick="document.getElementById('formNuevoContrato').classList.add('visible')">+ Nuevo contrato</button>
+        <div id="contratosList"><div class="loading">Cargando contratos...</div></div>
+      </div>
+
+    </div>
+
   </div>
 </div>
 
@@ -566,6 +662,8 @@
     document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
     document.getElementById('sec-' + tab).classList.add('activa');
     document.getElementById('btnNuevo').style.display  = (tab === 'publicadas' || tab === 'galeria') ? 'inline-block' : 'none';
+    document.getElementById('btnNuevo').textContent = tab === 'galeria' ? '+ Nuevo evento' : '+ Nueva noticia';
+    document.getElementById('btnNuevo').onclick = tab === 'galeria' ? mostrarFormEvento : mostrarFormulario;
     document.getElementById('btnNuevo').textContent = tab === 'galeria' ? '+ Nuevo evento' : '+ Nueva noticia';
     document.getElementById('btnNuevo').onclick = tab === 'galeria' ? mostrarFormEvento : mostrarFormulario;
     document.getElementById('seccionTitulo').textContent =
