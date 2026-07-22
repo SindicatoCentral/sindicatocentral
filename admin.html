@@ -1334,8 +1334,9 @@
     document.getElementById(barraId).style.display = 'block';
     try {
       const storRef = ref(storage, 'documentos/' + tipo + '/' + file.name);
+      const metaDoc = { contentDisposition: 'attachment; filename="' + file.name + '"' };
       await new Promise((resolve, reject) => {
-        const tarea = uploadBytesResumable(storRef, file);
+        const tarea = uploadBytesResumable(storRef, file, metaDoc);
         tarea.on('state_changed',
           s => document.getElementById(fillId).style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
           reject,
@@ -1377,8 +1378,9 @@
       snap.forEach(async d => await updateDoc(d.ref, { vigente: false }));
       // Subir nuevo contrato
       const storRef = ref(storage, 'documentos/contratos/' + archivoContrato.name);
+      const metaContrato = { contentDisposition: 'attachment; filename="' + nombre + '.pdf"' };
       await new Promise((resolve, reject) => {
-        const tarea = uploadBytesResumable(storRef, archivoContrato);
+        const tarea = uploadBytesResumable(storRef, archivoContrato, metaContrato);
         tarea.on('state_changed',
           s => document.getElementById('fillContrato').style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
           reject,
