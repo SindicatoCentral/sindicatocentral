@@ -44,7 +44,7 @@
   .btn-nuevo { background: var(--azul); color: var(--blanco); padding: 0.65rem 1.5rem; border: none; border-radius: 2px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s; }
   .btn-nuevo:hover { background: var(--azul-oscuro); }
 
-  .tabs-panel { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .tabs-panel { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
   .tab-p { padding: 0.55rem 1.3rem; border-radius: 2px; cursor: pointer; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border: 1.5px solid var(--borde); background: var(--blanco); color: var(--gris-medio); transition: all 0.2s; }
   .tab-p.activo { background: var(--azul); color: var(--blanco); border-color: var(--azul); }
   .tab-p:hover:not(.activo) { border-color: var(--azul); color: var(--azul); }
@@ -238,6 +238,8 @@
     .btn-topbar { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
     .noticia-item { flex-direction: column; }
     .noticia-acciones { width: 100%; }
+    .tabs-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+    .tab-p { padding: 0.5rem 0.5rem; font-size: 0.72rem; text-align: center; letter-spacing: 0.02em; }
   }
 </style>
 </head>
