@@ -1568,44 +1568,44 @@
     <p class="section-eyebrow">Descarga y gestión</p>
     <h2 class="section-title">Documentos</h2>
     <p class="section-body">Accede a los documentos oficiales del sindicato. Puedes descargarlos directamente desde aquí.</p>
-    <div class="docs-grid">
 
-      <div class="doc-card">
+    <div class="docs-grid" id="docsGrid">
+      <!-- Formulario -->
+      <div class="doc-card" id="cardFormulario" style="display:none;">
         <div class="doc-icon">📝</div>
         <h3>Formulario de Inscripción</h3>
         <p>Formulario oficial para solicitar tu afiliación al Sindicato de Trabajadores de la Universidad Central.</p>
-        <span class="doc-tipo word">Word .doc</span>
-        <a class="btn-descarga" href="documentos/formulario_inscripcion.doc" download>
-          ⬇ Descargar formulario
-        </a>
+        <a class="btn-descarga" id="btnFormulario" href="#" download target="_blank">⬇ Descargar formulario</a>
       </div>
 
-      <div class="doc-card">
-        <div class="doc-icon">📋</div>
-        <h3>Contrato Colectivo Vigente</h3>
-        <p>Instrumento colectivo actualmente vigente que regula las condiciones laborales de los trabajadores sindicalizados.</p>
-        <span class="doc-tipo pdf">PDF</span>
-        <a class="btn-descarga" href="documentos/contrato_colectivo_vigente.pdf" download>
-          ⬇ Descargar contrato
-        </a>
-      </div>
-
-      <div class="doc-card">
+      <!-- Estatuto -->
+      <div class="doc-card" id="cardEstatuto" style="display:none;">
         <div class="doc-icon">📖</div>
         <h3>Estatuto del Sindicato</h3>
         <p>Documento que establece la estructura, objetivos y normas de funcionamiento del sindicato.</p>
-        <span class="doc-tipo pdf">PDF</span>
-        <a class="btn-descarga" href="documentos/estatuto_sindicato.pdf" download>
-          ⬇ Descargar estatuto
-        </a>
+        <a class="btn-descarga" id="btnEstatuto" href="#" download target="_blank">⬇ Descargar estatuto</a>
       </div>
 
+      <!-- Contrato vigente -->
+      <div class="doc-card" id="cardContrato" style="display:none;">
+        <div class="doc-icon">📋</div>
+        <h3 id="contratoVigenteNombre">Contrato Colectivo Vigente</h3>
+        <p>Instrumento colectivo actualmente vigente que regula las condiciones laborales de los trabajadores sindicalizados.</p>
+        <a class="btn-descarga" id="btnContrato" href="#" download target="_blank">⬇ Descargar contrato</a>
+      </div>
     </div>
 
-
+    <!-- Versiones anteriores contratos -->
+    <div id="contratosAnterioresWrap" style="display:none; margin-top:2rem;">
+      <button onclick="toggleContratosAnteriores()" style="background:none; border:none; cursor:pointer; color:#2E5F8A; font-size:0.9rem; font-weight:600; font-family:Inter,sans-serif; display:flex; align-items:center; gap:0.5rem;" id="btnToggleAnteriores">
+        ▶ Ver versiones anteriores
+      </button>
+      <div id="contratosAnterioresList" style="display:none; margin-top:1rem; display:flex; flex-direction:column; gap:0.8rem;"></div>
+    </div>
 
   </div>
 </section>
+
 
 <section class="afiliacion" id="afiliacion" style="display:none;">
   <div class="container">
@@ -1975,6 +1975,75 @@ function convertirUrlVideo(url) {
 
   cargarNoticias();
 
+  async function cargarDocumentos() {
+    try {
+      // Formulario
+      const snapForm = await getDoc(doc(db, 'documentos', 'formulario'));
+      if (snapForm.exists()) {
+        const d = snapForm.data();
+        document.getElementById('btnFormulario').href = d.url;
+        document.getElementById('cardFormulario').style.display = 'block';
+      } else {
+        // Fallback a GitHub
+        document.getElementById('btnFormulario').href = 'documentos/formulario_inscripcion.doc';
+        document.getElementById('cardFormulario').style.display = 'block';
+      }
+
+      // Estatuto
+      const snapEst = await getDoc(doc(db, 'documentos', 'estatuto'));
+      if (snapEst.exists()) {
+        const d = snapEst.data();
+        document.getElementById('btnEstatuto').href = d.url;
+        document.getElementById('cardEstatuto').style.display = 'block';
+      } else {
+        document.getElementById('btnEstatuto').href = 'documentos/estatuto_sindicato.pdf';
+        document.getElementById('cardEstatuto').style.display = 'block';
+      }
+
+      // Contratos
+      const snapContratos = await getDocs(query(collection(db, 'documentos', 'contratos', 'lista'), orderBy('anoInicio', 'desc')));
+      if (!snapContratos.empty) {
+        const contratos = snapContratos.docs.map(d => ({ id: d.id, ...d.data() }));
+        const vigente   = contratos.find(c => c.vigente);
+        const anteriores = contratos.filter(c => !c.vigente);
+
+        if (vigente) {
+          document.getElementById('contratoVigenteNombre').textContent = vigente.nombre;
+          document.getElementById('btnContrato').href = vigente.url;
+          document.getElementById('cardContrato').style.display = 'block';
+        }
+
+        if (anteriores.length > 0) {
+          const wrap = document.getElementById('contratosAnterioresWrap');
+          wrap.style.display = 'block';
+          const lista = document.getElementById('contratosAnterioresList');
+          lista.innerHTML = anteriores.map(c => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem; background:var(--blanco); border:1px solid var(--borde); border-radius:2px;">
+              <div>
+                <div style="font-weight:600; font-size:0.95rem; color:var(--carbon);">${c.nombre}</div>
+                <div style="font-size:0.78rem; color:#666;">Período: ${c.anoInicio} - ${c.anoFin}</div>
+              </div>
+              <a href="${c.url}" target="_blank" class="btn-descarga" style="font-size:0.78rem; padding:0.5rem 1rem;">⬇ Descargar</a>
+            </div>
+          `).join('');
+        }
+      } else {
+        // Fallback contrato GitHub
+        document.getElementById('btnContrato').href = 'documentos/contrato_colectivo_vigente.pdf';
+        document.getElementById('cardContrato').style.display = 'block';
+      }
+    } catch(e) {
+      console.error('Error cargando documentos:', e);
+      // Fallback a GitHub en caso de error
+      document.getElementById('btnFormulario').href = 'documentos/formulario_inscripcion.doc';
+      document.getElementById('btnEstatuto').href = 'documentos/estatuto_sindicato.pdf';
+      document.getElementById('btnContrato').href = 'documentos/contrato_colectivo_vigente.pdf';
+      document.getElementById('cardFormulario').style.display = 'block';
+      document.getElementById('cardEstatuto').style.display = 'block';
+      document.getElementById('cardContrato').style.display = 'block';
+    }
+  }
+
   async function verificarNoticiasNuevas() {
     try {
       const hace7dias = new Date();
@@ -2251,6 +2320,17 @@ function filtrarFaq(texto) {
 
 
 
+
+
+<script>
+function toggleContratosAnteriores() {
+  const lista = document.getElementById('contratosAnterioresList');
+  const btn   = document.getElementById('btnToggleAnteriores');
+  const visible = lista.style.display !== 'none' && lista.style.display !== '';
+  lista.style.display = visible ? 'none' : 'flex';
+  btn.innerHTML = visible ? '▶ Ver versiones anteriores' : '▼ Ocultar versiones anteriores';
+}
+</script>
 
 </body>
 </html>

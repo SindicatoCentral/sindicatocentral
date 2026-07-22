@@ -288,6 +288,7 @@
       <button class="tab-p" onclick="cambiarTab('historial', this)">Historial</button>
       <button class="tab-p" onclick="cambiarTab('popup', this)">Popup</button>
       <button class="tab-p" onclick="cambiarTab('galeria', this)">Galería</button>
+      <button class="tab-p" onclick="cambiarTab('documentos', this)">Documentos</button>
     </div>
 
     <!-- NOTICIAS PUBLICADAS / HISTORIAL -->
@@ -575,6 +576,7 @@
     if (tab === 'historial')  cargarNoticias('archivada', 'historialList');
     if (tab === 'popup')      cargarPopup();
     if (tab === 'galeria')    cargarGaleria();
+    if (tab === 'documentos') cargarDocumentos();
   };
 
   // ── FORMULARIO NOTICIAS ──
@@ -1194,6 +1196,168 @@
       mostrarToast('Evento eliminado correctamente.', 'exito');
       cargarGaleria();
     } catch(e) { mostrarToast('Error al eliminar evento: ' + e.message, 'error'); }
+  };
+
+
+
+  // ── DOCUMENTOS ──
+  let archivoContrato = null;
+
+  window.mostrarUploadDoc = (tipo) => {
+    document.getElementById('doc' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Vista').style.display = 'none';
+    document.getElementById('doc' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Upload').style.display = 'block';
+  };
+
+  async function cargarDocumentos() {
+    try {
+      // Cargar formulario
+      const snapForm = await getDoc(doc(db, 'documentos', 'formulario'));
+      if (snapForm.exists()) {
+        const d = snapForm.data();
+        document.getElementById('docFormularioNombre').textContent = d.nombre || 'Formulario de inscripción';
+        document.getElementById('docFormularioFecha').textContent = d.updatedAt ? 'Actualizado: ' + new Date(d.updatedAt.seconds * 1000).toLocaleDateString('es-CL') : '';
+        document.getElementById('docFormularioVista').style.display = 'block';
+        document.getElementById('docFormularioUpload').style.display = 'none';
+      }
+      // Cargar estatuto
+      const snapEst = await getDoc(doc(db, 'documentos', 'estatuto'));
+      if (snapEst.exists()) {
+        const d = snapEst.data();
+        document.getElementById('docEstatutoNombre').textContent = d.nombre || 'Estatuto del sindicato';
+        document.getElementById('docEstatutoFecha').textContent = d.updatedAt ? 'Actualizado: ' + new Date(d.updatedAt.seconds * 1000).toLocaleDateString('es-CL') : '';
+        document.getElementById('docEstatutoVista').style.display = 'block';
+        document.getElementById('docEstatutoUpload').style.display = 'none';
+      }
+      // Cargar contratos
+      cargarContratos();
+    } catch(e) { console.error('Error cargando documentos:', e); }
+  }
+
+  window.subirDocSimple = async (tipo, input) => {
+    const file = input.files[0];
+    if (!file) return;
+    const barraId = 'progress' + tipo.charAt(0).toUpperCase() + tipo.slice(1);
+    const fillId  = 'fill' + tipo.charAt(0).toUpperCase() + tipo.slice(1);
+    document.getElementById(barraId).style.display = 'block';
+    try {
+      const storRef = ref(storage, 'documentos/' + tipo + '/' + file.name);
+      await new Promise((resolve, reject) => {
+        const tarea = uploadBytesResumable(storRef, file);
+        tarea.on('state_changed',
+          s => document.getElementById(fillId).style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
+          reject,
+          async () => {
+            const url = await getDownloadURL(tarea.snapshot.ref);
+            await setDoc(doc(db, 'documentos', tipo), {
+              nombre: file.name, url, path: 'documentos/' + tipo + '/' + file.name,
+              updatedAt: serverTimestamp()
+            });
+            resolve();
+          }
+        );
+      });
+      document.getElementById(barraId).style.display = 'none';
+      mostrarToast('Documento subido correctamente.', 'exito');
+      cargarDocumentos();
+    } catch(e) { mostrarToast('Error al subir: ' + e.message, 'error'); }
+  };
+
+  window.previsualizarContrato = (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    archivoContrato = file;
+    document.getElementById('contratoArchivoNombre').textContent = '📎 ' + file.name;
+  };
+
+  window.subirContrato = async () => {
+    const anoInicio = document.getElementById('contratoAnoInicio').value.trim();
+    const anoFin    = document.getElementById('contratoAnoFin').value.trim();
+    if (!anoInicio || !anoFin) { mostrarToast('Ingresa el año de inicio y fin.', 'error'); return; }
+    if (!archivoContrato) { mostrarToast('Selecciona el archivo del contrato.', 'error'); return; }
+    const nombre = 'Contrato Colectivo ' + anoInicio + '-' + anoFin;
+    const btn = document.querySelector('#formNuevoContrato .btn-guardar');
+    btn.textContent = 'Subiendo...'; btn.disabled = true;
+    document.getElementById('progressContrato').style.display = 'block';
+    try {
+      // Quitar vigente al contrato anterior
+      const snap = await getDocs(query(collection(db, 'documentos', 'contratos', 'lista'), where('vigente', '==', true)));
+      snap.forEach(async d => await updateDoc(d.ref, { vigente: false }));
+      // Subir nuevo contrato
+      const storRef = ref(storage, 'documentos/contratos/' + archivoContrato.name);
+      await new Promise((resolve, reject) => {
+        const tarea = uploadBytesResumable(storRef, archivoContrato);
+        tarea.on('state_changed',
+          s => document.getElementById('fillContrato').style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
+          reject,
+          async () => {
+            const url = await getDownloadURL(tarea.snapshot.ref);
+            await addDoc(collection(db, 'documentos', 'contratos', 'lista'), {
+              nombre, url, path: 'documentos/contratos/' + archivoContrato.name,
+              anoInicio: parseInt(anoInicio), anoFin: parseInt(anoFin),
+              vigente: true, createdAt: serverTimestamp()
+            });
+            resolve();
+          }
+        );
+      });
+      document.getElementById('progressContrato').style.display = 'none';
+      document.getElementById('fillContrato').style.width = '0%';
+      document.getElementById('formNuevoContrato').classList.remove('visible');
+      document.getElementById('contratoAnoInicio').value = '';
+      document.getElementById('contratoAnoFin').value = '';
+      document.getElementById('contratoArchivoNombre').textContent = 'Toca aquí para seleccionar el archivo';
+      archivoContrato = null;
+      mostrarToast('Contrato subido correctamente.', 'exito');
+      cargarContratos();
+    } catch(e) {
+      mostrarToast('Error al subir contrato: ' + e.message, 'error');
+    } finally {
+      btn.textContent = 'Subir contrato'; btn.disabled = false;
+    }
+  };
+
+  async function cargarContratos() {
+    const lista = document.getElementById('contratosList');
+    lista.innerHTML = '<div class="loading">Cargando contratos...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, 'documentos', 'contratos', 'lista'), orderBy('anoInicio', 'desc')));
+      if (snap.empty) {
+        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">📋</div><p>No hay contratos colectivos aún.</p></div>';
+        return;
+      }
+      lista.innerHTML = '';
+      snap.forEach(d => {
+        const c = d.data();
+        const item = document.createElement('div');
+        item.className = 'noticia-item';
+        item.innerHTML = `
+          <div class="noticia-info">
+            <div class="noticia-titulo-item">
+              ${c.nombre}
+              ${c.vigente ? '<span class="historial-badge" style="background:#e8f5e9; color:#2E7D32;">● Vigente</span>' : '<span class="historial-badge">Anterior</span>'}
+            </div>
+            <div class="noticia-resumen-item">Período: ${c.anoInicio} - ${c.anoFin}</div>
+          </div>
+          <div class="noticia-acciones">
+            <a href="${c.url}" target="_blank" class="btn-accion editar">Ver</a>
+            <button class="btn-accion eliminar" onclick="eliminarContrato('${d.id}', '${c.path}')">Eliminar</button>
+          </div>
+        `;
+        lista.appendChild(item);
+      });
+    } catch(e) {
+      lista.innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+    }
+  }
+
+  window.eliminarContrato = async (id, path) => {
+    if (!confirm('¿Eliminar este contrato?')) return;
+    try {
+      await deleteDoc(doc(db, 'documentos', 'contratos', 'lista', id));
+      if (path) { try { await deleteObject(ref(storage, path)); } catch(e) {} }
+      mostrarToast('Contrato eliminado.', 'exito');
+      cargarContratos();
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
   };
 
 
