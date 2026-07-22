@@ -1575,7 +1575,7 @@
         <div class="doc-icon">📝</div>
         <h3>Formulario de Inscripción</h3>
         <p>Formulario oficial para solicitar tu afiliación al Sindicato de Trabajadores de la Universidad Central.</p>
-        <a class="btn-descarga" id="btnFormulario" href="#" download target="_blank">⬇ Descargar formulario</a>
+        <button class="btn-descarga" id="btnFormulario" onclick="descargarArchivo(this)">⬇ Descargar formulario</button>
       </div>
 
       <!-- Estatuto -->
@@ -1583,7 +1583,7 @@
         <div class="doc-icon">📖</div>
         <h3>Estatuto del Sindicato</h3>
         <p>Documento que establece la estructura, objetivos y normas de funcionamiento del sindicato.</p>
-        <a class="btn-descarga" id="btnEstatuto" href="#" download target="_blank">⬇ Descargar estatuto</a>
+        <button class="btn-descarga" id="btnEstatuto" onclick="descargarArchivo(this)">⬇ Descargar estatuto</button>
       </div>
 
       <!-- Contrato vigente -->
@@ -1591,7 +1591,7 @@
         <div class="doc-icon">📋</div>
         <h3 id="contratoVigenteNombre">Contrato Colectivo Vigente</h3>
         <p>Instrumento colectivo actualmente vigente que regula las condiciones laborales de los trabajadores sindicalizados.</p>
-        <a class="btn-descarga" id="btnContrato" href="#" download target="_blank">⬇ Descargar contrato</a>
+        <button class="btn-descarga" id="btnContrato" onclick="descargarArchivo(this)">⬇ Descargar contrato</button>
       </div>
     </div>
 
@@ -1981,11 +1981,13 @@ function convertirUrlVideo(url) {
       const snapForm = await getDoc(doc(db, 'documentos', 'formulario'));
       if (snapForm.exists()) {
         const d = snapForm.data();
-        document.getElementById('btnFormulario').href = d.url;
+        document.getElementById('btnFormulario').dataset.url = d.url;
+        document.getElementById('btnFormulario').dataset.nombre = d.nombre || 'formulario_inscripcion';
         document.getElementById('cardFormulario').style.display = 'block';
       } else {
         // Fallback a GitHub
-        document.getElementById('btnFormulario').href = 'documentos/formulario_inscripcion.doc';
+        document.getElementById('btnFormulario').dataset.url = 'documentos/formulario_inscripcion.doc';
+        document.getElementById('btnFormulario').dataset.nombre = 'formulario_inscripcion.doc';
         document.getElementById('cardFormulario').style.display = 'block';
       }
 
@@ -1993,10 +1995,12 @@ function convertirUrlVideo(url) {
       const snapEst = await getDoc(doc(db, 'documentos', 'estatuto'));
       if (snapEst.exists()) {
         const d = snapEst.data();
-        document.getElementById('btnEstatuto').href = d.url;
+        document.getElementById('btnEstatuto').dataset.url = d.url;
+        document.getElementById('btnEstatuto').dataset.nombre = d.nombre || 'estatuto_sindicato';
         document.getElementById('cardEstatuto').style.display = 'block';
       } else {
-        document.getElementById('btnEstatuto').href = 'documentos/estatuto_sindicato.pdf';
+        document.getElementById('btnEstatuto').dataset.url = 'documentos/estatuto_sindicato.pdf';
+        document.getElementById('btnEstatuto').dataset.nombre = 'estatuto_sindicato.pdf';
         document.getElementById('cardEstatuto').style.display = 'block';
       }
 
@@ -2009,7 +2013,8 @@ function convertirUrlVideo(url) {
 
         if (vigente) {
           document.getElementById('contratoVigenteNombre').textContent = vigente.nombre;
-          document.getElementById('btnContrato').href = vigente.url;
+          document.getElementById('btnContrato').dataset.url = vigente.url;
+          document.getElementById('btnContrato').dataset.nombre = vigente.nombre + '.pdf';
           document.getElementById('cardContrato').style.display = 'block';
         }
 
@@ -2023,13 +2028,14 @@ function convertirUrlVideo(url) {
                 <div style="font-weight:600; font-size:0.95rem; color:var(--carbon);">${c.nombre}</div>
                 <div style="font-size:0.78rem; color:#666;">Período: ${c.anoInicio} - ${c.anoFin}</div>
               </div>
-              <a href="${c.url}" target="_blank" class="btn-descarga" style="font-size:0.78rem; padding:0.5rem 1rem;">⬇ Descargar</a>
+              <button class="btn-descarga" style="font-size:0.78rem; padding:0.5rem 1rem;" data-url="${c.url}" data-nombre="${c.nombre}.pdf" onclick="descargarArchivo(this)">⬇ Descargar</button>
             </div>
           `).join('');
         }
       } else {
         // Fallback contrato GitHub
-        document.getElementById('btnContrato').href = 'documentos/contrato_colectivo_vigente.pdf';
+        document.getElementById('btnContrato').dataset.url = 'documentos/contrato_colectivo_vigente.pdf';
+        document.getElementById('btnContrato').dataset.nombre = 'contrato_colectivo_vigente.pdf';
         document.getElementById('cardContrato').style.display = 'block';
       }
     } catch(e) {
@@ -2330,6 +2336,30 @@ function toggleContratosAnteriores() {
   const visible = lista.style.display !== 'none' && lista.style.display !== '';
   lista.style.display = visible ? 'none' : 'flex';
   btn.innerHTML = visible ? '▶ Ver versiones anteriores' : '▼ Ocultar versiones anteriores';
+}
+</script>
+
+
+<script>
+async function descargarArchivo(btn) {
+  const url    = btn.dataset.url;
+  const nombre = btn.dataset.nombre || 'documento';
+  if (!url || url === '#') return;
+  try {
+    btn.textContent = '⏳ Descargando...';
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nombre;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    btn.textContent = '⬇ Descargar';
+  } catch(e) {
+    // Si fetch falla (CORS), abrir en nueva pestaña
+    window.open(url, '_blank');
+    btn.textContent = '⬇ Descargar';
+  }
 }
 </script>
 
