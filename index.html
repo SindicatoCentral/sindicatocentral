@@ -2346,7 +2346,7 @@ function toggleContratosAnteriores() {
 <script>
 async function descargarArchivo(btn) {
   const url    = btn.dataset.url;
-  const nombre = btn.dataset.nombre || 'documento';
+  const nombre = (btn.dataset.nombre || 'documento').split('/').pop();
   if (!url || url === '#') return;
   try {
     btn.textContent = '⏳ Descargando...';
@@ -2359,7 +2359,6 @@ async function descargarArchivo(btn) {
     URL.revokeObjectURL(a.href);
     btn.textContent = '⬇ Descargar';
   } catch(e) {
-    // Si fetch falla (CORS), abrir en nueva pestaña
     window.open(url, '_blank');
     btn.textContent = '⬇ Descargar';
   }
