@@ -2345,9 +2345,25 @@ function toggleContratosAnteriores() {
 
 <script>
 async function descargarArchivo(btn) {
-  const url = btn.dataset.url;
+  const url    = btn.dataset.url;
+  const nombre = (btn.dataset.nombre || 'documento').split('/').pop();
   if (!url || url === '#') return;
-  window.open(url, '_blank');
+  try {
+    btn.textContent = '⏳ Descargando...';
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    btn.textContent = '⬇ Descargar';
+  } catch(e) {
+    window.open(url, '_blank');
+    btn.textContent = '⬇ Descargar';
+  }
 }
 </script>
 
