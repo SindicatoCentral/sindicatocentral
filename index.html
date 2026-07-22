@@ -2074,13 +2074,13 @@ function convertirUrlVideo(url) {
       const d = snap.data();
       if (!d.activo) return;
 
-      // Título — ocultar header si no hay título
+      // Título — siempre mostrar header con X, ocultar solo el título si no existe
       const header = document.getElementById('popupHeader');
+      header.style.display = 'flex';
       if (d.titulo) {
         document.getElementById('popupTitulo').textContent = d.titulo;
-        header.style.display = 'flex';
       } else {
-        header.style.display = 'none';
+        document.getElementById('popupTitulo').textContent = '';
       }
 
       // Video o imagen
