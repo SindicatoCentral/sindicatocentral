@@ -370,7 +370,7 @@
       </div>
 
       <!-- Formulario popup -->
-      <div class="form-card" id="formPopup">
+      <div class="form-card" id="formPopup" style="display:none;">
         <h3 id="formPopupTitulo">Configurar Popup</h3>
         <div class="toggle-wrap">
           <label>Mostrar popup en el sitio</label>
@@ -1013,15 +1013,13 @@
   window.mostrarFormularioPopup = () => {
     document.getElementById('popupVista').style.display = 'none';
     document.getElementById('popupVacio').style.display = 'none';
-    document.getElementById('formPopup').classList.add('visible');
+    document.getElementById('formPopup').style.display = 'block';
   };
 
   window.ocultarFormularioPopup = () => {
-    document.getElementById('formPopup').classList.remove('visible');
-    // Resetear botón guardar
+    document.getElementById('formPopup').style.display = 'none';
     const btn = document.querySelector('#sec-popup .btn-guardar');
     if (btn) { btn.textContent = 'Guardar popup'; btn.disabled = false; }
-    // Limpiar imagen temporal
     archivoImgPop = null;
     cargarPopup();
   };
