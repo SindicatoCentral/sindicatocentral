@@ -505,6 +505,10 @@
     background: none; border: none;
     align-items: center; justify-content: center;
   }
+  @media (max-width: 1280px) {
+    .hamburguesa { display: flex !important; }
+    .nav-links:not(.abierto) { display: none !important; }
+  }
   .hamburguesa span {
     display: block; width: 28px; height: 3px;
     background: #ffffff; border-radius: 3px;
