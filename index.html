@@ -1626,7 +1626,7 @@
         <h2 class="section-title">Sé parte del sindicato</h2>
         <p class="section-body">Afiliarte es sencillo y voluntario. Descarga el formulario, complétalo y lo envías a nuestro correo, un representante de nuestra directiva se pondrá en contacto contigo.</p>
       </div>
-      <a href="documentos/formulario_inscripcion.doc" download class="btn-blanco">⬇ Descargar formulario</a>
+      <button class="btn-blanco" id="btnFormularioAfiliacion" onclick="descargarArchivo(this)" data-url="" data-nombre="formulario_inscripcion">⬇ Descargar formulario</button>
     </div>
   </div>
 </section>
@@ -1988,6 +1988,9 @@ function convertirUrlVideo(url) {
         const d = snapForm.data();
         document.getElementById('btnFormulario').dataset.url = d.url;
         document.getElementById('btnFormulario').dataset.nombre = d.nombre || 'formulario_inscripcion';
+        // También actualizar botón en sección afiliación
+        const btnAfil = document.getElementById('btnFormularioAfiliacion');
+        if (btnAfil) { btnAfil.dataset.url = d.url; btnAfil.dataset.nombre = d.nombre || 'formulario_inscripcion'; }
         document.getElementById('cardFormulario').style.display = 'block';
       } else {
         // Fallback a GitHub
