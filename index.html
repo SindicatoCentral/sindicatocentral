@@ -1219,6 +1219,28 @@
     font-family: 'Inter', sans-serif;
   }
 
+
+  /* ── FECHA FLOTANTE ── */
+  .fecha-flotante {
+    position: fixed;
+    left: 1rem; bottom: 2rem;
+    background: rgba(28,43,58,0.85);
+    color: #ffffff;
+    padding: 0.5rem 0.9rem;
+    border-radius: 2px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(46,95,138,0.4);
+    z-index: 900;
+    text-transform: capitalize;
+  }
+  @media (max-width: 768px) {
+    .fecha-flotante { font-size: 0.7rem; padding: 0.4rem 0.7rem; }
+  }
+
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -1864,6 +1886,10 @@ function toggleFaq(btn) {
   </div>
 </div>
 
+
+<!-- FECHA FLOTANTE -->
+<div class="fecha-flotante" id="fechaFlotante"></div>
+
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
   <button class="lightbox-cerrar" onclick="cerrarLightbox()">✕</button>
@@ -2375,6 +2401,17 @@ async function descargarArchivo(btn) {
     btn.textContent = '⬇ Descargar';
   }
 }
+</script>
+
+
+<script>
+(function() {
+  const el = document.getElementById('fechaFlotante');
+  if (!el) return;
+  const ahora = new Date();
+  const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+  el.textContent = ahora.toLocaleDateString('es-CL', opciones);
+})();
 </script>
 
 </body>
