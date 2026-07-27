@@ -1241,6 +1241,30 @@
     .fecha-flotante { display: none; }
   }
 
+
+  /* ── CUMPLEAÑOS ── */
+  .cumpleanos { background: var(--blanco); }
+  .cumple-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem; margin-top: 2rem;
+  }
+  .cumple-card {
+    background: var(--gris-claro);
+    border-radius: 2px; padding: 1rem 1.2rem;
+    border-left: 3px solid #e65100;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .cumple-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .cumple-nombre { font-size: 0.88rem; font-weight: 600; color: var(--carbon); }
+  .cumple-fecha { font-size: 0.75rem; color: #888; margin-top: 0.2rem; }
+
+  @media (prefers-color-scheme: dark) {
+    .cumpleanos { background: #1a1a1a; }
+    .cumple-card { background: #1a2a3a; }
+    .cumple-nombre { color: #ffffff; }
+  }
+
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -1260,6 +1284,7 @@
     <li><a href="#documentos" onclick="mostrarSeccion('documentos'); cerrarMenu()">Documentos</a></li>
     <li><a href="#noticias" onclick="ocultarSecciones(); cerrarMenu()" class="nav-notif" id="navNoticias">Noticias</a></li>
     <li><a href="#galeria" onclick="ocultarSecciones(); cerrarMenu()">Galería</a></li>
+    <li><a href="#cumpleanos" onclick="ocultarSecciones(); cerrarMenu()">Cumpleaños</a></li>
     <li><a href="#contacto" onclick="ocultarSecciones(); cerrarMenu()">Contacto</a></li>
 
   </ul>
@@ -1593,6 +1618,18 @@
   </div>
   <div class="galeria-modal-fotos" id="modalFotos"></div>
 </div>
+
+<!-- CUMPLEAÑOS -->
+<section class="cumpleanos" id="cumpleanos" style="display:none;">
+  <div class="container">
+    <p class="section-eyebrow">Este mes</p>
+    <h2 class="section-title">🎂 Cumpleaños</h2>
+    <p class="section-body">Socios que cumplen años este mes. ¡Felicitaciones a todos!</p>
+    <div class="cumple-grid" id="cumpleGrid">
+      <p style="color:#888; font-size:0.9rem;">Cargando...</p>
+    </div>
+  </div>
+</section>
 
 <!-- AFILIACIÓN -->
 <!-- DOCUMENTOS -->
@@ -2086,6 +2123,48 @@ function convertirUrlVideo(url) {
       document.getElementById('cardFormulario').style.display = 'block';
       document.getElementById('cardEstatuto').style.display = 'block';
       document.getElementById('cardContrato').style.display = 'block';
+    }
+  }
+
+
+  async function cargarCumpleanos() {
+    const grid = document.getElementById('cumpleGrid');
+    if (!grid) return;
+    try {
+      const snap = await getDocs(collection(db, 'socios'));
+      if (snap.empty) {
+        grid.innerHTML = '<p style="color:#888; font-size:0.9rem;">Próximamente.</p>';
+        return;
+      }
+      const mesActual = new Date().getMonth() + 1;
+      const cumpleaneros = [];
+      snap.forEach(d => {
+        const s = d.data();
+        if (!s.fechaNacimiento) return;
+        const fecha = new Date(s.fechaNacimiento);
+        if (fecha.getMonth() + 1 === mesActual) {
+          cumpleaneros.push({
+            nombre: s.nombre,
+            dia: fecha.getDate()
+          });
+        }
+      });
+      cumpleaneros.sort((a, b) => a.dia - b.dia);
+      if (cumpleaneros.length === 0) {
+        grid.innerHTML = '<p style="color:#888; font-size:0.9rem;">No hay cumpleaños este mes.</p>';
+        return;
+      }
+      grid.innerHTML = cumpleaneros.map(s => `
+        <div class="cumple-card">
+          <div class="cumple-icon">🎂</div>
+          <div>
+            <div class="cumple-nombre">${s.nombre}</div>
+            <div class="cumple-fecha">Día ${s.dia}</div>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) {
+      console.error('Error cargando cumpleaños:', e);
     }
   }
 

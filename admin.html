@@ -291,6 +291,7 @@
       <button class="tab-p" onclick="cambiarTab('popup', this)">Popup</button>
       <button class="tab-p" onclick="cambiarTab('galeria', this)">Galería</button>
       <button class="tab-p" onclick="cambiarTab('documentos', this)">Documentos</button>
+      <button class="tab-p" onclick="cambiarTab('socios', this)">Socios</button>
     </div>
 
     <!-- NOTICIAS PUBLICADAS / HISTORIAL -->
@@ -565,6 +566,37 @@
 </div>
 
 
+
+    <!-- SOCIOS -->
+    <div class="seccion" id="sec-socios">
+
+      <!-- Barra de búsqueda y acciones -->
+      <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="buscarSocio" placeholder="Buscar por nombre o RUT..." oninput="filtrarSocios(this.value)"
+          style="flex:1; min-width:200px; padding:0.7rem 1rem; border:1.5px solid var(--borde); border-radius:2px; font-family:Inter,sans-serif; font-size:0.9rem; outline:none;">
+        <label class="btn-nuevo" style="cursor:pointer;">
+          📥 Cargar Excel
+          <input type="file" id="inputSocios" accept=".xls,.xlsx,.csv" style="display:none;" onchange="cargarExcelSocios(this)">
+        </label>
+      </div>
+
+      <!-- Estadísticas -->
+      <div id="sociosStats" style="display:none; margin-bottom:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+        <div style="background:var(--blanco); border:1px solid var(--borde); border-radius:2px; padding:0.8rem 1.2rem; text-align:center;">
+          <div style="font-size:1.4rem; font-weight:700; color:var(--azul);" id="statTotal">0</div>
+          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Total socios</div>
+        </div>
+        <div style="background:var(--blanco); border:1px solid var(--borde); border-radius:2px; padding:0.8rem 1.2rem; text-align:center;">
+          <div style="font-size:1.4rem; font-weight:700; color:#e65100;" id="statCumple">0</div>
+          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Cumplen este mes</div>
+        </div>
+      </div>
+
+      <!-- Lista socios -->
+      <div id="sociosList"><div class="vacio"><div class="vacio-icon">👥</div><p>No hay socios cargados.<br>Usa el botón "Cargar Excel" para importar el listado.</p></div></div>
+
+    </div>
+
 <!-- MODAL VER FOTOS EVENTO -->
 <div id="modalVerFotos" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; flex-direction:column;">
   <div style="background:#1C2B3A; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
@@ -676,6 +708,7 @@
     if (tab === 'popup')      cargarPopup();
     if (tab === 'galeria')    cargarGaleria();
     if (tab === 'documentos') cargarDocumentos();
+    if (tab === 'socios')    cargarSocios();
   };
 
   // ── FORMULARIO NOTICIAS ──
@@ -1454,6 +1487,153 @@
       if (path) { try { await deleteObject(ref(storage, path)); } catch(e) {} }
       mostrarToast('Contrato eliminado.', 'exito');
       cargarContratos();
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+  };
+
+
+
+  // ── SOCIOS ──
+  let sociosData = [];
+  let sociosFiltrados = [];
+
+  function calcularAntiguedad(fechaIngreso) {
+    const hoy = new Date();
+    const ingreso = new Date(fechaIngreso);
+    let anios = hoy.getFullYear() - ingreso.getFullYear();
+    let meses = hoy.getMonth() - ingreso.getMonth();
+    if (meses < 0) { anios--; meses += 12; }
+    if (anios === 0) return meses + ' mes' + (meses !== 1 ? 'es' : '');
+    return anios + ' año' + (anios !== 1 ? 's' : '') + (meses > 0 ? ' y ' + meses + ' mes' + (meses !== 1 ? 'es' : '') : '');
+  }
+
+  async function cargarSocios() {
+    const lista = document.getElementById('sociosList');
+    lista.innerHTML = '<div class="loading">Cargando socios...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, 'socios'), orderBy('nombre', 'asc')));
+      if (snap.empty) {
+        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">👥</div><p>No hay socios cargados.<br>Usa el botón "Cargar Excel" para importar el listado.</p></div>';
+        document.getElementById('sociosStats').style.display = 'none';
+        return;
+      }
+      sociosData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      sociosFiltrados = [...sociosData];
+      renderSocios(sociosFiltrados);
+      actualizarStats(sociosData);
+    } catch(e) {
+      lista.innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+    }
+  }
+
+  function actualizarStats(socios) {
+    const mesActual = new Date().getMonth() + 1;
+    const cumpleEsteMes = socios.filter(s => {
+      if (!s.fechaNacimiento) return false;
+      const fecha = new Date(s.fechaNacimiento);
+      return fecha.getMonth() + 1 === mesActual;
+    }).length;
+    document.getElementById('statTotal').textContent = socios.length;
+    document.getElementById('statCumple').textContent = cumpleEsteMes;
+    document.getElementById('sociosStats').style.display = 'flex';
+  }
+
+  function renderSocios(socios) {
+    const lista = document.getElementById('sociosList');
+    if (socios.length === 0) {
+      lista.innerHTML = '<div class="vacio"><div class="vacio-icon">🔍</div><p>No se encontraron socios.</p></div>';
+      return;
+    }
+    lista.innerHTML = '';
+    socios.forEach(s => {
+      const antiguedad = s.fechaIngreso ? calcularAntiguedad(s.fechaIngreso) : '—';
+      const fnac = s.fechaNacimiento ? new Date(s.fechaNacimiento).toLocaleDateString('es-CL') : '—';
+      const mesNac = s.fechaNacimiento ? new Date(s.fechaNacimiento).getMonth() + 1 : 0;
+      const mesActual = new Date().getMonth() + 1;
+      const esCumple = mesNac === mesActual;
+      const item = document.createElement('div');
+      item.className = 'noticia-item';
+      item.style.borderLeft = esCumple ? '3px solid #e65100' : '';
+      item.innerHTML = `
+        <div class="noticia-info">
+          <div class="noticia-titulo-item">
+            ${esCumple ? '🎂 ' : ''}${s.nombre}
+            <span class="historial-badge">${s.rut || ''}</span>
+          </div>
+          <div class="noticia-resumen-item">
+            ${s.cargo || ''} — ${s.unidad || ''}
+            &nbsp;·&nbsp; Ingreso: ${antiguedad}
+            &nbsp;·&nbsp; Nac: ${fnac}
+          </div>
+        </div>
+        <div class="noticia-acciones">
+          <button class="btn-accion eliminar" onclick="eliminarSocio('${s.id}')">Eliminar</button>
+        </div>
+      `;
+      lista.appendChild(item);
+    });
+  }
+
+  window.filtrarSocios = (texto) => {
+    const t = texto.toLowerCase().trim();
+    sociosFiltrados = !t ? [...sociosData] : sociosData.filter(s =>
+      (s.nombre || '').toLowerCase().includes(t) ||
+      (s.rut || '').toLowerCase().includes(t)
+    );
+    renderSocios(sociosFiltrados);
+  };
+
+  window.cargarExcelSocios = async (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    mostrarToast('Procesando Excel...', 'exito');
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        // Parsear CSV simple o usar SheetJS
+        const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs');
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array', cellDates: true });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { raw: false });
+
+        let importados = 0;
+        const lote = [];
+        for (const row of rows) {
+          const socio = {
+            rut: row['Rut'] || row['RUT'] || '',
+            nombre: (row['Nombre'] || '').trim(),
+            clasificacion: row['Clasificación'] || row['Clasificacion'] || '',
+            cargo: row['Cargo'] || '',
+            unidad: row['Unidad'] || '',
+            fechaIngreso: row['Fecha Ingreso'] || '',
+            fechaNacimiento: row['Fecha Nacimiento'] || '',
+            sexo: row['Sexo'] || '',
+            cuotaSocio: row['Cuota Socio'] || ''
+          };
+          if (socio.nombre) lote.push(socio);
+        }
+
+        // Subir en lotes de 500
+        for (const socio of lote) {
+          await addDoc(collection(db, 'socios'), socio);
+          importados++;
+        }
+        mostrarToast(importados + ' socios importados correctamente.', 'exito');
+        input.value = '';
+        cargarSocios();
+      } catch(err) {
+        mostrarToast('Error al procesar Excel: ' + err.message, 'error');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  window.eliminarSocio = async (id) => {
+    if (!confirm('¿Eliminar este socio?')) return;
+    try {
+      await deleteDoc(doc(db, 'socios', id));
+      mostrarToast('Socio eliminado.', 'exito');
+      cargarSocios();
     } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
   };
 
