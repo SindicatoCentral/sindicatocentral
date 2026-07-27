@@ -593,14 +593,21 @@
       </div>
 
       <!-- Estadísticas -->
-      <div id="sociosStats" style="display:none; margin-bottom:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
-        <div style="background:var(--blanco); border:1px solid var(--borde); border-radius:2px; padding:0.8rem 1.2rem; text-align:center;">
-          <div style="font-size:1.4rem; font-weight:700; color:var(--azul);" id="statTotal">0</div>
-          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Total socios</div>
+      <div id="sociosStats" style="display:none; margin-bottom:1.5rem; flex-direction:column; gap:1rem;">
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <div style="background:var(--blanco); border:1px solid var(--borde); border-radius:2px; padding:0.8rem 1.2rem; text-align:center;">
+            <div style="font-size:1.4rem; font-weight:700; color:var(--azul);" id="statTotal">0</div>
+            <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Total socios</div>
+          </div>
+          <div style="background:var(--blanco); border:1px solid var(--borde); border-radius:2px; padding:0.8rem 1.2rem; text-align:center; cursor:pointer;" onclick="toggleCumpleList()">
+            <div style="font-size:1.4rem; font-weight:700; color:#e65100;" id="statCumple">0</div>
+            <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Cumplen este mes ▾</div>
+          </div>
         </div>
-        <div style="background:var(--blanco); border:1px solid var(--borde); border-radius:2px; padding:0.8rem 1.2rem; text-align:center;">
-          <div style="font-size:1.4rem; font-weight:700; color:#e65100;" id="statCumple">0</div>
-          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Cumplen este mes</div>
+        <!-- Lista cumpleañeros del mes -->
+        <div id="cumpleListAdmin" style="display:none; background:var(--blanco); border:1px solid #ffe0b2; border-left:3px solid #e65100; border-radius:2px; padding:1rem 1.2rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:#e65100; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.8rem;">🎂 Cumpleaños este mes</div>
+          <div id="cumpleListItems" style="display:flex; flex-direction:column; gap:0.4rem;"></div>
         </div>
       </div>
 
@@ -1539,15 +1546,35 @@
 
   function actualizarStats(socios) {
     const mesActual = new Date().getMonth() + 1;
-    const cumpleEsteMes = socios.filter(s => {
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const cumpleaneros = socios.filter(s => {
       if (!s.fechaNacimiento) return false;
-      const fecha = new Date(s.fechaNacimiento);
-      return fecha.getMonth() + 1 === mesActual;
-    }).length;
+      return new Date(s.fechaNacimiento).getMonth() + 1 === mesActual;
+    }).sort((a, b) => new Date(a.fechaNacimiento).getDate() - new Date(b.fechaNacimiento).getDate());
+
     document.getElementById('statTotal').textContent = socios.length;
-    document.getElementById('statCumple').textContent = cumpleEsteMes;
+    document.getElementById('statCumple').textContent = cumpleaneros.length;
     document.getElementById('sociosStats').style.display = 'flex';
+
+    // Llenar lista cumpleañeros
+    const items = document.getElementById('cumpleListItems');
+    if (cumpleaneros.length === 0) {
+      items.innerHTML = '<div style="font-size:0.85rem; color:#888;">No hay cumpleaños en ' + meses[mesActual-1] + '.</div>';
+    } else {
+      items.innerHTML = cumpleaneros.map(s => {
+        const dia = new Date(s.fechaNacimiento).getDate();
+        return `<div style="font-size:0.85rem; color:var(--carbon); display:flex; justify-content:space-between;">
+          <span>🎂 ${s.nombre}</span>
+          <span style="color:#e65100; font-weight:600;">${dia} de ${meses[mesActual-1]}</span>
+        </div>`;
+      }).join('');
+    }
   }
+
+  window.toggleCumpleList = () => {
+    const lista = document.getElementById('cumpleListAdmin');
+    lista.style.display = lista.style.display === 'none' ? 'block' : 'none';
+  };
 
   function renderSocios(socios) {
     const lista = document.getElementById('sociosList');
