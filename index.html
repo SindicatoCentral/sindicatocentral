@@ -1284,7 +1284,7 @@
     <li><a href="#documentos" onclick="mostrarSeccion('documentos'); cerrarMenu()">Documentos</a></li>
     <li><a href="#noticias" onclick="ocultarSecciones(); cerrarMenu()" class="nav-notif" id="navNoticias">Noticias</a></li>
     <li><a href="#galeria" onclick="ocultarSecciones(); cerrarMenu()">Galería</a></li>
-    <li><a href="#cumpleanos" onclick="ocultarSecciones(); cerrarMenu()">Cumpleaños</a></li>
+    <li><a href="#cumpleanos" onclick="mostrarSeccion('cumpleanos'); cerrarMenu()">Cumpleaños</a></li>
     <li><a href="#contacto" onclick="ocultarSecciones(); cerrarMenu()">Contacto</a></li>
 
   </ul>
@@ -1765,7 +1765,7 @@
 
 
 <script>
-const seccionesOcultas = ['documentos', 'afiliacion'];
+const seccionesOcultas = ['documentos', 'afiliacion', 'cumpleanos'];
 
 function mostrarSeccion(id) {
   // Ocultar todas las secciones ocultas primero
