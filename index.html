@@ -55,6 +55,8 @@
     transition: color 0.2s;
   }
   .nav-links a:hover { color: var(--blanco); }
+  .nav-solo-movil { display: none; }
+  @media (max-width: 1280px) { .nav-solo-movil { display: block; } }
 
   @media (max-width: 1200px) {
     .nav-links a { font-size: 0.72rem; letter-spacing: 0.04em; }
@@ -1318,7 +1320,7 @@
     <li><a href="#documentos" onclick="mostrarSeccion('documentos'); cerrarMenu()">Documentos</a></li>
     <li><a href="#noticias" onclick="ocultarSecciones(); cerrarMenu()" class="nav-notif" id="navNoticias">Noticias</a></li>
     <li><a href="#galeria" onclick="ocultarSecciones(); cerrarMenu()">Galería</a></li>
-    <li><a href="#cumpleanos" onclick="mostrarSeccion('cumpleanos'); cerrarMenu()">Cumpleaños</a></li>
+    <li class="nav-solo-movil"><a href="#cumpleanos" onclick="mostrarSeccion('cumpleanos'); cerrarMenu()">Cumpleaños</a></li>
     <li><a href="#contacto" onclick="ocultarSecciones(); cerrarMenu()">Contacto</a></li>
 
   </ul>
