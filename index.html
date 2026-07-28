@@ -1220,28 +1220,6 @@
   }
 
 
-  /* ── FECHA FLOTANTE ── */
-  .fecha-flotante {
-    position: fixed;
-    left: 0.8rem; bottom: 1.5rem;
-    background: rgba(28,43,58,0.4);
-    color: rgba(255,255,255,0.55);
-    padding: 0.3rem 0.7rem;
-    border-radius: 2px;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.68rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    border: 1px solid rgba(46,95,138,0.2);
-    z-index: 900;
-    text-transform: capitalize;
-    pointer-events: none;
-  }
-  @media (max-width: 768px) {
-    .fecha-flotante { display: none; }
-  }
-
-
   /* ── CUMPLEAÑOS ── */
   .cumpleanos { background: var(--blanco); }
   .cumple-grid {
@@ -1268,7 +1246,7 @@
 
   /* ── TARJETA CUMPLEAÑOS HOY ── */
   .cumple-hoy-card {
-    position: fixed;
+    position: absolute;
     right: 1rem; top: 80px;
     width: 220px;
     background: var(--blanco);
@@ -1980,9 +1958,6 @@ function toggleFaq(btn) {
 </div>
 
 
-<!-- FECHA FLOTANTE -->
-<div class="fecha-flotante" id="fechaFlotante"></div>
-
 
 <!-- TARJETA CUMPLEAÑOS HOY -->
 <div class="cumple-hoy-card" id="cumpleHoyCard">
@@ -2564,15 +2539,6 @@ async function descargarArchivo(btn) {
 </script>
 
 
-<script>
-(function() {
-  const el = document.getElementById('fechaFlotante');
-  if (!el) return;
-  const ahora = new Date();
-  const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-  el.textContent = ahora.toLocaleDateString('es-CL', opciones);
-})();
-</script>
 
 </body>
 </html>
