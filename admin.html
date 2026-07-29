@@ -1649,7 +1649,11 @@
         const rows = XLSX.utils.sheet_to_json(ws, { raw: false });
 
         const lote = rows
-          .filter(row => (row['Nombre'] || '').trim())
+          .filter(row => {
+            if (!(row['Nombre'] || '').trim()) return false;
+            const entrega = (row['Entrega tarjeta'] || row['Entrega Tarjeta'] || row['ENTREGA TARJETA'] || '').toLowerCase().trim();
+            return entrega !== 'desvinculado';
+          })
           .map(row => ({
             rut: row['Rut'] || row['RUT'] || '',
             nombre: (row['Nombre'] || '').trim(),
