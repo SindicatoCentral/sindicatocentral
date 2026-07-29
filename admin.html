@@ -1535,7 +1535,8 @@
         document.getElementById('sociosStats').style.display = 'none';
         return;
       }
-      sociosData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      sociosData = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter(s => (s.entregaTarjeta || '').toLowerCase().trim() !== 'desvinculado');
       sociosFiltrados = [...sociosData];
       renderSocios(sociosFiltrados);
       actualizarStats(sociosData);
