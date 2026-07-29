@@ -2169,6 +2169,11 @@ function convertirUrlVideo(url) {
   }
 
 
+
+  function esDesvinculado(s) {
+    return (s.entregaTarjeta || '').toLowerCase().trim() === 'desvinculado';
+  }
+
   async function cargarCumpleanos() {
     const grid = document.getElementById('cumpleGrid');
     const card = document.getElementById('cumpleHoyCard');
@@ -2188,7 +2193,7 @@ function convertirUrlVideo(url) {
         const s = d.data();
         if (!s.fechaNacimiento) return;
         const fecha = new Date(s.fechaNacimiento);
-        if (fecha.getDate() === diaHoy && fecha.getMonth() + 1 === mesHoy) {
+        if (fecha.getDate() === diaHoy && fecha.getMonth() + 1 === mesHoy && !esDesvinculado(s)) {
           cumpleHoy.push({ nombre: s.nombre, dia: diaHoy });
         }
       });
