@@ -1658,12 +1658,33 @@
         const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs');
         const data = new Uint8Array(e.target.result);
         const wb = XLSX.read(data, { type: 'array', cellDates: true });
+        
+        // 1. Recopilar RUTs desvinculados de todas las hojas Giftcard
+        const rutsDesvinculados = new Set();
+        const hojasGiftcard = wb.SheetNames.filter(n => 
+          n.toLowerCase().includes('giftcard') || n.toLowerCase().includes('gitfcard')
+        );
+        for (const hoja of hojasGiftcard) {
+          const wsG = wb.Sheets[hoja];
+          const rowsG = XLSX.utils.sheet_to_json(wsG, { raw: false });
+          for (const row of rowsG) {
+            const entrega = (row['Entrega tarjeta'] || '').toLowerCase().trim();
+            if (entrega === 'desvinculado') {
+              const rut = (row['Rut'] || row['RUT'] || '').trim();
+              if (rut) rutsDesvinculados.add(rut);
+            }
+          }
+        }
+
+        // 2. Leer hoja principal de socios
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { raw: false });
 
         const lote = rows
           .filter(row => {
             if (!(row['Nombre'] || '').trim()) return false;
+            const rut = (row['Rut'] || row['RUT'] || '').trim();
+            if (rutsDesvinculados.has(rut)) return false;
             const entrega = (row['Entrega tarjeta'] || row['Entrega Tarjeta'] || row['ENTREGA TARJETA'] || '').toLowerCase().trim();
             return entrega !== 'desvinculado';
           })
