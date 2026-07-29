@@ -1629,9 +1629,22 @@
     // Si reemplazar, eliminar primero todos los socios existentes
     if (reemplazar) {
       if (!confirm('¿Reemplazar todos los socios actuales con el nuevo archivo?')) { input.value = ''; return; }
-      mostrarToast('Eliminando socios anteriores...', 'exito');
+      const barra2 = document.getElementById('progressSocios');
+      const fill2  = document.getElementById('progressSociosFill');
+      const label2 = document.getElementById('progressSociosLabel');
+      barra2.style.display = 'block';
+      label2.textContent = 'Eliminando socios anteriores...';
       const snapExist = await getDocs(collection(db, 'socios'));
-      for (const d of snapExist.docs) await deleteDoc(d.ref);
+      let eliminados = 0;
+      const totalElim = snapExist.docs.length;
+      for (const d of snapExist.docs) {
+        await deleteDoc(d.ref);
+        eliminados++;
+        fill2.style.width = Math.round(eliminados / totalElim * 100) + '%';
+        label2.textContent = 'Eliminando... ' + eliminados + ' de ' + totalElim;
+      }
+      fill2.style.width = '0%';
+      label2.textContent = 'Preparando carga...';
     }
 
     const barra = document.getElementById('progressSocios');
