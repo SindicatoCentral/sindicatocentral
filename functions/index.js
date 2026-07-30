@@ -37,7 +37,8 @@ exports.cumpleanosdiarios = onSchedule(
       const s = doc.data();
       if (!s.fechaNacimiento) return;
       const fecha = new Date(s.fechaNacimiento);
-      if (fecha.getDate() === dia && fecha.getMonth() + 1 === mes) {
+      const desvinculado = (s.entregaTarjeta || "").toLowerCase().trim() === "desvinculado";
+      if (fecha.getDate() === dia && fecha.getMonth() + 1 === mes && !desvinculado) {
         cumpleaneros.push(s);
       }
     });
