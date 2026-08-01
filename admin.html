@@ -647,7 +647,7 @@
 
 <script type="module">
   import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged }
+  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc, writeBatch }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -733,13 +733,22 @@
     const errDiv = document.getElementById('loginError');
     errDiv.style.display = 'none';
     try {
-      await signInWithPopup(auth, googleProvider);
-      // La validación de correo permitido se hace en onAuthStateChanged
+      await signInWithRedirect(auth, googleProvider);
+      // La página se recarga tras redirigir a Google; el resultado se procesa
+      // más abajo con getRedirectResult al volver a cargar.
     } catch(e) {
       errDiv.style.display = 'block';
       errDiv.textContent   = 'No se pudo iniciar sesión con Google.';
     }
   };
+
+  // Procesa el resultado al volver de la pantalla de login de Google
+  getRedirectResult(auth).catch((e) => {
+    const errDiv = document.getElementById('loginError');
+    errDiv.style.display = 'block';
+    errDiv.textContent   = 'No se pudo completar el inicio de sesión con Google.';
+    console.error('Error en getRedirectResult:', e);
+  });
 
   window.cerrarSesion = async () => {
     await signOut(auth);
