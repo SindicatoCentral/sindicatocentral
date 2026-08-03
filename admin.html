@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel Admin — Sindicato UCEN</title>
+<title>Panel Admin — Sindicato Central</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -250,28 +250,27 @@
   <div class="login-box">
     <div class="login-logo">
       <h1>Panel Administrador</h1>
-      <p>Sindicato de Trabajadores UCEN</p>
+      <p>Sindicato de Trabajadores Central</p>
     </div>
-    <div class="form-group">
-      <label>Correo electrónico</label>
-      <input type="email" id="loginEmail" placeholder="correo@ejemplo.cl">
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <div style="position:relative;">
-        <input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter') iniciarSesion()" style="padding-right:2.8rem; width:100%;">
-        <button type="button" onclick="togglePassword()" style="position:absolute; right:0.8rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#888; font-size:1rem;" id="btnVerPassword" title="Mostrar contraseña">👁</button>
-      </div>
-    </div>
-    <button class="btn-login" onclick="iniciarSesion()">Ingresar</button>
+    <button type="button" class="btn-login" onclick="iniciarSesionGoogle()"
+      style="background:#fff; color:#3c4043; border:1px solid #dadce0; display:flex; align-items:center; justify-content:center; gap:0.6rem;">
+      <svg width="18" height="18" viewBox="0 0 48 48">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.7 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.4 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4c-7.5 0-14 4.2-17.3 10.4z"/>
+        <path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.9 14-5.1l-6.5-5.4c-2 1.4-4.6 2.2-7.5 2.2-5.4 0-9.9-3.4-11.4-8.2l-6.6 5.1C9.9 39.7 16.4 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.7 2.1-2.1 4-3.8 5.4l6.5 5.4C41.6 36.6 44 30.8 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+      </svg>
+      Ingresar con Google
+    </button>
     <div class="login-error" id="loginError"></div>
+    <a href="https://sindicatocentral.cl" style="display:block; text-align:center; margin-top:1.2rem; font-size:0.85rem; color:#888; text-decoration:none;">← Volver al sitio</a>
   </div>
 </div>
 
 <!-- PANEL -->
 <div class="panel-wrap" id="panelWrap">
   <div class="topbar">
-    <span class="topbar-title">Panel Administrador — Sindicato UCEN</span>
+    <span class="topbar-title">Panel Administrador — Sindicato Central</span>
     <div class="topbar-right">
       <span class="topbar-user" id="topbarUser"></span>
       <a href="index.html" class="btn-topbar">← Ir al sitio</a>
@@ -568,7 +567,6 @@
 
 
     <!-- SOCIOS -->
-
 <!-- MODAL VER FOTOS EVENTO -->
 <div id="modalVerFotos" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; flex-direction:column;">
   <div style="background:#1C2B3A; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
@@ -585,7 +583,7 @@
 
 <script type="module">
   import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc, writeBatch }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -593,18 +591,24 @@
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const firebaseConfig = {
-  apiKey: "AIzaSyAVabxEzbuyOllC1-iJXZVCX1a0hI1SItQ",
-  authDomain: "sindicato-central.firebaseapp.com",
-  projectId: "sindicato-central",
-  storageBucket: "sindicato-central.firebasestorage.app",
-  messagingSenderId: "370976982041",
-  appId: "1:370976982041:web:fc05dfecfc39b5e2fa9688"
+    apiKey: "AIzaSyAVabxEzbuyOllC1-iJXZVCX1a0hI1SItQ",
+    authDomain: "sindicato-central.firebaseapp.com",
+    projectId: "sindicato-central",
+    storageBucket: "sindicato-central.firebasestorage.app",
+    messagingSenderId: "370976982041",
+    appId: "1:370976982041:web:fc05dfecfc39b5e2fa9688"
   };
 
   const app     = initializeApp(firebaseConfig);
   const auth    = getAuth(app);
   const db      = getFirestore(app);
   const storage = getStorage(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  // Solo estos correos pueden acceder al panel admin, aunque inicien sesión con Google
+  const CORREOS_PERMITIDOS = [
+    "trabajadores@sindicatocentral.cl"
+  ];
 
   let tabActual    = 'publicada';
   let archivoImg   = null;
@@ -612,12 +616,18 @@
 
   // ── AUTH ──
   onAuthStateChanged(auth, user => {
+    if (user && !CORREOS_PERMITIDOS.includes(user.email)) {
+      // Cuenta autenticada pero no autorizada para este panel: se cierra la sesión de inmediato
+      signOut(auth);
+      const errDiv = document.getElementById('loginError');
+      errDiv.style.display = 'block';
+      errDiv.textContent   = 'Esta cuenta no tiene autorización para acceder al panel.';
+      return;
+    }
     if (user) {
       document.getElementById('loginWrap').style.display = 'none';
       document.getElementById('panelWrap').style.display = 'block';
       document.getElementById('topbarUser').textContent  = user.email;
-      document.getElementById('loginEmail').value    = '';
-      document.getElementById('loginPassword').value = '';
       document.getElementById('loginError').style.display = 'none';
       cargarNoticias('publicada', 'noticiasList');
     } else {
@@ -626,37 +636,29 @@
     }
   });
 
-  window.togglePassword = () => {
-    const input = document.getElementById('loginPassword');
-    const btn   = document.getElementById('btnVerPassword');
-    if (input.type === 'password') {
-      input.type = 'text';
-      btn.textContent = '🙈';
-      btn.title = 'Ocultar contraseña';
-    } else {
-      input.type = 'password';
-      btn.textContent = '👁';
-      btn.title = 'Mostrar contraseña';
+  window.iniciarSesionGoogle = async () => {
+    const errDiv = document.getElementById('loginError');
+    errDiv.style.display = 'none';
+    try {
+      await signInWithRedirect(auth, googleProvider);
+      // La página se recarga tras redirigir a Google; el resultado se procesa
+      // más abajo con getRedirectResult al volver a cargar.
+    } catch(e) {
+      errDiv.style.display = 'block';
+      errDiv.textContent   = 'No se pudo iniciar sesión con Google.';
     }
   };
 
-  window.iniciarSesion = async () => {
-    const email    = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const errDiv   = document.getElementById('loginError');
-    errDiv.style.display = 'none';
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch(e) {
-      errDiv.style.display = 'block';
-      errDiv.textContent   = 'Correo o contraseña incorrectos.';
-    }
-  };
+  // Procesa el resultado al volver de la pantalla de login de Google
+  getRedirectResult(auth).catch((e) => {
+    const errDiv = document.getElementById('loginError');
+    errDiv.style.display = 'block';
+    errDiv.textContent   = 'No se pudo completar el inicio de sesión con Google.';
+    console.error('Error en getRedirectResult:', e);
+  });
 
   window.cerrarSesion = async () => {
     await signOut(auth);
-    document.getElementById('loginEmail').value    = '';
-    document.getElementById('loginPassword').value = '';
     window.location.href = 'index.html';
   };
 
@@ -1460,6 +1462,7 @@
       cargarContratos();
     } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
   };
+
 
 
   // ── TOAST ──
