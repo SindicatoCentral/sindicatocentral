@@ -252,18 +252,19 @@
       <h1>Panel Administrador</h1>
       <p>Sindicato de Trabajadores UCEN</p>
     </div>
-    <button type="button" class="btn-login" onclick="iniciarSesionGoogle()"
-      style="background:#fff; color:#3c4043; border:1px solid #dadce0; display:flex; align-items:center; justify-content:center; gap:0.6rem;">
-      <svg width="18" height="18" viewBox="0 0 48 48">
-        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.7 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
-        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.4 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4c-7.5 0-14 4.2-17.3 10.4z"/>
-        <path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.9 14-5.1l-6.5-5.4c-2 1.4-4.6 2.2-7.5 2.2-5.4 0-9.9-3.4-11.4-8.2l-6.6 5.1C9.9 39.7 16.4 44 24 44z"/>
-        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.7 2.1-2.1 4-3.8 5.4l6.5 5.4C41.6 36.6 44 30.8 44 24c0-1.2-.1-2.4-.4-3.5z"/>
-      </svg>
-      Ingresar con Google
-    </button>
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="loginEmail" placeholder="correo@ejemplo.cl">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <div style="position:relative;">
+        <input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter') iniciarSesion()" style="padding-right:2.8rem; width:100%;">
+        <button type="button" onclick="togglePassword()" style="position:absolute; right:0.8rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#888; font-size:1rem;" id="btnVerPassword" title="Mostrar contraseña">👁</button>
+      </div>
+    </div>
+    <button class="btn-login" onclick="iniciarSesion()">Ingresar</button>
     <div class="login-error" id="loginError"></div>
-    <a href="https://sindicatocentral.cl" style="display:block; text-align:center; margin-top:1.2rem; font-size:0.85rem; color:#888; text-decoration:none;">← Volver al sitio</a>
   </div>
 </div>
 
@@ -290,7 +291,7 @@
       <button class="tab-p" onclick="cambiarTab('popup', this)">Popup</button>
       <button class="tab-p" onclick="cambiarTab('galeria', this)">Galería</button>
       <button class="tab-p" onclick="cambiarTab('documentos', this)">Documentos</button>
-      <button class="tab-p" onclick="cambiarTab('socios', this)">Socios</button>
+
     </div>
 
     <!-- NOTICIAS PUBLICADAS / HISTORIAL -->
@@ -567,53 +568,6 @@
 
 
     <!-- SOCIOS -->
-    <div class="seccion" id="sec-socios">
-
-      <!-- Barra de búsqueda y acciones -->
-      <div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center;">
-        <input type="text" id="buscarSocio" placeholder="Buscar por nombre o RUT..." oninput="filtrarSocios(this.value)"
-          style="flex:1; min-width:200px; padding:0.7rem 1rem; border:1.5px solid var(--borde); border-radius:2px; font-family:Inter,sans-serif; font-size:0.9rem; outline:none;">
-        <label class="btn-nuevo" style="cursor:pointer; background:var(--azul);">
-          📥 Cargar Excel
-          <input type="file" id="inputSocios" accept=".xls,.xlsx,.csv" style="display:none;" onchange="cargarExcelSocios(this, false)">
-        </label>
-        <label class="btn-nuevo" style="cursor:pointer; background:#e65100;">
-          🔄 Reemplazar
-          <input type="file" id="inputSociosReemplazar" accept=".xls,.xlsx,.csv" style="display:none;" onchange="cargarExcelSocios(this, true)">
-        </label>
-        <button class="btn-accion eliminar" style="padding:0.65rem 1rem;" onclick="eliminarTodosSocios()">🗑 Eliminar todos</button>
-      </div>
-      <!-- Barra de progreso carga socios -->
-      <div id="progressSocios" style="display:none; margin-bottom:1rem;">
-        <div style="font-size:0.82rem; color:var(--azul); margin-bottom:0.4rem;" id="progressSociosLabel">Importando socios...</div>
-        <div style="height:6px; background:var(--gris-claro); border-radius:3px;">
-          <div id="progressSociosFill" style="height:100%; background:var(--azul); border-radius:3px; width:0%; transition:width 0.2s;"></div>
-        </div>
-      </div>
-
-      <!-- Estadísticas -->
-      <div id="sociosStats" style="display:none; margin-bottom:1.5rem; flex-direction:column; gap:1rem;">
-        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-          <div style="background:var(--blanco); border:1px solid var(--borde); border-radius:2px; padding:0.8rem 1.2rem; text-align:center;">
-            <div style="font-size:1.4rem; font-weight:700; color:var(--azul);" id="statTotal">0</div>
-            <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Total socios</div>
-          </div>
-          <div style="background:var(--blanco); border:1px solid var(--borde); border-radius:2px; padding:0.8rem 1.2rem; text-align:center; cursor:pointer;" onclick="toggleCumpleList()">
-            <div style="font-size:1.4rem; font-weight:700; color:#e65100;" id="statCumple">0</div>
-            <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Cumplen este mes ▾</div>
-          </div>
-        </div>
-        <!-- Lista cumpleañeros del mes -->
-        <div id="cumpleListAdmin" style="display:none; background:var(--blanco); border:1px solid #ffe0b2; border-left:3px solid #e65100; border-radius:2px; padding:1rem 1.2rem;">
-          <div style="font-size:0.78rem; font-weight:700; color:#e65100; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.8rem;">🎂 Cumpleaños este mes</div>
-          <div id="cumpleListItems" style="display:flex; flex-direction:column; gap:0.4rem;"></div>
-        </div>
-      </div>
-
-      <!-- Lista socios -->
-      <div id="sociosList"><div class="vacio"><div class="vacio-icon">👥</div><p>No hay socios cargados.<br>Usa el botón "Cargar Excel" para importar el listado.</p></div></div>
-
-    </div>
 
 <!-- MODAL VER FOTOS EVENTO -->
 <div id="modalVerFotos" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; flex-direction:column;">
@@ -631,7 +585,7 @@
 
 <script type="module">
   import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc, writeBatch }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -651,12 +605,6 @@
   const auth    = getAuth(app);
   const db      = getFirestore(app);
   const storage = getStorage(app);
-  const googleProvider = new GoogleAuthProvider();
-
-  // Solo estos correos pueden acceder al panel admin, aunque inicien sesión con Google
-  const CORREOS_PERMITIDOS = [
-    "trabajadores@sindicatocentral.cl"
-  ];
 
   let tabActual    = 'publicada';
   let archivoImg   = null;
@@ -664,18 +612,12 @@
 
   // ── AUTH ──
   onAuthStateChanged(auth, user => {
-    if (user && !CORREOS_PERMITIDOS.includes(user.email)) {
-      // Cuenta autenticada pero no autorizada para este panel: se cierra la sesión de inmediato
-      signOut(auth);
-      const errDiv = document.getElementById('loginError');
-      errDiv.style.display = 'block';
-      errDiv.textContent   = 'Esta cuenta no tiene autorización para acceder al panel.';
-      return;
-    }
     if (user) {
       document.getElementById('loginWrap').style.display = 'none';
       document.getElementById('panelWrap').style.display = 'block';
       document.getElementById('topbarUser').textContent  = user.email;
+      document.getElementById('loginEmail').value    = '';
+      document.getElementById('loginPassword').value = '';
       document.getElementById('loginError').style.display = 'none';
       cargarNoticias('publicada', 'noticiasList');
     } else {
@@ -684,29 +626,37 @@
     }
   });
 
-  window.iniciarSesionGoogle = async () => {
-    const errDiv = document.getElementById('loginError');
-    errDiv.style.display = 'none';
-    try {
-      await signInWithRedirect(auth, googleProvider);
-      // La página se recarga tras redirigir a Google; el resultado se procesa
-      // más abajo con getRedirectResult al volver a cargar.
-    } catch(e) {
-      errDiv.style.display = 'block';
-      errDiv.textContent   = 'No se pudo iniciar sesión con Google.';
+  window.togglePassword = () => {
+    const input = document.getElementById('loginPassword');
+    const btn   = document.getElementById('btnVerPassword');
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+      btn.title = 'Ocultar contraseña';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁';
+      btn.title = 'Mostrar contraseña';
     }
   };
 
-  // Procesa el resultado al volver de la pantalla de login de Google
-  getRedirectResult(auth).catch((e) => {
-    const errDiv = document.getElementById('loginError');
-    errDiv.style.display = 'block';
-    errDiv.textContent   = 'No se pudo completar el inicio de sesión con Google.';
-    console.error('Error en getRedirectResult:', e);
-  });
+  window.iniciarSesion = async () => {
+    const email    = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errDiv   = document.getElementById('loginError');
+    errDiv.style.display = 'none';
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch(e) {
+      errDiv.style.display = 'block';
+      errDiv.textContent   = 'Correo o contraseña incorrectos.';
+    }
+  };
 
   window.cerrarSesion = async () => {
     await signOut(auth);
+    document.getElementById('loginEmail').value    = '';
+    document.getElementById('loginPassword').value = '';
     window.location.href = 'index.html';
   };
 
@@ -730,7 +680,6 @@
     if (tab === 'popup')      cargarPopup();
     if (tab === 'galeria')    cargarGaleria();
     if (tab === 'documentos') cargarDocumentos();
-    if (tab === 'socios')    cargarSocios();
   };
 
   // ── FORMULARIO NOTICIAS ──
@@ -1509,262 +1458,6 @@
       if (path) { try { await deleteObject(ref(storage, path)); } catch(e) {} }
       mostrarToast('Contrato eliminado.', 'exito');
       cargarContratos();
-    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
-  };
-
-
-
-  // ── SOCIOS ──
-  let sociosData = [];
-  let sociosFiltrados = [];
-
-  function calcularAntiguedad(fechaIngreso) {
-    const hoy = new Date();
-    const ingreso = new Date(fechaIngreso);
-    let anios = hoy.getFullYear() - ingreso.getFullYear();
-    let meses = hoy.getMonth() - ingreso.getMonth();
-    if (meses < 0) { anios--; meses += 12; }
-    if (anios === 0) return meses + ' mes' + (meses !== 1 ? 'es' : '');
-    return anios + ' año' + (anios !== 1 ? 's' : '') + (meses > 0 ? ' y ' + meses + ' mes' + (meses !== 1 ? 'es' : '') : '');
-  }
-
-  async function cargarSocios() {
-    const lista = document.getElementById('sociosList');
-    lista.innerHTML = '<div class="loading">Cargando socios...</div>';
-    try {
-      const snap = await getDocs(query(collection(db, 'socios'), orderBy('nombre', 'asc')));
-      if (snap.empty) {
-        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">👥</div><p>No hay socios cargados.<br>Usa el botón "Cargar Excel" para importar el listado.</p></div>';
-        document.getElementById('sociosStats').style.display = 'none';
-        return;
-      }
-      sociosData = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        .filter(s => (s.entregaTarjeta || '').toLowerCase().trim() !== 'desvinculado');
-      sociosFiltrados = [...sociosData];
-      renderSocios(sociosFiltrados);
-      actualizarStats(sociosData);
-    } catch(e) {
-      lista.innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
-    }
-  }
-
-  function actualizarStats(socios) {
-    const mesActual = new Date().getMonth() + 1;
-    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    const cumpleaneros = socios.filter(s => {
-      if (!s.fechaNacimiento) return false;
-      return new Date(s.fechaNacimiento).getMonth() + 1 === mesActual;
-    }).sort((a, b) => new Date(a.fechaNacimiento).getDate() - new Date(b.fechaNacimiento).getDate());
-
-    document.getElementById('statTotal').textContent = socios.length;
-    document.getElementById('statCumple').textContent = cumpleaneros.length;
-    document.getElementById('sociosStats').style.display = 'flex';
-
-    // Llenar lista cumpleañeros
-    const items = document.getElementById('cumpleListItems');
-    if (cumpleaneros.length === 0) {
-      items.innerHTML = '<div style="font-size:0.85rem; color:#888;">No hay cumpleaños en ' + meses[mesActual-1] + '.</div>';
-    } else {
-      items.innerHTML = cumpleaneros.map(s => {
-        const dia = new Date(s.fechaNacimiento).getDate();
-        return `<div style="font-size:0.85rem; color:var(--carbon); display:flex; justify-content:space-between;">
-          <span>🎂 ${s.nombre}</span>
-          <span style="color:#e65100; font-weight:600;">${dia} de ${meses[mesActual-1]}</span>
-        </div>`;
-      }).join('');
-    }
-  }
-
-  window.toggleCumpleList = () => {
-    const lista = document.getElementById('cumpleListAdmin');
-    lista.style.display = lista.style.display === 'none' ? 'block' : 'none';
-  };
-
-  function renderSocios(socios) {
-    const lista = document.getElementById('sociosList');
-    if (socios.length === 0) {
-      lista.innerHTML = '<div class="vacio"><div class="vacio-icon">🔍</div><p>No se encontraron socios.</p></div>';
-      return;
-    }
-    lista.innerHTML = '';
-    socios.forEach(s => {
-      const antiguedad = s.fechaIngreso ? calcularAntiguedad(s.fechaIngreso) : '—';
-      const fnac = s.fechaNacimiento ? new Date(s.fechaNacimiento).toLocaleDateString('es-CL') : '—';
-      const mesNac = s.fechaNacimiento ? new Date(s.fechaNacimiento).getMonth() + 1 : 0;
-      const mesActual = new Date().getMonth() + 1;
-      const esCumple = mesNac === mesActual;
-      const item = document.createElement('div');
-      item.className = 'noticia-item';
-      item.style.borderLeft = esCumple ? '3px solid #e65100' : '';
-      item.innerHTML = `
-        <div class="noticia-info">
-          <div class="noticia-titulo-item">
-            ${esCumple ? '🎂 ' : ''}${s.nombre}
-            <span class="historial-badge">${s.rut || ''}</span>
-          </div>
-          <div class="noticia-resumen-item">
-            ${s.cargo || ''} — ${s.unidad || ''}
-            &nbsp;·&nbsp; Ingreso: ${antiguedad}
-            &nbsp;·&nbsp; Nac: ${fnac}
-          </div>
-        </div>
-        <div class="noticia-acciones">
-          <button class="btn-accion eliminar" onclick="eliminarSocio('${s.id}')">Eliminar</button>
-        </div>
-      `;
-      lista.appendChild(item);
-    });
-  }
-
-  window.filtrarSocios = (texto) => {
-    const t = texto.toLowerCase().trim();
-    sociosFiltrados = !t ? [...sociosData] : sociosData.filter(s =>
-      (s.nombre || '').toLowerCase().includes(t) ||
-      (s.rut || '').toLowerCase().includes(t)
-    );
-    renderSocios(sociosFiltrados);
-  };
-
-  window.cargarExcelSocios = async (input, reemplazar) => {
-    const file = input.files[0];
-    if (!file) return;
-
-    // Si reemplazar, eliminar primero todos los socios existentes
-    if (reemplazar) {
-      if (!confirm('¿Reemplazar todos los socios actuales con el nuevo archivo?')) { input.value = ''; return; }
-      const barra2 = document.getElementById('progressSocios');
-      const fill2  = document.getElementById('progressSociosFill');
-      const label2 = document.getElementById('progressSociosLabel');
-      barra2.style.display = 'block';
-      label2.textContent = 'Eliminando socios anteriores...';
-      const snapExist = await getDocs(collection(db, 'socios'));
-      let eliminados = 0;
-      const totalElim = snapExist.docs.length;
-      for (const d of snapExist.docs) {
-        await deleteDoc(d.ref);
-        eliminados++;
-        fill2.style.width = Math.round(eliminados / totalElim * 100) + '%';
-        label2.textContent = 'Eliminando... ' + eliminados + ' de ' + totalElim;
-      }
-      fill2.style.width = '0%';
-      label2.textContent = 'Preparando carga...';
-    }
-
-    const barra = document.getElementById('progressSocios');
-    const fill  = document.getElementById('progressSociosFill');
-    const label = document.getElementById('progressSociosLabel');
-    barra.style.display = 'block';
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs');
-        const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, { type: 'array', cellDates: true });
-        
-        // 1. Recopilar RUTs desvinculados de todas las hojas Giftcard
-        const rutsDesvinculados = new Set();
-        const hojasGiftcard = wb.SheetNames.filter(n => 
-          n.toLowerCase().includes('giftcard') || n.toLowerCase().includes('gitfcard')
-        );
-        for (const hoja of hojasGiftcard) {
-          const wsG = wb.Sheets[hoja];
-          const rowsG = XLSX.utils.sheet_to_json(wsG, { raw: false });
-          for (const row of rowsG) {
-            const entrega = (row['Entrega tarjeta'] || '').toLowerCase().trim();
-            if (entrega === 'desvinculado') {
-              const rut = (row['Rut'] || row['RUT'] || '').trim();
-              if (rut) rutsDesvinculados.add(rut);
-            }
-          }
-        }
-
-        // 2. Leer hoja principal de socios
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { raw: false });
-
-        const lote = rows
-          .filter(row => {
-            if (!(row['Nombre'] || '').trim()) return false;
-            const rut = (row['Rut'] || row['RUT'] || '').trim();
-            if (rutsDesvinculados.has(rut)) return false;
-            const entrega = (row['Entrega tarjeta'] || row['Entrega Tarjeta'] || row['ENTREGA TARJETA'] || '').toLowerCase().trim();
-            return entrega !== 'desvinculado';
-          })
-          .map(row => ({
-            rut: row['Rut'] || row['RUT'] || '',
-            nombre: (row['Nombre'] || '').trim(),
-            clasificacion: row['Clasificación'] || row['Clasificacion'] || '',
-            cargo: row['Cargo'] || '',
-            unidad: row['Unidad'] || '',
-            fechaIngreso: row['Fecha Ingreso'] || '',
-            fechaNacimiento: row['Fecha Nacimiento'] || '',
-            sexo: row['Sexo'] || '',
-            cuotaSocio: row['Cuota Socio'] || '',
-            entregaTarjeta: row['Entrega tarjeta'] || row['Entrega Tarjeta'] || row['ENTREGA TARJETA'] || ''
-          }));
-
-        let importados = 0;
-        const total = lote.length;
-
-        // Subir en lotes de 50 con pausa para evitar timeout
-        const TAMANO_LOTE = 50;
-        for (let i = 0; i < lote.length; i += TAMANO_LOTE) {
-          const sublote = lote.slice(i, i + TAMANO_LOTE);
-          await Promise.all(sublote.map(s => addDoc(collection(db, 'socios'), s)));
-          importados += sublote.length;
-          const pct = Math.round(importados / total * 100);
-          fill.style.width = pct + '%';
-          label.textContent = 'Importando... ' + importados + ' de ' + total + ' socios (' + pct + '%)';
-          await new Promise(r => setTimeout(r, 100)); // pausa entre lotes
-        }
-
-        barra.style.display = 'none';
-        fill.style.width = '0%';
-        mostrarToast(importados + ' socios importados correctamente.', 'exito');
-        input.value = '';
-        cargarSocios();
-      } catch(err) {
-        barra.style.display = 'none';
-        mostrarToast('Error al procesar Excel: ' + err.message, 'error');
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
-  window.eliminarTodosSocios = async () => {
-    if (!confirm('¿Eliminar TODOS los socios? Esta acción no se puede deshacer.')) return;
-    const barra = document.getElementById('progressSocios');
-    const fill  = document.getElementById('progressSociosFill');
-    const label = document.getElementById('progressSociosLabel');
-    barra.style.display = 'block';
-    label.textContent = 'Eliminando socios...';
-    try {
-      const snap = await getDocs(collection(db, 'socios'));
-      let eliminados = 0;
-      const total = snap.docs.length;
-      for (const d of snap.docs) {
-        await deleteDoc(d.ref);
-        eliminados++;
-        fill.style.width = Math.round(eliminados / total * 100) + '%';
-        label.textContent = 'Eliminando... ' + eliminados + ' de ' + total;
-      }
-      barra.style.display = 'none';
-      fill.style.width = '0%';
-      mostrarToast('Todos los socios eliminados.', 'exito');
-      cargarSocios();
-    } catch(e) {
-      barra.style.display = 'none';
-      mostrarToast('Error: ' + e.message, 'error');
-    }
-  };
-
-  window.eliminarSocio = async (id) => {
-    if (!confirm('¿Eliminar este socio?')) return;
-    try {
-      await deleteDoc(doc(db, 'socios', id));
-      mostrarToast('Socio eliminado.', 'exito');
-      cargarSocios();
     } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
   };
 
