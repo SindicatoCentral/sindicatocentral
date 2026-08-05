@@ -613,6 +613,7 @@
   let tabActual    = 'publicada';
   let archivoImg   = null;
   let archivoImgPop= null;
+  let popupImgPathActual = '';
 
   // ── AUTH ──
   onAuthStateChanged(auth, user => {
@@ -1000,6 +1001,7 @@
         document.getElementById('popupTituloInput').value  = d.titulo  || '';
         document.getElementById('popupMensajeInput').value = d.mensaje || '';
         document.getElementById('popupVideo').value        = d.videoUrl || '';
+        popupImgPathActual = d.imgPath || '';
         const chk = document.getElementById('popupActivo');
         chk.checked = d.activo || false;
         chk.dispatchEvent(new Event('change'));
@@ -1032,9 +1034,15 @@
   window.limpiarPopup = async () => {
     if (!confirm('¿Limpiar el popup? Se desactivará y se borrará todo su contenido.')) return;
     try {
-      await setDoc(doc(db,'config','popup'), { titulo:'', mensaje:'', activo:false, imgUrl:'' });
+      const snapAct = await getDoc(doc(db,'config','popup'));
+      if (snapAct.exists() && snapAct.data().imgPath) {
+        try { await deleteObject(ref(storage, snapAct.data().imgPath)); } catch(e) {}
+      }
+      await setDoc(doc(db,'config','popup'), { titulo:'', mensaje:'', activo:false, imgUrl:'', imgPath:'', videoUrl:'' });
       document.getElementById('popupTituloInput').value  = '';
       document.getElementById('popupMensajeInput').value = '';
+      document.getElementById('popupVideo').value        = '';
+      popupImgPathActual = '';
       const chk = document.getElementById('popupActivo');
       chk.checked = false;
       chk.dispatchEvent(new Event('change'));
@@ -1050,25 +1058,35 @@
     const mensaje   = document.getElementById('popupMensajeInput').value.trim();
     const activo    = document.getElementById('popupActivo').checked;
     const videoUrl  = document.getElementById('popupVideo').value.trim();
-    if (activo && !titulo && !mensaje && !archivoImgPop && !videoUrl) { mostrarToast('Agrega título, mensaje, imagen o video para activar el popup.','error'); return; }
+    const previewVisible = document.getElementById('previewImgPopup').style.display !== 'none'
+      && document.getElementById('previewImgPopup').src;
+    if (activo && !titulo && !mensaje && !archivoImgPop && !previewVisible && !videoUrl) { mostrarToast('Agrega título, mensaje, imagen o video para activar el popup.','error'); return; }
 
     const btn = document.querySelector('#sec-popup .btn-guardar');
     btn.textContent = 'Guardando...'; btn.disabled = true;
 
     try {
-      let imgUrl = '';
+      let imgUrl  = '';
+      let imgPath = '';
       const snapAct = await getDoc(doc(db,'config','popup'));
-      if (snapAct.exists()) imgUrl = snapAct.data().imgUrl || '';
+      if (snapAct.exists()) { imgUrl = snapAct.data().imgUrl || ''; imgPath = snapAct.data().imgPath || ''; }
 
       if (archivoImgPop) {
+        // Se está reemplazando la imagen: borrar la anterior de Storage si existía
+        if (imgPath) { try { await deleteObject(ref(storage, imgPath)); } catch(e) {} }
         const r = await subirImagen(archivoImgPop,'popup','progressBarPopup','progressFillPopup');
-        imgUrl = r.url;
+        imgUrl = r.url; imgPath = r.path;
       }
 
       const preview = document.getElementById('previewImgPopup');
-      if (!preview.src || preview.style.display === 'none') imgUrl = '';
+      if (!preview.src || preview.style.display === 'none') {
+        // Se quitó la imagen sin reemplazarla: borrar la anterior de Storage si existía
+        if (imgPath && !archivoImgPop) { try { await deleteObject(ref(storage, imgPath)); } catch(e) {} }
+        imgUrl = ''; imgPath = '';
+      }
 
-      await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl,videoUrl:videoUrl||''});
+      await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl,imgPath,videoUrl:videoUrl||''});
+      popupImgPathActual = imgPath;
       mostrarToast('Popup guardado correctamente.','exito');
       archivoImgPop = null;
       ocultarFormularioPopup();
