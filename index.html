@@ -1380,7 +1380,7 @@
     <div class="banda-label">Trabajadores sindicalizados</div>
   </div>
   <div class="banda-item">
-    <div class="banda-num">35</div>
+    <div class="banda-num" id="aniosTrayectoria">35</div>
     <div class="banda-label">Años de trayectoria</div>
   </div>
 
@@ -1889,6 +1889,19 @@ function cerrarMenu() {
   document.getElementById('navLinks').classList.remove('abierto');
   document.getElementById('hamburguesa').classList.remove('activo');
 }
+
+// ── AÑOS DE TRAYECTORIA (se calcula solo, no hace falta editarlo cada año) ──
+(function actualizarAniosTrayectoria() {
+  const fundacion = new Date(1990, 9, 23); // 23 de octubre de 1990 (mes 9 = octubre, en base 0)
+  const hoy = new Date();
+  let anios = hoy.getFullYear() - fundacion.getFullYear();
+  const aunNoCumpleEsteAnio =
+    hoy.getMonth() < fundacion.getMonth() ||
+    (hoy.getMonth() === fundacion.getMonth() && hoy.getDate() < fundacion.getDate());
+  if (aunNoCumpleEsteAnio) anios--;
+  const el = document.getElementById('aniosTrayectoria');
+  if (el) el.textContent = anios;
+})();
 
 // ── BÚSQUEDA ──
 const busquedaIndiceEstatico = [
