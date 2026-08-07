@@ -1899,13 +1899,13 @@ window.ejecutarBusqueda = (valor) => {
 
 function irAResultadoBusqueda(item) {
   cerrarBusqueda();
+  ocultarSecciones();
+  const el = document.getElementById(item.anchor);
+  if (!el) return;
   if (item.esOculta) {
-    mostrarSeccion(item.anchor);
-  } else {
-    ocultarSecciones();
-    const el = document.getElementById(item.anchor);
-    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 50);
+    el.style.display = 'block';
   }
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 80);
 }
 </script>
 
