@@ -1593,6 +1593,11 @@
       } else {
         vista.style.display = 'none';
         vacio.style.display = 'block';
+        document.getElementById('inscNombreEvento').value = '';
+        document.getElementById('inscFechaEvento').value  = '';
+        document.getElementById('inscHoraEvento').value   = '';
+        document.getElementById('inscActivo').checked     = false;
+        document.getElementById('inscEstadoLabel').textContent = 'Desactivado';
       }
     } catch(e) { mostrarToast('Error cargando configuración: ' + e.message, 'error'); }
     cargarConteoInscripciones();
