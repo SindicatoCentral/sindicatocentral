@@ -242,6 +242,7 @@
     .tab-p { padding: 0.5rem 0.5rem; font-size: 0.72rem; text-align: center; letter-spacing: 0.02em; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -290,6 +291,7 @@
       <button class="tab-p" onclick="cambiarTab('popup', this)">Popup</button>
       <button class="tab-p" onclick="cambiarTab('galeria', this)">Galería</button>
       <button class="tab-p" onclick="cambiarTab('documentos', this)">Documentos</button>
+      <button class="tab-p" onclick="cambiarTab('inscripciones', this)">Inscripciones</button>
 
     </div>
 
@@ -561,6 +563,57 @@
 
     </div>
 
+    <!-- INSCRIPCIONES A EVENTOS -->
+    <div class="seccion" id="sec-inscripciones">
+
+      <div class="form-card visible" style="margin-bottom:1.5rem;">
+        <h3>Configuración del evento</h3>
+        <div class="toggle-wrap">
+          <label>Formulario visible en el sitio</label>
+          <label class="toggle">
+            <input type="checkbox" id="inscActivo">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label" id="inscEstadoLabel">Desactivado</span>
+        </div>
+        <div class="form-group">
+          <label>Nombre del evento</label>
+          <input type="text" id="inscNombreEvento" placeholder="Ej: Aniversario del Sindicato">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="inscFechaEvento">
+          </div>
+          <div class="form-group">
+            <label>Hora</label>
+            <input type="time" id="inscHoraEvento">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Párrafo de consentimiento de fotografía (fijo, se muestra siempre igual en el sitio)</label>
+          <textarea readonly style="min-height:90px; background:var(--gris-claro); color:var(--gris-medio);">Durante este evento se podrán tomar fotografías con fines de registro y difusión institucional. Al inscribirte, puedes autorizar o no que tu imagen sea publicada en la sección Galería del sitio web del sindicato.</textarea>
+        </div>
+        <div class="form-acciones">
+          <button class="btn-guardar" onclick="guardarConfigEvento()">Guardar configuración</button>
+        </div>
+      </div>
+
+      <div class="form-card visible">
+        <h3>Inscritos</h3>
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.2rem; flex-wrap:wrap;">
+          <div style="background:var(--gris-claro); border-radius:2px; padding:0.7rem 1.2rem; text-align:center;">
+            <div style="font-size:1.4rem; font-weight:700; color:var(--azul);" id="inscConteo">0</div>
+            <div style="font-size:0.72rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Personas inscritas</div>
+          </div>
+          <button class="btn-accion editar" onclick="descargarPlanillaInscripciones()">📊 Descargar planilla (Excel)</button>
+          <button class="btn-accion eliminar" onclick="eliminarTodasInscripciones()">🗑 Eliminar todas las inscripciones</button>
+        </div>
+        <p style="font-size:0.8rem; color:#888;">Recomendación: descarga la planilla antes de eliminar las inscripciones — una vez eliminadas, no se pueden recuperar. Los datos se guardan únicamente en Firestore mientras el evento está en curso, no se conservan de forma permanente en el sitio.</p>
+      </div>
+
+    </div>
+
   </div>
 </div>
 
@@ -673,17 +726,17 @@
     document.getElementById('btnNuevo').style.display  = (tab === 'publicadas' || tab === 'galeria') ? 'inline-block' : 'none';
     document.getElementById('btnNuevo').textContent = tab === 'galeria' ? '+ Nuevo evento' : '+ Nueva noticia';
     document.getElementById('btnNuevo').onclick = tab === 'galeria' ? mostrarFormEvento : mostrarFormulario;
-    document.getElementById('btnNuevo').textContent = tab === 'galeria' ? '+ Nuevo evento' : '+ Nueva noticia';
-    document.getElementById('btnNuevo').onclick = tab === 'galeria' ? mostrarFormEvento : mostrarFormulario;
     document.getElementById('seccionTitulo').textContent =
       tab === 'publicadas' ? 'Noticias y comunicados' :
-      tab === 'historial'  ? 'Historial de noticias' : 'Configuración del Popup';
+      tab === 'historial'  ? 'Historial de noticias' :
+      tab === 'inscripciones' ? 'Inscripción a eventos' : 'Configuración del Popup';
     ocultarFormulario();
     if (tab === 'publicadas') cargarNoticias('publicada', 'noticiasList');
     if (tab === 'historial')  cargarNoticias('archivada', 'historialList');
     if (tab === 'popup')      cargarPopup();
     if (tab === 'galeria')    cargarGaleria();
     if (tab === 'documentos') cargarDocumentos();
+    if (tab === 'inscripciones') cargarConfigEvento();
   };
 
   // ── FORMULARIO NOTICIAS ──
@@ -1483,6 +1536,80 @@
   };
 
 
+
+  // ── INSCRIPCIONES A EVENTOS ──
+  window.cargarConfigEvento = async () => {
+    try {
+      const snap = await getDoc(doc(db, 'config', 'evento'));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('inscNombreEvento').value = d.nombre || '';
+        document.getElementById('inscFechaEvento').value  = d.fecha || '';
+        document.getElementById('inscHoraEvento').value   = d.hora || '';
+        const chk = document.getElementById('inscActivo');
+        chk.checked = !!d.activo;
+        document.getElementById('inscEstadoLabel').textContent = d.activo ? 'Activado' : 'Desactivado';
+      }
+    } catch(e) { mostrarToast('Error cargando configuración: ' + e.message, 'error'); }
+    cargarConteoInscripciones();
+  };
+
+  document.getElementById('inscActivo')?.addEventListener('change', function() {
+    document.getElementById('inscEstadoLabel').textContent = this.checked ? 'Activado' : 'Desactivado';
+  });
+
+  window.guardarConfigEvento = async () => {
+    const nombre = document.getElementById('inscNombreEvento').value.trim();
+    const fecha  = document.getElementById('inscFechaEvento').value;
+    const hora   = document.getElementById('inscHoraEvento').value;
+    const activo = document.getElementById('inscActivo').checked;
+    if (activo && (!nombre || !fecha)) {
+      mostrarToast('Agrega al menos el nombre y la fecha del evento antes de activarlo.', 'error');
+      return;
+    }
+    try {
+      await setDoc(doc(db, 'config', 'evento'), { nombre, fecha, hora, activo });
+      mostrarToast('Configuración del evento guardada.', 'exito');
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+  };
+
+  async function cargarConteoInscripciones() {
+    try {
+      const snap = await getDocs(collection(db, 'inscripciones'));
+      document.getElementById('inscConteo').textContent = snap.size;
+    } catch(e) { /* silencioso */ }
+  }
+
+  window.descargarPlanillaInscripciones = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'inscripciones'));
+      if (snap.empty) { mostrarToast('No hay inscripciones para descargar.', 'error'); return; }
+      const filas = [['Nombre', 'Autoriza fotografía']];
+      snap.forEach(d => {
+        const data = d.data();
+        filas.push([data.nombre || '', data.autorizaFotos ? 'Sí' : 'No']);
+      });
+      const ws = XLSX.utils.aoa_to_sheet(filas);
+      ws['!cols'] = [{ wch: 32 }, { wch: 20 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Inscritos');
+      const nombreEvento = document.getElementById('inscNombreEvento').value.trim() || 'evento';
+      const nombreArchivo = 'inscripciones_' + nombreEvento.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.xlsx';
+      XLSX.writeFile(wb, nombreArchivo);
+    } catch(e) { mostrarToast('Error al generar la planilla: ' + e.message, 'error'); }
+  };
+
+  window.eliminarTodasInscripciones = async () => {
+    if (!confirm('¿Eliminar TODAS las inscripciones? Asegúrate de haber descargado la planilla primero — esta acción no se puede deshacer.')) return;
+    try {
+      const snap = await getDocs(collection(db, 'inscripciones'));
+      const batch = writeBatch(db);
+      snap.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      mostrarToast('Inscripciones eliminadas.', 'exito');
+      cargarConteoInscripciones();
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+  };
 
   // ── TOAST ──
   function mostrarToast(msg, tipo) {

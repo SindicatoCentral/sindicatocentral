@@ -431,6 +431,39 @@
   .footer-divider { border: none; border-top: 1px solid #2a2a2a; margin: 1.5rem auto; max-width: 400px; }
   .footer-copy { font-size: 0.78rem; color: #aaaaaa; }
 
+  /* ── INSCRIPCIÓN A EVENTOS ── */
+  .inscripcion-evento {
+    background: #FFF8E1; border-top: 3px solid #E65100; border-bottom: 3px solid #E65100;
+    padding: 3rem 1.5rem;
+  }
+  .inscripcion-box { max-width: 620px; margin: 0 auto; text-align: center; }
+  .inscripcion-eyebrow {
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #E65100; font-weight: 700; margin-bottom: 0.6rem;
+  }
+  .inscripcion-evento h2 { margin-bottom: 0.4rem; }
+  .inscripcion-fecha { color: #555; font-size: 0.95rem; margin-bottom: 1.5rem; }
+  .inscripcion-consentimiento {
+    background: #FFFFFF; border-radius: 3px; padding: 1.2rem 1.4rem;
+    font-size: 0.85rem; color: #555; text-align: left; margin-bottom: 1.5rem;
+    border-left: 3px solid #E65100;
+  }
+  .inscripcion-form { text-align: left; }
+  .inscripcion-form label { display:block; font-size: 0.8rem; font-weight: 600; color: #1C2B3A; margin-bottom: 0.4rem; }
+  .inscripcion-form input[type="text"] {
+    width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--borde); border-radius: 2px;
+    font-family: 'Inter', sans-serif; font-size: 0.92rem; outline: none; margin-bottom: 1.2rem;
+  }
+  .inscripcion-radios { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .inscripcion-radios label { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.9rem; cursor: pointer; }
+  .inscripcion-btn {
+    background: #E65100; color: #fff; border: none; padding: 0.85rem 2rem;
+    border-radius: 2px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    font-size: 0.85rem; cursor: pointer; transition: background 0.2s; width: 100%;
+  }
+  .inscripcion-btn:hover { background: #C64100; }
+  .inscripcion-confirmacion { display:none; text-align:center; padding: 1.5rem; color: #2E7D32; font-weight: 600; }
+
   /* ── SITIOS DE INTERÉS ── */
   .enlaces-interes {
     background: var(--gris-claro); padding: 4rem 1.5rem;
@@ -1592,6 +1625,28 @@
   </div>
 </section>
 
+<section class="inscripcion-evento" id="inscripcion-evento" style="display:none;">
+  <div class="inscripcion-box">
+    <p class="inscripcion-eyebrow">Inscripciones abiertas</p>
+    <h2 id="inscEventoNombre">Evento</h2>
+    <p class="inscripcion-fecha" id="inscEventoFecha"></p>
+    <div class="inscripcion-consentimiento">
+      Durante este evento se podrán tomar fotografías con fines de registro y difusión institucional. Al inscribirte, puedes autorizar o no que tu imagen sea publicada en la sección Galería del sitio web del sindicato.
+    </div>
+    <form class="inscripcion-form" id="formInscripcionEvento" onsubmit="enviarInscripcionEvento(event)">
+      <label for="inscNombreInput">Nombre completo</label>
+      <input type="text" id="inscNombreInput" required placeholder="Tu nombre">
+      <label>¿Autorizas la toma y publicación de fotografías?</label>
+      <div class="inscripcion-radios">
+        <label><input type="radio" name="inscAutoriza" value="si" checked> Sí, autorizo</label>
+        <label><input type="radio" name="inscAutoriza" value="no"> No autorizo</label>
+      </div>
+      <button type="submit" class="inscripcion-btn">Inscribirme</button>
+    </form>
+    <div class="inscripcion-confirmacion" id="inscripcionConfirmacion">✓ ¡Inscripción registrada! Nos vemos en el evento.</div>
+  </div>
+</section>
+
 <section class="beneficios" id="beneficios">
   <div class="container">
     <p class="section-eyebrow">Para los socios</p>
@@ -2147,7 +2202,7 @@ function convertirUrlVideo(url) {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc }
+  import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc, addDoc, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -2245,6 +2300,46 @@ function convertirUrlVideo(url) {
   }
 
   cargarNoticias();
+
+  // ── INSCRIPCIÓN A EVENTOS ──
+  async function cargarEventoInscripcion() {
+    try {
+      const snap = await getDoc(doc(db, 'config', 'evento'));
+      if (!snap.exists()) return;
+      const d = snap.data();
+      if (!d.activo) return;
+      document.getElementById('inscEventoNombre').textContent = d.nombre || 'Evento';
+      let fechaTexto = '';
+      if (d.fecha) {
+        const [anio, mes, dia] = d.fecha.split('-');
+        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        fechaTexto = `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${anio}`;
+      }
+      if (d.hora) fechaTexto += ` · ${d.hora} hrs`;
+      document.getElementById('inscEventoFecha').textContent = fechaTexto;
+      document.getElementById('inscripcion-evento').style.display = 'block';
+    } catch(e) { /* si falla, simplemente no se muestra la sección */ }
+  }
+  cargarEventoInscripcion();
+
+  window.enviarInscripcionEvento = async (ev) => {
+    ev.preventDefault();
+    const nombre = document.getElementById('inscNombreInput').value.trim();
+    const autoriza = document.querySelector('input[name="inscAutoriza"]:checked').value === 'si';
+    if (!nombre) return;
+    const btn = ev.target.querySelector('.inscripcion-btn');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    try {
+      await addDoc(collection(db, 'inscripciones'), {
+        nombre, autorizaFotos: autoriza, creadoEn: serverTimestamp(),
+      });
+      document.getElementById('formInscripcionEvento').style.display = 'none';
+      document.getElementById('inscripcionConfirmacion').style.display = 'block';
+    } catch(e) {
+      alert('No se pudo registrar tu inscripción. Intenta de nuevo en unos minutos.');
+      btn.disabled = false; btn.textContent = 'Inscribirme';
+    }
+  };
 
   async function cargarDocumentos() {
     try {
