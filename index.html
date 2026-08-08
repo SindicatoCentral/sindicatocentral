@@ -73,6 +73,17 @@
   }
   .nav-cta:hover { background: #1E3F5F; color: var(--blanco); }
 
+  .nav-inscripcion {
+    background: #E65100 !important; color: #fff !important;
+    padding: 0.4rem 0.9rem; border-radius: 20px;
+    animation: pulso-inscripcion 2s ease-in-out infinite;
+  }
+  .nav-inscripcion:hover { background: #C64100 !important; }
+  @keyframes pulso-inscripcion {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(230,81,0,0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(230,81,0,0); }
+  }
+
   /* ── BÚSQUEDA ── */
   .btn-buscar {
     background: none; border: none; cursor: pointer;
@@ -433,16 +444,18 @@
 
   /* ── INSCRIPCIÓN A EVENTOS ── */
   .inscripcion-evento {
-    background: #FFF8E1; border-top: 3px solid #E65100; border-bottom: 3px solid #E65100;
-    padding: 3rem 1.5rem;
+    background: linear-gradient(180deg, #FFF3E0, #FFF8E1);
+    border-top: 4px solid #E65100; border-bottom: 4px solid #E65100;
+    padding: 3.5rem 1.5rem;
   }
   .inscripcion-box { max-width: 620px; margin: 0 auto; text-align: center; }
+  .inscripcion-icono { font-size: 2.8rem; margin-bottom: 0.6rem; }
   .inscripcion-eyebrow {
-    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
-    color: #E65100; font-weight: 700; margin-bottom: 0.6rem;
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em;
+    color: #E65100; font-weight: 800; margin-bottom: 0.5rem;
   }
-  .inscripcion-evento h2 { margin-bottom: 0.4rem; }
-  .inscripcion-fecha { color: #555; font-size: 0.95rem; margin-bottom: 1.5rem; }
+  .inscripcion-evento h2 { margin-bottom: 0.4rem; font-size: 2rem; }
+  .inscripcion-fecha { color: #555; font-size: 1.05rem; margin-bottom: 1.8rem; font-weight: 600; }
   .inscripcion-consentimiento {
     background: #FFFFFF; border-radius: 3px; padding: 1.2rem 1.4rem;
     font-size: 0.85rem; color: #555; text-align: left; margin-bottom: 1.5rem;
@@ -1373,6 +1386,7 @@
     <li><a href="#noticias" onclick="ocultarSecciones(); cerrarMenu()" class="nav-notif" id="navNoticias">Noticias</a></li>
     <li><a href="#galeria" onclick="ocultarSecciones(); cerrarMenu()">Galería</a></li>
     <li><a href="#contacto" onclick="ocultarSecciones(); cerrarMenu()">Contacto</a></li>
+    <li id="navInscripcionLi" style="display:none;"><a href="#inscripcion-evento" class="nav-inscripcion" onclick="cerrarMenu()">🎉 Inscríbete</a></li>
 
   </ul>
 
@@ -1627,6 +1641,7 @@
 
 <section class="inscripcion-evento" id="inscripcion-evento" style="display:none;">
   <div class="inscripcion-box">
+    <div class="inscripcion-icono">🎉</div>
     <p class="inscripcion-eyebrow">Inscripciones abiertas</p>
     <h2 id="inscEventoNombre">Evento</h2>
     <p class="inscripcion-fecha" id="inscEventoFecha"></p>
@@ -2318,6 +2333,13 @@ function convertirUrlVideo(url) {
       if (d.hora) fechaTexto += ` · ${d.hora} hrs`;
       document.getElementById('inscEventoFecha').textContent = fechaTexto;
       document.getElementById('inscripcion-evento').style.display = 'block';
+      document.getElementById('navInscripcionLi').style.display = 'block';
+      if (window.busquedaIndiceNoticias) {
+        window.busquedaIndiceNoticias.push({
+          titulo: 'Inscríbete: ' + (d.nombre || 'Evento'),
+          texto: fechaTexto, anchor: 'inscripcion-evento', tipo: 'Evento',
+        });
+      }
     } catch(e) { /* si falla, simplemente no se muestra la sección */ }
   }
   cargarEventoInscripcion();
