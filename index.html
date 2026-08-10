@@ -307,6 +307,27 @@
   }
   .card p { font-size: 0.9rem; color: #333333; }
 
+  /* ── LEY KARIN / ACOSO LABORAL ── */
+  .acoso-laboral { background: var(--gris-claro); padding: 5rem 1.5rem; }
+  .acoso-intro { max-width: 720px; margin: 0 auto 2.5rem; text-align: center; }
+  .acoso-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem; max-width: 1000px; margin: 0 auto 2.5rem;
+  }
+  .acoso-card {
+    background: var(--blanco); border-radius: 3px; padding: 1.6rem;
+    border-top: 3px solid var(--rojo);
+  }
+  .acoso-card h3 { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin-bottom: 0.6rem; color: var(--carbon); }
+  .acoso-card p { font-size: 0.88rem; color: #666; line-height: 1.6; margin: 0; }
+  .acoso-card ul { margin: 0.4rem 0 0 1.1rem; padding: 0; font-size: 0.88rem; color: #666; line-height: 1.8; }
+  .acoso-canales {
+    max-width: 720px; margin: 0 auto; background: var(--blanco);
+    border-radius: 3px; padding: 1.8rem 2rem; border-left: 3px solid var(--rojo);
+  }
+  .acoso-canales h3 { font-family: 'Playfair Display', serif; margin-bottom: 0.8rem; color: var(--carbon); }
+  .acoso-canales ul { margin: 0 0 0 1.1rem; padding: 0; font-size: 0.9rem; color: #555; line-height: 2; }
+
   /* ── DIRECTIVA ── */
   .directiva { background: #1C2B3A; }
   .directiva .section-title { color: var(--blanco); }
@@ -1381,6 +1402,7 @@
   <ul class="nav-links" id="navLinks">
     <li><a href="#sobre" onclick="ocultarSecciones(); cerrarMenu()">Sobre nosotros</a></li>
     <li><a href="#beneficios" onclick="ocultarSecciones(); cerrarMenu()">Beneficios</a></li>
+    <li><a href="#acoso-laboral" onclick="ocultarSecciones(); cerrarMenu()">Ley Karin</a></li>
     <li><a href="#directiva" onclick="ocultarSecciones(); cerrarMenu()">Directiva</a></li>
     <li><a href="#documentos" onclick="mostrarSeccion('documentos'); cerrarMenu()">Documentos</a></li>
     <li><a href="#noticias" onclick="ocultarSecciones(); cerrarMenu()" class="nav-notif" id="navNoticias">Noticias</a></li>
@@ -1688,6 +1710,57 @@
         <p>Un reconocimiento para cada socio en fechas especiales: Cumpleaños, Día del Trabajador y Aniversario del Sindicato.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- LEY KARIN / ACOSO LABORAL -->
+<section class="acoso-laboral" id="acoso-laboral">
+  <div class="acoso-intro">
+    <p class="section-eyebrow">Ley Karin</p>
+    <h2 class="section-title">Prevención del acoso laboral</h2>
+    <p class="section-body">La Ley Karin (N° 21.643) modifica el Código del Trabajo para prevenir, investigar y sancionar el acoso laboral, sexual y la violencia en el trabajo. Aquí van algunos tips prácticos para reconocerlo y saber qué hacer.</p>
+  </div>
+
+  <div class="acoso-cards">
+    <div class="acoso-card">
+      <h3>¿Cómo reconocerlo?</h3>
+      <p>El acoso laboral es toda conducta que agrede u hostiga reiteradamente a un trabajador, afectando su dignidad o generando un ambiente hostil. Puede incluir humillaciones, aislamiento, sobrecarga injustificada de trabajo, o comentarios y conductas de connotación sexual no deseadas.</p>
+    </div>
+    <div class="acoso-card">
+      <h3>Si te está pasando a ti</h3>
+      <ul>
+        <li>No estás obligado a resolverlo solo/a.</li>
+        <li>Guarda registro de lo ocurrido: fechas, mensajes, testigos.</li>
+        <li>Busca apoyo en el sindicato o en una persona de confianza.</li>
+        <li>Presenta la denuncia por los canales formales.</li>
+      </ul>
+    </div>
+    <div class="acoso-card">
+      <h3>Si eres testigo</h3>
+      <ul>
+        <li>Ofrece apoyo a la persona afectada.</li>
+        <li>No minimices lo que presenciaste.</li>
+        <li>Puedes acompañar o ayudar a documentar la situación si la persona lo pide.</li>
+      </ul>
+    </div>
+    <div class="acoso-card">
+      <h3>Qué garantiza la ley</h3>
+      <ul>
+        <li>Toda denuncia debe ser investigada.</li>
+        <li>Protección contra represalias por denunciar.</li>
+        <li>Plazos definidos para la investigación.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="acoso-canales">
+    <h3>Canales de denuncia</h3>
+    <ul>
+      <li>Directamente ante tu empleador, a través del protocolo interno.</li>
+      <li>Ante la <a href="https://www.dt.gob.cl" target="_blank" rel="noopener">Dirección del Trabajo</a>.</li>
+      <li>Asesoría jurídica del sindicato, como socio afiliado.</li>
+      <li>Texto completo de la <a href="https://www.bcn.cl/leychile/navegar?idNorma=1200096" target="_blank" rel="noopener">Ley Karin en la Biblioteca del Congreso Nacional</a>.</li>
+    </ul>
   </div>
 </section>
 
@@ -2023,6 +2096,7 @@ const busquedaIndiceEstatico = [
   { titulo: 'Beneficios que te respaldan', texto: 'Convenios y protecciones para los socios', anchor: 'beneficios', tipo: 'Sección' },
   { titulo: 'Asesoría jurídica', texto: 'Representación legal ante autoridades administrativas o judiciales, derechos laborales', anchor: 'beneficios', tipo: 'Beneficio' },
   { titulo: 'Negociación colectiva', texto: 'Representación en la mesa de negociación para mejorar remuneraciones y condiciones laborales', anchor: 'beneficios', tipo: 'Beneficio' },
+  { titulo: 'Ley Karin', texto: 'Prevención del acoso laboral, sexual y violencia en el trabajo: cómo reconocerlo, qué hacer y canales de denuncia', anchor: 'acoso-laboral', tipo: 'Sección' },
   { titulo: 'Gift Card', texto: 'Un reconocimiento para cada socio en fechas especiales: Cumpleaños, Día del Trabajador y Aniversario del Sindicato', anchor: 'beneficios', tipo: 'Beneficio' },
   { titulo: 'Directiva sindical', texto: 'Directorio período 2025–2028', anchor: 'directiva', tipo: 'Sección' },
   { titulo: 'Marco Marchant Córdova', texto: 'Presidente de la directiva sindical', anchor: 'directiva', tipo: 'Directiva' },
