@@ -2080,6 +2080,7 @@ function toggleMenu() {
   const btn  = document.getElementById('hamburguesa');
   menu.classList.toggle('abierto');
   btn.classList.toggle('activo');
+  if (menu.classList.contains('abierto')) menu.scrollTop = 0;
 }
 function cerrarMenu() {
   document.getElementById('navLinks').classList.remove('abierto');
