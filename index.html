@@ -23,6 +23,12 @@
 
   html { scroll-behavior: smooth; }
 
+  section[id] { scroll-margin-top: 84px; }
+
+  @media (max-width: 768px) {
+    section[id] { scroll-margin-top: 66px; }
+  }
+
   body {
     font-family: 'Inter', sans-serif;
     color: var(--gris);
@@ -527,7 +533,7 @@
   .enlaces-categoria a span { font-size: 0.7rem; color: #999; }
 
   /* ── RESPONSIVE ── */
-  @media (max-width: 1440px) {
+  @media (max-width: 1100px) {
 
     /* NAV */
     nav {
@@ -666,7 +672,7 @@
     background: none; border: none;
     align-items: center; justify-content: center;
   }
-  @media (max-width: 1440px) {
+  @media (max-width: 1100px) {
     .hamburguesa { display: flex !important; }
     .nav-links:not(.abierto) { display: none !important; }
   }
