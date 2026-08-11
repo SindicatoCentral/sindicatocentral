@@ -341,6 +341,10 @@
   .acoso-canales-texto { font-size: 0.9rem; color: #555; line-height: 1.7; margin-bottom: 1rem; }
   .acoso-canales-nota { font-size: 0.85rem; color: #777; margin: 0; }
 
+  .capsulas-legales { max-width: 900px; margin: 3.5rem auto 0; }
+  .capsulas-titulo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--carbon); text-align: center; margin-bottom: 0.5rem; }
+  .capsulas-subtitulo { font-size: 0.9rem; color: #666; text-align: center; margin-bottom: 1.8rem; }
+
   /* ── DIRECTIVA ── */
   .directiva { background: #1C2B3A; }
   .directiva .section-title { color: var(--blanco); }
@@ -788,6 +792,8 @@
     .acoso-canales ul, .acoso-canales p { color: #cfcfcf; }
     .acoso-canales-texto, .acoso-canales-nota { color: #cfcfcf; }
     .acoso-canales a { color: #7fb3e0; }
+    .capsulas-titulo { color: #f0f0f0; }
+    .capsulas-subtitulo { color: #aaaaaa; }
     .doc-tipo.word { background: #1a2a3a; color: #7aadff; }
     .doc-tipo.pdf  { background: #2a1a1a; color: #ff8080; }
     .envio-card { background: #1a2a3a; }
@@ -1785,6 +1791,58 @@
     <h3>¿Eres víctima de acoso laboral? Contáctanos</h3>
     <p class="acoso-canales-texto">Si estás viviendo esta situación, escríbenos a través del <a href="#contacto" onclick="ocultarSecciones(); mostrarSeccion('contacto')">formulario de contacto</a>. Como socio, cuentas con asesoría jurídica del sindicato para que sepas exactamente qué pasos seguir, con acompañamiento en todo el proceso.</p>
     <p class="acoso-canales-nota">También puedes denunciar directamente ante tu empleador (protocolo interno) o ante la <a href="https://www.dt.gob.cl" target="_blank" rel="noopener">Dirección del Trabajo</a>. Puedes revisar el texto completo de la <a href="https://www.bcn.cl/leychile/navegar?idNorma=1200096" target="_blank" rel="noopener">Ley Karin</a>, que regula esta materia.</p>
+  </div>
+
+  <div class="capsulas-legales">
+    <h3 class="capsulas-titulo">Cápsulas informativas y legales</h3>
+    <p class="capsulas-subtitulo">Normativas y procedimientos que todo socio debería conocer. Haz clic para desplegar cada una.</p>
+    <div class="faq-lista">
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          <span>Ley Karin: plazos y protocolo</span>
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">
+          <p>La Ley Karin (N° 21.643) obliga a la Universidad a contar con un protocolo de prevención del acoso laboral, acoso sexual y violencia en el trabajo, e investigar toda denuncia formal en un plazo máximo de 30 días hábiles. Terminada la investigación, el caso puede derivarse a la Dirección del Trabajo o a la Superintendencia de Seguridad Social para su sanción. Revisa el <a href="https://www.bcn.cl/leychile/navegar?idNorma=1200096" target="_blank" rel="noopener">texto completo de la ley</a>.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          <span>Ley de Conciliación de la Vida Personal, Familiar y Laboral</span>
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">
+          <p>La Ley 21.645, vigente desde enero de 2024, da derecho a trabajo a distancia o teletrabajo a quienes tienen el cuidado personal de un niño o niña menor de 14 años, o de una persona con discapacidad o en situación de dependencia severa o moderada. También contempla el derecho preferente a usar el feriado legal y la posibilidad de reducir transitoriamente la jornada durante las vacaciones escolares. Más información en la <a href="https://www.subtrab.gob.cl/conciliacion/" target="_blank" rel="noopener">Subsecretaría del Trabajo</a>.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          <span>Ley de 40 Horas: calendario de reducción</span>
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">
+          <p>La Ley 21.561 reduce en forma gradual la jornada ordinaria semanal: de 45 a 44 horas desde abril de 2024, a 42 horas desde abril de 2026, y a 40 horas desde abril de 2028. Es un cambio legal que aplica a todos los trabajadores del Código del Trabajo, no algo negociado particularmente por el Sindicato. Detalles en el sitio del <a href="https://www.mintrab.gob.cl/40horas/" target="_blank" rel="noopener">Ministerio del Trabajo</a>.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          <span>Fuero maternal y postnatal parental</span>
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">
+          <p>La trabajadora tiene fuero laboral (protección contra el despido sin autorización judicial) desde el inicio del embarazo y hasta un año después de terminado el postnatal. Al descanso de maternidad (6 semanas antes del parto y 12 semanas después) se suma el postnatal parental, un periodo adicional que puede tomarse a jornada completa o combinarse con trabajo a media jornada por más semanas. Las condiciones específicas de cada caso conviene confirmarlas con la <a href="https://www.suseso.cl" target="_blank" rel="noopener">Superintendencia de Seguridad Social</a>.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-pregunta" onclick="toggleFaq(this)">
+          <span>Derecho a sala cuna</span>
+          <span class="faq-icono">+</span>
+        </button>
+        <div class="faq-respuesta">
+          <p>El artículo 203 del Código del Trabajo obliga a financiar sala cuna para hijos e hijas menores de dos años de las trabajadoras. Como viste en la sección de Beneficios, este derecho está reforzado en nuestro contrato colectivo, incluyendo un bono compensatorio cuando no es posible usar la sala cuna asignada.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
