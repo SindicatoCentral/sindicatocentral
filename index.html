@@ -549,6 +549,9 @@
       display: none;
       position: fixed;
       top: 56px; left: 0; right: 0;
+      max-height: calc(100vh - 56px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       background: rgba(20,20,20,0.99);
       flex-direction: column;
       padding: 0;
@@ -699,6 +702,9 @@
       display: none;
       position: fixed;
       top: 56px; left: 0; right: 0;
+      max-height: calc(100vh - 56px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       background: rgba(30,30,30,0.98);
       flex-direction: column;
       padding: 1.5rem 2rem;
