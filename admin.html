@@ -291,6 +291,7 @@
       <button class="tab-p" onclick="cambiarTab('popup', this)">Popup</button>
       <button class="tab-p" onclick="cambiarTab('galeria', this)">Galería</button>
       <button class="tab-p" onclick="cambiarTab('documentos', this)">Documentos</button>
+      <button class="tab-p" onclick="cambiarTab('presupuesto', this)">Presupuesto</button>
       <button class="tab-p" onclick="cambiarTab('inscripciones', this)">Inscripciones</button>
 
     </div>
@@ -563,6 +564,65 @@
 
     </div>
 
+    <!-- EJECUCIÓN PRESUPUESTARIA -->
+    <div class="seccion" id="sec-presupuesto">
+
+      <!-- Presupuestos anuales -->
+      <div class="form-card visible" style="margin-bottom:1.5rem;">
+        <h3>Presupuestos anuales aprobados</h3>
+        <p style="font-size:0.82rem; color:var(--gris-medio); margin:-0.5rem 0 1rem;">Un presupuesto por año, aprobado en asamblea.</p>
+        <div class="form-group">
+          <label>Año</label>
+          <input type="number" id="presupuestoAno" placeholder="2026" min="1990" max="2100">
+        </div>
+        <div class="form-group">
+          <label>Archivo del presupuesto</label>
+          <div class="upload-area" onclick="document.getElementById('inputPresupuesto').click()">
+            <input type="file" id="inputPresupuesto" accept=".pdf,.doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="previsualizarPresupuesto(this)">
+            <div class="upload-icon">💰</div>
+            <div class="upload-text" id="presupuestoArchivoNombre">Toca aquí para seleccionar el archivo</div>
+            <div class="upload-hint">PDF o Word</div>
+          </div>
+          <div class="progress-bar" id="progressPresupuesto"><div class="progress-fill" id="fillPresupuesto"></div></div>
+        </div>
+        <div class="form-acciones">
+          <button class="btn-guardar" onclick="subirPresupuesto()">Subir presupuesto</button>
+        </div>
+        <div id="presupuestosList" style="margin-top:1.5rem;"><div class="loading">Cargando presupuestos...</div></div>
+      </div>
+
+      <!-- Informes comisión revisora -->
+      <div class="form-card visible">
+        <h3>Informes de la comisión revisora de cuentas</h3>
+        <p style="font-size:0.82rem; color:var(--gris-medio); margin:-0.5rem 0 1rem;">Puede haber varios informes en el mismo año, según cuántas revisiones se realicen.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Año</label>
+            <input type="number" id="informeAno" placeholder="2026" min="1990" max="2100">
+          </div>
+          <div class="form-group">
+            <label>Período o fecha del informe</label>
+            <input type="text" id="informePeriodo" placeholder="Ej: 1er semestre, o 15 de marzo">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Archivo del informe</label>
+          <div class="upload-area" onclick="document.getElementById('inputInforme').click()">
+            <input type="file" id="inputInforme" accept=".pdf,.doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="previsualizarInforme(this)">
+            <div class="upload-icon">🧾</div>
+            <div class="upload-text" id="informeArchivoNombre">Toca aquí para seleccionar el archivo</div>
+            <div class="upload-hint">PDF o Word</div>
+          </div>
+          <div class="progress-bar" id="progressInforme"><div class="progress-fill" id="fillInforme"></div></div>
+        </div>
+        <div class="form-acciones">
+          <button class="btn-guardar" onclick="subirInforme()">Subir informe</button>
+        </div>
+        <div id="informesRevisoraList" style="margin-top:1.5rem;"><div class="loading">Cargando informes...</div></div>
+      </div>
+
+    </div>
+
     <!-- INSCRIPCIONES A EVENTOS -->
     <div class="seccion" id="sec-inscripciones">
 
@@ -751,13 +811,15 @@
     document.getElementById('seccionTitulo').textContent =
       tab === 'publicadas' ? 'Noticias y comunicados' :
       tab === 'historial'  ? 'Historial de noticias' :
-      tab === 'inscripciones' ? 'Inscripción a eventos' : 'Configuración del Popup';
+      tab === 'inscripciones' ? 'Inscripción a eventos' :
+      tab === 'presupuesto' ? 'Ejecución presupuestaria' : 'Configuración del Popup';
     ocultarFormulario();
     if (tab === 'publicadas') cargarNoticias('publicada', 'noticiasList');
     if (tab === 'historial')  cargarNoticias('archivada', 'historialList');
     if (tab === 'popup')      cargarPopup();
     if (tab === 'galeria')    cargarGaleria();
     if (tab === 'documentos') cargarDocumentos();
+    if (tab === 'presupuesto') { cargarPresupuestos(); cargarInformesRevisora(); }
     if (tab === 'inscripciones') cargarConfigEvento();
   };
 
@@ -1554,6 +1616,189 @@
       if (path) { try { await deleteObject(ref(storage, path)); } catch(e) {} }
       mostrarToast('Contrato eliminado.', 'exito');
       cargarContratos();
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+  };
+
+
+  // ── EJECUCIÓN PRESUPUESTARIA ──
+  let archivoPresupuesto = null;
+  let archivoInforme = null;
+
+  window.previsualizarPresupuesto = (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    archivoPresupuesto = file;
+    document.getElementById('presupuestoArchivoNombre').textContent = '📎 ' + file.name;
+  };
+
+  window.subirPresupuesto = async () => {
+    const ano = document.getElementById('presupuestoAno').value.trim();
+    if (!ano) { mostrarToast('Ingresa el año del presupuesto.', 'error'); return; }
+    if (!archivoPresupuesto) { mostrarToast('Selecciona el archivo del presupuesto.', 'error'); return; }
+    const nombre = 'Presupuesto Anual ' + ano;
+    const btn = document.querySelector('#sec-presupuesto .form-card:first-of-type .btn-guardar');
+    btn.textContent = 'Subiendo...'; btn.disabled = true;
+    document.getElementById('progressPresupuesto').style.display = 'block';
+    try {
+      const storRef = ref(storage, 'documentos/presupuestos/' + archivoPresupuesto.name);
+      const metaPresupuesto = { contentDisposition: 'attachment; filename="' + nombre + '.pdf"' };
+      await new Promise((resolve, reject) => {
+        const tarea = uploadBytesResumable(storRef, archivoPresupuesto, metaPresupuesto);
+        tarea.on('state_changed',
+          s => document.getElementById('fillPresupuesto').style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
+          reject,
+          async () => {
+            const url = await getDownloadURL(tarea.snapshot.ref);
+            await addDoc(collection(db, 'documentos', 'presupuestos', 'lista'), {
+              nombre, url, path: 'documentos/presupuestos/' + archivoPresupuesto.name,
+              ano: parseInt(ano), createdAt: serverTimestamp()
+            });
+            resolve();
+          }
+        );
+      });
+      document.getElementById('progressPresupuesto').style.display = 'none';
+      document.getElementById('fillPresupuesto').style.width = '0%';
+      document.getElementById('presupuestoAno').value = '';
+      document.getElementById('presupuestoArchivoNombre').textContent = 'Toca aquí para seleccionar el archivo';
+      archivoPresupuesto = null;
+      mostrarToast('Presupuesto subido correctamente.', 'exito');
+      cargarPresupuestos();
+    } catch(e) {
+      mostrarToast('Error al subir presupuesto: ' + e.message, 'error');
+    } finally {
+      btn.textContent = 'Subir presupuesto'; btn.disabled = false;
+    }
+  };
+
+  window.cargarPresupuestos = async () => {
+    const lista = document.getElementById('presupuestosList');
+    lista.innerHTML = '<div class="loading">Cargando presupuestos...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, 'documentos', 'presupuestos', 'lista'), orderBy('ano', 'desc')));
+      if (snap.empty) {
+        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">💰</div><p>No hay presupuestos aún.</p></div>';
+        return;
+      }
+      lista.innerHTML = '';
+      snap.forEach(d => {
+        const p = d.data();
+        const item = document.createElement('div');
+        item.className = 'noticia-item';
+        item.innerHTML = `
+          <div class="noticia-info">
+            <div class="noticia-titulo-item">${p.nombre}</div>
+            <div class="noticia-resumen-item">Año: ${p.ano}</div>
+          </div>
+          <div class="noticia-acciones">
+            <a href="${p.url}" target="_blank" class="btn-accion editar">Ver</a>
+            <button class="btn-accion eliminar" onclick="eliminarPresupuesto('${d.id}', '${p.path}')">Eliminar</button>
+          </div>
+        `;
+        lista.appendChild(item);
+      });
+    } catch(e) {
+      lista.innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+    }
+  };
+
+  window.eliminarPresupuesto = async (id, path) => {
+    if (!confirm('¿Eliminar este presupuesto?')) return;
+    try {
+      await deleteDoc(doc(db, 'documentos', 'presupuestos', 'lista', id));
+      if (path) { try { await deleteObject(ref(storage, path)); } catch(e) {} }
+      mostrarToast('Presupuesto eliminado.', 'exito');
+      cargarPresupuestos();
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+  };
+
+  window.previsualizarInforme = (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    archivoInforme = file;
+    document.getElementById('informeArchivoNombre').textContent = '📎 ' + file.name;
+  };
+
+  window.subirInforme = async () => {
+    const ano = document.getElementById('informeAno').value.trim();
+    const periodo = document.getElementById('informePeriodo').value.trim();
+    if (!ano) { mostrarToast('Ingresa el año del informe.', 'error'); return; }
+    if (!archivoInforme) { mostrarToast('Selecciona el archivo del informe.', 'error'); return; }
+    const nombre = 'Informe Comisión Revisora ' + ano + (periodo ? ' — ' + periodo : '');
+    const btn = document.querySelector('#sec-presupuesto .form-card:last-of-type .btn-guardar');
+    btn.textContent = 'Subiendo...'; btn.disabled = true;
+    document.getElementById('progressInforme').style.display = 'block';
+    try {
+      const storRef = ref(storage, 'documentos/informes-revisora/' + archivoInforme.name);
+      const metaInforme = { contentDisposition: 'attachment; filename="' + nombre + '.pdf"' };
+      await new Promise((resolve, reject) => {
+        const tarea = uploadBytesResumable(storRef, archivoInforme, metaInforme);
+        tarea.on('state_changed',
+          s => document.getElementById('fillInforme').style.width = (s.bytesTransferred/s.totalBytes*100)+'%',
+          reject,
+          async () => {
+            const url = await getDownloadURL(tarea.snapshot.ref);
+            await addDoc(collection(db, 'documentos', 'informes-revisora', 'lista'), {
+              nombre, url, path: 'documentos/informes-revisora/' + archivoInforme.name,
+              ano: parseInt(ano), periodo: periodo || '', createdAt: serverTimestamp()
+            });
+            resolve();
+          }
+        );
+      });
+      document.getElementById('progressInforme').style.display = 'none';
+      document.getElementById('fillInforme').style.width = '0%';
+      document.getElementById('informeAno').value = '';
+      document.getElementById('informePeriodo').value = '';
+      document.getElementById('informeArchivoNombre').textContent = 'Toca aquí para seleccionar el archivo';
+      archivoInforme = null;
+      mostrarToast('Informe subido correctamente.', 'exito');
+      cargarInformesRevisora();
+    } catch(e) {
+      mostrarToast('Error al subir informe: ' + e.message, 'error');
+    } finally {
+      btn.textContent = 'Subir informe'; btn.disabled = false;
+    }
+  };
+
+  window.cargarInformesRevisora = async () => {
+    const lista = document.getElementById('informesRevisoraList');
+    lista.innerHTML = '<div class="loading">Cargando informes...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, 'documentos', 'informes-revisora', 'lista'), orderBy('ano', 'desc')));
+      if (snap.empty) {
+        lista.innerHTML = '<div class="vacio"><div class="vacio-icon">🧾</div><p>No hay informes aún.</p></div>';
+        return;
+      }
+      lista.innerHTML = '';
+      snap.forEach(d => {
+        const i = d.data();
+        const item = document.createElement('div');
+        item.className = 'noticia-item';
+        item.innerHTML = `
+          <div class="noticia-info">
+            <div class="noticia-titulo-item">${i.nombre}</div>
+            <div class="noticia-resumen-item">Año: ${i.ano}${i.periodo ? ' · ' + i.periodo : ''}</div>
+          </div>
+          <div class="noticia-acciones">
+            <a href="${i.url}" target="_blank" class="btn-accion editar">Ver</a>
+            <button class="btn-accion eliminar" onclick="eliminarInformeRevisora('${d.id}', '${i.path}')">Eliminar</button>
+          </div>
+        `;
+        lista.appendChild(item);
+      });
+    } catch(e) {
+      lista.innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+    }
+  };
+
+  window.eliminarInformeRevisora = async (id, path) => {
+    if (!confirm('¿Eliminar este informe?')) return;
+    try {
+      await deleteDoc(doc(db, 'documentos', 'informes-revisora', 'lista', id));
+      if (path) { try { await deleteObject(ref(storage, path)); } catch(e) {} }
+      mostrarToast('Informe eliminado.', 'exito');
+      cargarInformesRevisora();
     } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
   };
 

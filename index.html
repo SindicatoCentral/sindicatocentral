@@ -1955,6 +1955,24 @@
       <div id="contratosAnterioresList" style="display:none; margin-top:1rem; flex-direction:column; gap:0.6rem;"></div>
     </div>
 
+    <!-- Ejecución presupuestaria -->
+    <div id="presupuestoWrap" style="display:none; margin-top:1.5rem; border-top:1px solid var(--borde); padding-top:1.2rem;">
+      <button onclick="togglePresupuesto()" style="background:none; border:none; cursor:pointer; color:#2E5F8A; font-size:0.82rem; font-weight:600; font-family:Inter,sans-serif; display:flex; align-items:center; gap:0.5rem; letter-spacing:0.05em; text-transform:uppercase;" id="btnTogglePresupuesto">
+        ▶ Ejecución presupuestaria
+      </button>
+      <div id="presupuestoContenido" style="display:none; margin-top:1rem;">
+        <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">Presupuestos anuales aprobados en asamblea e informes de la comisión revisora de cuentas.</p>
+        <div style="margin-bottom:1.2rem;">
+          <h4 style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#888; margin-bottom:0.6rem;">Presupuestos anuales</h4>
+          <div id="presupuestosPublicoList" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+        </div>
+        <div>
+          <h4 style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#888; margin-bottom:0.6rem;">Informes de la comisión revisora de cuentas</h4>
+          <div id="informesPublicoList" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -2633,6 +2651,53 @@ function convertirUrlVideo(url) {
         document.getElementById('btnContrato').dataset.nombre = 'contrato_colectivo_vigente.pdf';
         document.getElementById('cardContrato').style.display = 'block';
       }
+
+      // Ejecución presupuestaria: presupuestos anuales
+      const snapPresupuestos = await getDocs(query(collection(db, 'documentos', 'presupuestos', 'lista'), orderBy('ano', 'desc')));
+      const snapInformes = await getDocs(query(collection(db, 'documentos', 'informes-revisora', 'lista'), orderBy('ano', 'desc')));
+
+      if (!snapPresupuestos.empty || !snapInformes.empty) {
+        document.getElementById('presupuestoWrap').style.display = 'block';
+
+        const listaPresu = document.getElementById('presupuestosPublicoList');
+        if (!snapPresupuestos.empty) {
+          listaPresu.innerHTML = snapPresupuestos.docs.map(d => {
+            const p = d.data();
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 1rem; background:var(--gris-claro); border:1px solid var(--borde); border-radius:2px;">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                  <span style="font-size:0.9rem;">💰</span>
+                  <div style="font-weight:600; font-size:0.85rem; color:var(--carbon);">${p.nombre}</div>
+                </div>
+                <button class="btn-descarga" style="font-size:0.72rem; padding:0.4rem 0.8rem;" data-url="${p.url}" data-nombre="${p.nombre}.pdf" onclick="descargarArchivo(this)">⬇ Descargar</button>
+              </div>
+            `;
+          }).join('');
+        } else {
+          listaPresu.innerHTML = '<p style="font-size:0.82rem; color:#888;">Aún no hay presupuestos publicados.</p>';
+        }
+
+        const listaInf = document.getElementById('informesPublicoList');
+        if (!snapInformes.empty) {
+          listaInf.innerHTML = snapInformes.docs.map(d => {
+            const i = d.data();
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 1rem; background:var(--gris-claro); border:1px solid var(--borde); border-radius:2px;">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                  <span style="font-size:0.9rem;">🧾</span>
+                  <div>
+                    <div style="font-weight:600; font-size:0.85rem; color:var(--carbon);">${i.nombre}</div>
+                    <div style="font-size:0.72rem; color:#888;">${i.ano}${i.periodo ? ' · ' + i.periodo : ''}</div>
+                  </div>
+                </div>
+                <button class="btn-descarga" style="font-size:0.72rem; padding:0.4rem 0.8rem;" data-url="${i.url}" data-nombre="${i.nombre}.pdf" onclick="descargarArchivo(this)">⬇ Descargar</button>
+              </div>
+            `;
+          }).join('');
+        } else {
+          listaInf.innerHTML = '<p style="font-size:0.82rem; color:#888;">Aún no hay informes publicados.</p>';
+        }
+      }
     } catch(e) {
       console.error('Error cargando documentos:', e);
       // Fallback a GitHub en caso de error
@@ -2937,6 +3002,14 @@ function toggleContratosAnteriores() {
   const visible = lista.style.display !== 'none' && lista.style.display !== '';
   lista.style.display = visible ? 'none' : 'flex';
   btn.innerHTML = visible ? '▶ Contratos colectivos anteriores' : '▼ Contratos colectivos anteriores';
+}
+
+function togglePresupuesto() {
+  const contenido = document.getElementById('presupuestoContenido');
+  const btn = document.getElementById('btnTogglePresupuesto');
+  const visible = contenido.style.display !== 'none' && contenido.style.display !== '';
+  contenido.style.display = visible ? 'none' : 'block';
+  btn.innerHTML = visible ? '▶ Ejecución presupuestaria' : '▼ Ejecución presupuestaria';
 }
 </script>
 
