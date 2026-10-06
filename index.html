@@ -23,12 +23,6 @@
 
   html { scroll-behavior: smooth; }
 
-  section[id] { scroll-margin-top: 84px; }
-
-  @media (max-width: 768px) {
-    section[id] { scroll-margin-top: 66px; }
-  }
-
   body {
     font-family: 'Inter', sans-serif;
     color: var(--gris);
@@ -42,33 +36,38 @@
     background: rgba(28,43,58,0.97);
     backdrop-filter: blur(8px);
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    padding: 0 0.75rem;
+    padding: 0 0.5rem 0 1rem;
     height: 68px;
     border-bottom: 2px solid #2E5F8A;
-    gap: 0.5rem;
+    gap: 0.3rem;
   }
   .nav-right {
-    display: flex; align-items: center; gap: 0.45rem; overflow: visible;
-    flex-shrink: 0;
+    display: flex; align-items: center; gap: 0.4rem; overflow: visible;
   }
-  .nav-logo { height: 40px; filter: brightness(0) invert(1); flex-shrink: 0; }
-  .nav-logo-ucen { height: 36px; opacity: 0.9; flex-shrink: 0; margin-right: 0.25rem; }
-  .nav-links { display: flex; gap: 0.7rem; list-style: none; justify-content: center; min-width: 0; overflow: hidden; }
+  .nav-logo { height: 58px; filter: brightness(0) invert(1); }
+  .nav-logo-ucen { height: 50px; opacity: 0.9; flex-shrink: 0; margin-right: 0.4rem; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; justify-content: center; }
   .nav-links a {
     color: #ffffff; text-decoration: none;
-    font-size: 0.64rem; letter-spacing: 0.01em; text-transform: uppercase;
+    font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase;
     font-weight: 500;
-    white-space: nowrap;
     transition: color 0.2s;
   }
   .nav-links a:hover { color: var(--blanco); }
 
+  @media (max-width: 1200px) {
+    .nav-links a { font-size: 0.72rem; letter-spacing: 0.04em; }
+  }
+  @media (max-width: 1024px) {
+    .nav-links a { font-size: 0.65rem; letter-spacing: 0.02em; }
+    .nav-links { gap: 0.8rem; }
+  }
   .nav-cta {
     background: #2E5F8A; color: #ffffff;
-    padding: 0.4rem 0.7rem; border-radius: 2px;
-    font-size: 0.64rem; font-weight: 700; text-decoration: none;
+    padding: 0.5rem 1rem; border-radius: 2px;
+    font-size: 0.75rem; font-weight: 700; text-decoration: none;
     letter-spacing: 0.06em; text-transform: uppercase;
     transition: background 0.2s; white-space: nowrap; flex-shrink: 0;
   }
@@ -83,16 +82,6 @@
   @keyframes pulso-inscripcion {
     0%, 100% { box-shadow: 0 0 0 0 rgba(230,81,0,0.5); }
     50% { box-shadow: 0 0 0 6px rgba(230,81,0,0); }
-  }
-
-  @media (min-width: 1500px) {
-    nav { padding: 0 1.5rem; gap: 1rem; }
-    .nav-right { gap: 0.6rem; }
-    .nav-logo { height: 58px; }
-    .nav-logo-ucen { height: 50px; margin-right: 0.4rem; }
-    .nav-links { gap: 2rem; }
-    .nav-links a { font-size: 0.82rem; letter-spacing: 0.08em; }
-    .nav-cta { padding: 0.5rem 1rem; font-size: 0.75rem; }
   }
 
   /* ── BÚSQUEDA ── */
@@ -341,10 +330,6 @@
   .acoso-canales-texto { font-size: 0.9rem; color: #555; line-height: 1.7; margin-bottom: 1rem; }
   .acoso-canales-nota { font-size: 0.85rem; color: #777; margin: 0; }
 
-  .capsulas-legales { max-width: 900px; margin: 3.5rem auto 0; }
-  .capsulas-titulo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--carbon); text-align: center; margin-bottom: 0.5rem; }
-  .capsulas-subtitulo { font-size: 0.9rem; color: #666; text-align: center; margin-bottom: 1.8rem; }
-
   /* ── DIRECTIVA ── */
   .directiva { background: #1C2B3A; }
   .directiva .section-title { color: var(--blanco); }
@@ -513,6 +498,9 @@
     font-size: 0.85rem; cursor: pointer; transition: background 0.2s; width: 100%;
   }
   .inscripcion-btn:hover { background: #C64100; }
+  .inscripcion-numero { margin-top:1rem; padding:0.9rem 1rem; border:2px dashed #E65100; border-radius:6px; color:#1C2B3A; }
+  .inscripcion-numero span { display:block; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.08em; opacity:.8; }
+  .inscripcion-numero strong { display:block; font-size:2.4rem; letter-spacing:.1em; color:#E65100; }
   .inscripcion-confirmacion { display:none; text-align:center; padding: 1.5rem; color: #2E7D32; font-weight: 600; }
 
   /* ── SITIOS DE INTERÉS ── */
@@ -542,7 +530,7 @@
   .enlaces-categoria a span { font-size: 0.7rem; color: #999; }
 
   /* ── RESPONSIVE ── */
-  @media (max-width: 920px) {
+  @media (max-width: 1440px) {
 
     /* NAV */
     nav {
@@ -681,7 +669,7 @@
     background: none; border: none;
     align-items: center; justify-content: center;
   }
-  @media (max-width: 920px) {
+  @media (max-width: 1440px) {
     .hamburguesa { display: flex !important; }
     .nav-links:not(.abierto) { display: none !important; }
   }
@@ -792,8 +780,6 @@
     .acoso-canales ul, .acoso-canales p { color: #cfcfcf; }
     .acoso-canales-texto, .acoso-canales-nota { color: #cfcfcf; }
     .acoso-canales a { color: #7fb3e0; }
-    .capsulas-titulo { color: #f0f0f0; }
-    .capsulas-subtitulo { color: #aaaaaa; }
     .doc-tipo.word { background: #1a2a3a; color: #7aadff; }
     .doc-tipo.pdf  { background: #2a1a1a; color: #ff8080; }
     .envio-card { background: #1a2a3a; }
@@ -1792,58 +1778,6 @@
     <p class="acoso-canales-texto">Si estás viviendo esta situación, escríbenos a través del <a href="#contacto" onclick="ocultarSecciones(); mostrarSeccion('contacto')">formulario de contacto</a>. Como socio, cuentas con asesoría jurídica del sindicato para que sepas exactamente qué pasos seguir, con acompañamiento en todo el proceso.</p>
     <p class="acoso-canales-nota">También puedes denunciar directamente ante tu empleador (protocolo interno) o ante la <a href="https://www.dt.gob.cl" target="_blank" rel="noopener">Dirección del Trabajo</a>. Puedes revisar el texto completo de la <a href="https://www.bcn.cl/leychile/navegar?idNorma=1200096" target="_blank" rel="noopener">Ley Karin</a>, que regula esta materia.</p>
   </div>
-
-  <div class="capsulas-legales">
-    <h3 class="capsulas-titulo">Cápsulas informativas y legales</h3>
-    <p class="capsulas-subtitulo">Normativas y procedimientos que todo socio debería conocer. Haz clic para desplegar cada una.</p>
-    <div class="faq-lista">
-      <div class="faq-item">
-        <button class="faq-pregunta" onclick="toggleFaq(this)">
-          <span>Ley Karin: plazos y protocolo</span>
-          <span class="faq-icono">+</span>
-        </button>
-        <div class="faq-respuesta">
-          <p>La Ley Karin (N° 21.643) obliga a la Universidad a contar con un protocolo de prevención del acoso laboral, acoso sexual y violencia en el trabajo, e investigar toda denuncia formal en un plazo máximo de 30 días hábiles. Terminada la investigación, el caso puede derivarse a la Dirección del Trabajo o a la Superintendencia de Seguridad Social para su sanción. Revisa el <a href="https://www.bcn.cl/leychile/navegar?idNorma=1200096" target="_blank" rel="noopener">texto completo de la ley</a>.</p>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-pregunta" onclick="toggleFaq(this)">
-          <span>Ley de Conciliación de la Vida Personal, Familiar y Laboral</span>
-          <span class="faq-icono">+</span>
-        </button>
-        <div class="faq-respuesta">
-          <p>La Ley 21.645, vigente desde enero de 2024, da derecho a trabajo a distancia o teletrabajo a quienes tienen el cuidado personal de un niño o niña menor de 14 años, o de una persona con discapacidad o en situación de dependencia severa o moderada. También contempla el derecho preferente a usar el feriado legal y la posibilidad de reducir transitoriamente la jornada durante las vacaciones escolares. Más información en la <a href="https://www.subtrab.gob.cl/conciliacion/" target="_blank" rel="noopener">Subsecretaría del Trabajo</a>.</p>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-pregunta" onclick="toggleFaq(this)">
-          <span>Ley de 40 Horas: calendario de reducción</span>
-          <span class="faq-icono">+</span>
-        </button>
-        <div class="faq-respuesta">
-          <p>La Ley 21.561 reduce en forma gradual la jornada ordinaria semanal: de 45 a 44 horas desde abril de 2024, a 42 horas desde abril de 2026, y a 40 horas desde abril de 2028. Es un cambio legal que aplica a todos los trabajadores del Código del Trabajo, no algo negociado particularmente por el Sindicato. Detalles en el sitio del <a href="https://www.mintrab.gob.cl/40horas/" target="_blank" rel="noopener">Ministerio del Trabajo</a>.</p>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-pregunta" onclick="toggleFaq(this)">
-          <span>Fuero maternal y postnatal parental</span>
-          <span class="faq-icono">+</span>
-        </button>
-        <div class="faq-respuesta">
-          <p>La trabajadora tiene fuero laboral (protección contra el despido sin autorización judicial) desde el inicio del embarazo y hasta un año después de terminado el postnatal. Al descanso de maternidad (6 semanas antes del parto y 12 semanas después) se suma el postnatal parental, un periodo adicional que puede tomarse a jornada completa o combinarse con trabajo a media jornada por más semanas. Las condiciones específicas de cada caso conviene confirmarlas con la <a href="https://www.suseso.cl" target="_blank" rel="noopener">Superintendencia de Seguridad Social</a>.</p>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-pregunta" onclick="toggleFaq(this)">
-          <span>Derecho a sala cuna</span>
-          <span class="faq-icono">+</span>
-        </button>
-        <div class="faq-respuesta">
-          <p>El artículo 203 del Código del Trabajo obliga a financiar sala cuna para hijos e hijas menores de dos años de las trabajadoras. Como viste en la sección de Beneficios, este derecho está reforzado en nuestro contrato colectivo, incluyendo un bono compensatorio cuando no es posible usar la sala cuna asignada. Revisa el <a href="https://www.bcn.cl/leychile/navegar?idNorma=1008293" target="_blank" rel="noopener">texto legal en BCN</a>.</p>
-        </div>
-      </div>
-    </div>
-  </div>
 </section>
 
 <!-- DIRECTIVA -->
@@ -1955,24 +1889,6 @@
       <div id="contratosAnterioresList" style="display:none; margin-top:1rem; flex-direction:column; gap:0.6rem;"></div>
     </div>
 
-    <!-- Ejecución presupuestaria -->
-    <div id="presupuestoWrap" style="display:none; margin-top:1.5rem; border-top:1px solid var(--borde); padding-top:1.2rem;">
-      <button onclick="togglePresupuesto()" style="background:none; border:none; cursor:pointer; color:#2E5F8A; font-size:0.82rem; font-weight:600; font-family:Inter,sans-serif; display:flex; align-items:center; gap:0.5rem; letter-spacing:0.05em; text-transform:uppercase;" id="btnTogglePresupuesto">
-        ▶ Ejecución presupuestaria
-      </button>
-      <div id="presupuestoContenido" style="display:none; margin-top:1rem;">
-        <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">Presupuestos anuales aprobados en asamblea e informes de la comisión revisora de cuentas.</p>
-        <div style="margin-bottom:1.2rem;">
-          <h4 style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#888; margin-bottom:0.6rem;">Presupuestos anuales</h4>
-          <div id="presupuestosPublicoList" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
-        </div>
-        <div>
-          <h4 style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#888; margin-bottom:0.6rem;">Informes de la comisión revisora de cuentas</h4>
-          <div id="informesPublicoList" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
-        </div>
-      </div>
-    </div>
-
   </div>
 </section>
 
@@ -2064,9 +1980,6 @@
         <li><a href="https://www.supersalud.gob.cl" target="_blank" rel="noopener">Superintendencia de Salud <span>↗</span></a></li>
         <li><a href="https://www.bcn.cl/leychile/navegar?idNorma=1200096" target="_blank" rel="noopener">Ley Karin <span>↗</span></a></li>
         <li><a href="https://www.mutual.cl" target="_blank" rel="noopener">Mutual de Seguridad <span>↗</span></a></li>
-        <li><a href="https://www.cajalosandes.cl/" target="_blank" rel="noopener">Caja de Compensación Los Andes <span>↗</span></a></li>
-        <li><a href="https://www.afc.cl/" target="_blank" rel="noopener">AFC <span>↗</span></a></li>
-        <li><a href="https://vidacamara.cl/" target="_blank" rel="noopener">Seguro Complementario <span>↗</span></a></li>
       </ul>
     </div>
     <div class="enlaces-categoria">
@@ -2436,7 +2349,7 @@ function convertirUrlVideo(url) {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc, addDoc, serverTimestamp }
+  import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc, addDoc, serverTimestamp, runTransaction }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -2571,11 +2484,20 @@ function convertirUrlVideo(url) {
     const btn = ev.target.querySelector('.inscripcion-btn');
     btn.disabled = true; btn.textContent = 'Enviando...';
     try {
-      await addDoc(collection(db, 'inscripciones'), {
-        nombre, autorizaFotos: autoriza, creadoEn: serverTimestamp(),
+      const contRef = doc(db, 'contadores', 'inscripciones');
+      const nuevaRef = doc(collection(db, 'inscripciones'));
+      const numero = await runTransaction(db, async (tx) => {
+        const snap = await tx.get(contRef);
+        const n = (snap.exists() ? (snap.data().ultimo || 0) : 0) + 1;
+        tx.set(contRef, { ultimo: n });
+        tx.set(nuevaRef, { nombre, autorizaFotos: autoriza, numero: n, creadoEn: serverTimestamp() });
+        return n;
       });
+      const numTxt = String(numero).padStart(3, '0');
       document.getElementById('formInscripcionEvento').style.display = 'none';
-      document.getElementById('inscripcionConfirmacion').style.display = 'block';
+      const conf = document.getElementById('inscripcionConfirmacion');
+      conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>';
+      conf.style.display = 'block';
     } catch(e) {
       alert('No se pudo registrar tu inscripción. Intenta de nuevo en unos minutos.');
       btn.disabled = false; btn.textContent = 'Inscribirme';
@@ -2650,53 +2572,6 @@ function convertirUrlVideo(url) {
         document.getElementById('btnContrato').dataset.url = 'documentos/contrato_colectivo_vigente.pdf';
         document.getElementById('btnContrato').dataset.nombre = 'contrato_colectivo_vigente.pdf';
         document.getElementById('cardContrato').style.display = 'block';
-      }
-
-      // Ejecución presupuestaria: presupuestos anuales
-      const snapPresupuestos = await getDocs(query(collection(db, 'documentos', 'presupuestos', 'lista'), orderBy('ano', 'desc')));
-      const snapInformes = await getDocs(query(collection(db, 'documentos', 'informes-revisora', 'lista'), orderBy('ano', 'desc')));
-
-      if (!snapPresupuestos.empty || !snapInformes.empty) {
-        document.getElementById('presupuestoWrap').style.display = 'block';
-
-        const listaPresu = document.getElementById('presupuestosPublicoList');
-        if (!snapPresupuestos.empty) {
-          listaPresu.innerHTML = snapPresupuestos.docs.map(d => {
-            const p = d.data();
-            return `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 1rem; background:var(--gris-claro); border:1px solid var(--borde); border-radius:2px;">
-                <div style="display:flex; align-items:center; gap:0.6rem;">
-                  <span style="font-size:0.9rem;">💰</span>
-                  <div style="font-weight:600; font-size:0.85rem; color:var(--carbon);">${p.nombre}</div>
-                </div>
-                <button class="btn-descarga" style="font-size:0.72rem; padding:0.4rem 0.8rem;" data-url="${p.url}" data-nombre="${p.nombre}.pdf" onclick="descargarArchivo(this)">⬇ Descargar</button>
-              </div>
-            `;
-          }).join('');
-        } else {
-          listaPresu.innerHTML = '<p style="font-size:0.82rem; color:#888;">Aún no hay presupuestos publicados.</p>';
-        }
-
-        const listaInf = document.getElementById('informesPublicoList');
-        if (!snapInformes.empty) {
-          listaInf.innerHTML = snapInformes.docs.map(d => {
-            const i = d.data();
-            return `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 1rem; background:var(--gris-claro); border:1px solid var(--borde); border-radius:2px;">
-                <div style="display:flex; align-items:center; gap:0.6rem;">
-                  <span style="font-size:0.9rem;">🧾</span>
-                  <div>
-                    <div style="font-weight:600; font-size:0.85rem; color:var(--carbon);">${i.nombre}</div>
-                    <div style="font-size:0.72rem; color:#888;">${i.ano}${i.periodo ? ' · ' + i.periodo : ''}</div>
-                  </div>
-                </div>
-                <button class="btn-descarga" style="font-size:0.72rem; padding:0.4rem 0.8rem;" data-url="${i.url}" data-nombre="${i.nombre}.pdf" onclick="descargarArchivo(this)">⬇ Descargar</button>
-              </div>
-            `;
-          }).join('');
-        } else {
-          listaInf.innerHTML = '<p style="font-size:0.82rem; color:#888;">Aún no hay informes publicados.</p>';
-        }
       }
     } catch(e) {
       console.error('Error cargando documentos:', e);
@@ -3002,14 +2877,6 @@ function toggleContratosAnteriores() {
   const visible = lista.style.display !== 'none' && lista.style.display !== '';
   lista.style.display = visible ? 'none' : 'flex';
   btn.innerHTML = visible ? '▶ Contratos colectivos anteriores' : '▼ Contratos colectivos anteriores';
-}
-
-function togglePresupuesto() {
-  const contenido = document.getElementById('presupuestoContenido');
-  const btn = document.getElementById('btnTogglePresupuesto');
-  const visible = contenido.style.display !== 'none' && contenido.style.display !== '';
-  contenido.style.display = visible ? 'none' : 'block';
-  btn.innerHTML = visible ? '▶ Ejecución presupuestaria' : '▼ Ejecución presupuestaria';
 }
 </script>
 
