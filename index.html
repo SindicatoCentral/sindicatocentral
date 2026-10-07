@@ -484,6 +484,11 @@
     font-size: 0.85rem; color: #555; text-align: left; margin-bottom: 1.5rem;
     border-left: 3px solid #E65100;
   }
+  .inscripcion-requisito {
+    background: #FFF8E1; border: 1px solid #F0C36D; border-left: 3px solid #E65100;
+    border-radius: 3px; padding: 1rem 1.4rem; font-size: 0.85rem; color: #4A3B1C;
+    text-align: left; margin-bottom: 1.5rem; line-height: 1.55;
+  }
   .inscripcion-form { text-align: left; }
   .inscripcion-form label { display:block; font-size: 0.8rem; font-weight: 600; color: #1C2B3A; margin-bottom: 0.4rem; }
   .inscripcion-form input[type="text"] {
@@ -1692,6 +1697,9 @@
     <div class="inscripcion-consentimiento">
       Durante este evento se podrán tomar fotografías con fines de registro y difusión institucional. Al inscribirte, puedes autorizar o no que tu imagen sea publicada en la sección Galería del sitio web del sindicato.
     </div>
+    <div class="inscripcion-requisito" id="inscRequisito">
+      <strong>📌 Recuerda:</strong> para participar en este evento debes tener al menos 6 meses de antigüedad en el sindicato y estar al día en el pago de tus cuotas sindicales. Si aún no cumples alguno de estos requisitos y quieres participar, comunícate con nosotros y buscaremos una alternativa.
+    </div>
     <form class="inscripcion-form" id="formInscripcionEvento" onsubmit="enviarInscripcionEvento(event)">
       <label for="inscNombreInput">Nombre completo</label>
       <input type="text" id="inscNombreInput" required placeholder="Tu nombre">
@@ -2495,6 +2503,7 @@ function convertirUrlVideo(url) {
       });
       const numTxt = String(numero).padStart(3, '0');
       document.getElementById('formInscripcionEvento').style.display = 'none';
+      document.getElementById('inscRequisito').style.display = 'none';
       const conf = document.getElementById('inscripcionConfirmacion');
       conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>';
       conf.style.display = 'block';
