@@ -503,6 +503,8 @@
     font-size: 0.85rem; cursor: pointer; transition: background 0.2s; width: 100%;
   }
   .inscripcion-btn:hover { background: #C64100; }
+  .inscripcion-btn-sec { background: #fff; color: #E65100; border: 2px solid #E65100; }
+  .inscripcion-btn-sec:hover { background: #FFF3E0; }
   .inscripcion-numero { margin-top:1rem; padding:0.9rem 1rem; border:2px dashed #E65100; border-radius:6px; color:#1C2B3A; }
   .inscripcion-numero span { display:block; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.08em; opacity:.8; }
   .inscripcion-numero strong { font-variant-numeric: lining-nums; display:block; font-size:2.4rem; letter-spacing:.1em; color:#E65100; }
@@ -2608,10 +2610,24 @@ function convertirUrlVideo(url) {
       dibujarInvitacion(c, { evento: ev, nombre: ins.nombre, numero: ins.numero, bg, logo });
       c.toBlob(b => {
         const a = document.createElement('a'); a.href = URL.createObjectURL(b);
-        a.download = 'invitacion_' + ins.numero + '.png'; document.body.appendChild(a); a.click(); a.remove();
+        a.download = 'invitacion_' + ins.numero + '.png'; document.body.appendChild(a); a.click(); a.remove(); window.__descargada = true;
         setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       }, 'image/png');
     } finally { btn.disabled = false; btn.textContent = txtOrig; }
+  };
+
+  window.nuevaInscripcion = () => {
+    const conInv = !(window.__evento && window.__evento.generaInvitacion === false);
+    if (conInv && window.__inscrito && !window.__descargada &&
+        !confirm('Aún no has descargado tu invitación (N° ' + window.__inscrito.numero + '). ¿Quieres continuar de todos modos? Anota tu número antes de seguir.')) return;
+    window.__inscrito = null;
+    const form = document.getElementById('formInscripcionEvento');
+    form.reset();
+    const btn = form.querySelector('.inscripcion-btn'); btn.disabled = false; btn.textContent = 'Inscribirme';
+    form.style.display = 'block';
+    document.getElementById('inscRequisito').style.display = 'block';
+    document.getElementById('inscripcionConfirmacion').style.display = 'none';
+    document.getElementById('inscNombreInput').focus();
   };
 
   window.enviarInscripcionEvento = async (ev) => {
@@ -2635,8 +2651,9 @@ function convertirUrlVideo(url) {
       document.getElementById('formInscripcionEvento').style.display = 'none';
       document.getElementById('inscRequisito').style.display = 'none';
       const conf = document.getElementById('inscripcionConfirmacion');
-      conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>' + ((window.__evento && window.__evento.generaInvitacion === false) ? '' : '<button type="button" class="inscripcion-btn" style="margin-top:1rem;" onclick="descargarInvitacion(this)">⬇ Descargar mi invitación</button>');
-      window.__inscrito = { nombre, numero: numTxt };
+      conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>' + ((window.__evento && window.__evento.generaInvitacion === false) ? '' : '<button type="button" class="inscripcion-btn" style="margin-top:1rem;" onclick="descargarInvitacion(this)">⬇ Descargar mi invitación</button>')
+        + '<button type="button" class="inscripcion-btn inscripcion-btn-sec" style="margin-top:0.8rem;" onclick="nuevaInscripcion()">Inscribir a otra persona</button>';
+      window.__inscrito = { nombre, numero: numTxt }; window.__descargada = false;
       conf.style.display = 'block';
     } catch(e) {
       alert('No se pudo registrar tu inscripción. Intenta de nuevo en unos minutos.');
