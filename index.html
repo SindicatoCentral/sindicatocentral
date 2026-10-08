@@ -2659,7 +2659,6 @@ function convertirUrlVideo(url) {
       conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>' + ((window.__evento && window.__evento.generaInvitacion === false) ? '' : '<button type="button" class="inscripcion-btn" style="margin-top:1rem;" onclick="descargarInvitacion(this)">⬇ Descargar mi invitación</button><div id="invDescargaNota" style="font-size:0.78rem; color:#555; margin-top:0.5rem;">Podrás descargarla una sola vez. Si tienes problemas, comunícate con nosotros.</div>')
         + '<button type="button" class="inscripcion-btn inscripcion-btn-sec" style="margin-top:0.8rem;" onclick="nuevaInscripcion()">Inscribir a otra persona</button>';
       window.__inscrito = { nombre, numero: numTxt }; window.__descargada = false;
-      window.onbeforeunload = (e) => { const conInv = !(window.__evento && window.__evento.generaInvitacion === false); if (conInv && window.__inscrito && !window.__descargada) { e.preventDefault(); e.returnValue = ''; return ''; } };
       conf.style.display = 'block';
     } catch(e) {
       alert('No se pudo registrar tu inscripción. Intenta de nuevo en unos minutos.');
