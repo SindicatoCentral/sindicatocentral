@@ -1626,7 +1626,7 @@
   }
   function invAjustarTexto(ctx, txt, maxAncho, tamMax, peso) {
     let t = tamMax;
-    do { ctx.font = peso + ' ' + t + 'px Georgia, "Times New Roman", serif'; t -= 2; } while (ctx.measureText(txt).width > maxAncho && t > 20);
+    do { ctx.font = peso + ' ' + t + 'px "Times New Roman", Times, serif'; t -= 2; } while (ctx.measureText(txt).width > maxAncho && t > 20);
   }
   function invLineas(ctx, txt, maxAncho) {
     const pal = txt.split(/\s+/), out = []; let l = '';
@@ -1648,7 +1648,7 @@
       ctx.fillText(nombre, W / 2, H * (ev.invPosNombre || 58) / 100);
       ctx.font = '600 28px Arial, sans-serif'; ctx.globalAlpha = 0.85;
       ctx.fillText('N° DE INSCRIPCIÓN', W / 2, H * (ev.invPosNumero || 70) / 100 - 62); ctx.globalAlpha = 1;
-      ctx.font = 'bold 120px Georgia, serif';
+      ctx.font = 'bold 120px "Times New Roman", Times, serif';
       ctx.fillText(num, W / 2, H * (ev.invPosNumero || 70) / 100);
       return;
     }
@@ -1657,12 +1657,12 @@
       .replace(/\{fecha\}/g, invFechaTexto(ev)).replace(/\{hora\}/g, ev.hora || '').replace(/\{lugar\}/g, ev.lugar || '');
     const parrafos = (t, ancho, fuente) => { ctx.font = fuente; const out = []; reemp(t).split(/\n+/).forEach(p => { if (p.trim()) invLineas(ctx, p.trim(), ancho).forEach(l => out.push(l)); out.push(null); }); if (out.length) out.pop(); return out; };
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = 'bold 80px Georgia, "Times New Roman", serif';
+    ctx.font = 'bold 80px "Times New Roman", Times, serif';
     const lsEv = invLineas(ctx, ev.nombre || 'Nombre del evento', 960).slice(0, 4);
-    const fMsg = '500 34px Georgia, serif', fNota = 'italic bold 26px Georgia, serif';
+    const fMsg = '500 34px "Times New Roman", Times, serif', fNota = 'italic bold 26px "Times New Roman", Times, serif';
     const lsMsg = parrafos(ev.invMensaje != null && ev.invMensaje !== '' ? ev.invMensaje : INV_MENSAJE_DEFECTO, 920, fMsg);
     const lsNota = ev.invNota ? parrafos(ev.invNota, 880, fNota) : [];
-    ctx.font = '500 38px Georgia, serif';
+    ctx.font = '500 38px "Times New Roman", Times, serif';
     const detalles = [];
     [invFechaTexto(ev).replace(/^./, c => c.toUpperCase()), invHoraTexto(ev), ev.lugar || ''].filter(Boolean).forEach(t => invLineas(ctx, t, 960).forEach(l => detalles.push(l)));
     let y = 430; const yTitulo = y; y = 520;
@@ -1688,9 +1688,9 @@
     ctx.fillText('SINDICATO DE TRABAJADORES UNIVERSIDAD CENTRAL', W / 2, 275);
     ctx.fillStyle = '#E65100'; ctx.font = '600 30px Arial, sans-serif'; ls6('5px');
     ctx.fillText('CONFIRMACIÓN DE ASISTENCIA', W / 2, yTitulo); ls6('0px');
-    ctx.fillStyle = '#1C2B3A'; ctx.font = 'bold 80px Georgia, "Times New Roman", serif';
+    ctx.fillStyle = '#1C2B3A'; ctx.font = 'bold 80px "Times New Roman", Times, serif';
     lsEv.forEach((l, i) => ctx.fillText(l, W / 2, yEv + 45 + i * 95));
-    ctx.fillStyle = '#444'; ctx.font = '500 38px Georgia, serif';
+    ctx.fillStyle = '#444'; ctx.font = '500 38px "Times New Roman", Times, serif';
     detalles.forEach((d, i) => ctx.fillText(d, W / 2, yDet + 29 + i * 58));
     ctx.fillStyle = '#E65100'; ctx.fillRect(W / 2 - 60, yDiv, 120, 5);
     ctx.fillStyle = '#888'; ctx.font = '600 26px Arial, sans-serif'; ls6('5px');
@@ -1702,7 +1702,7 @@
     ctx.strokeRect(W / 2 - 280, yBox, 560, 230); ctx.setLineDash([]);
     ctx.fillStyle = '#555'; ctx.font = '600 26px Arial, sans-serif'; ls6('4px');
     ctx.fillText('N° DE INSCRIPCIÓN', W / 2, yBox + 45); ls6('0px');
-    ctx.fillStyle = '#E65100'; ctx.font = 'bold 150px Georgia, serif'; ctx.fillText(num, W / 2, yBox + 155);
+    ctx.fillStyle = '#E65100'; ctx.font = 'bold 150px "Times New Roman", Times, serif'; ctx.fillText(num, W / 2, yBox + 155);
     if (lsNota.length) {
       ctx.fillStyle = '#FFFFFF'; ctx.fillRect(100, yNotaBox, W - 200, hNota);
       ctx.strokeStyle = '#E65100'; ctx.lineWidth = 2; ctx.strokeRect(100, yNotaBox, W - 200, hNota);
