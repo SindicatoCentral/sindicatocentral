@@ -2470,8 +2470,9 @@ function convertirUrlVideo(url) {
         const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
         fechaTexto = `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${anio}`;
       }
-      if (d.hora) fechaTexto += ` · ${d.hora} hrs`;
+      if (d.hora) fechaTexto += ` · ${d.hora}${d.horaFin ? ' a ' + d.horaFin : ''} hrs`;
       document.getElementById('inscEventoFecha').textContent = fechaTexto;
+      window.__evento = d;
       document.getElementById('inscripcion-evento').style.display = 'block';
       document.getElementById('navInscripcionLi').style.display = 'block';
       if (window.busquedaIndiceNoticias) {
@@ -2483,6 +2484,135 @@ function convertirUrlVideo(url) {
     } catch(e) { /* si falla, simplemente no se muestra la sección */ }
   }
   cargarEventoInscripcion();
+
+  // ── INVITACIÓN (generada en el navegador; no se guarda nada por inscrito) ──
+  const INV_MENSAJE_DEFECTO = "Se confirma su asistencia. Le solicitamos imprimir esta invitación y presentarla al ingreso del recinto.";
+  function invFechaTexto(ev) {
+    let t = '';
+    if (ev.fecha) {
+      const [a, m, d] = ev.fecha.split('-');
+      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+      t = dias[new Date(parseInt(a), parseInt(m) - 1, parseInt(d)).getDay()] + ' ' + parseInt(d) + ' de ' + meses[parseInt(m) - 1] + ' de ' + a;
+    }
+    return t;
+  }
+  function invHoraTexto(ev) {
+    if (ev.hora && ev.horaFin) return 'Desde las ' + ev.hora + ' hrs hasta las ' + ev.horaFin + ' hrs';
+    return ev.hora ? ev.hora + ' hrs' : '';
+  }
+  function invCargarImg(src) {
+    return new Promise(res => { if (!src) return res(null); const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+  }
+  function invAjustarTexto(ctx, txt, maxAncho, tamMax, peso) {
+    let t = tamMax;
+    do { ctx.font = peso + ' ' + t + 'px Georgia, "Times New Roman", serif'; t -= 2; } while (ctx.measureText(txt).width > maxAncho && t > 20);
+  }
+  function invLineas(ctx, txt, maxAncho) {
+    const pal = txt.split(/\s+/), out = []; let l = '';
+    pal.forEach(p => { const prueba = l ? l + ' ' + p : p; if (ctx.measureText(prueba).width > maxAncho && l) { out.push(l); l = p; } else l = prueba; });
+    if (l) out.push(l); return out;
+  }
+  function dibujarInvitacion(canvas, o) {
+    const ev = o.evento || {}, W = 1200, ctx = canvas.getContext('2d');
+    const nombre = o.nombre || 'Nombre del invitado', num = o.numero || '001';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (o.bg) {
+      const H = Math.round(W * o.bg.height / o.bg.width);
+      canvas.width = W; canvas.height = H;
+      ctx.drawImage(o.bg, 0, 0, W, H);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const col = ev.invColor === 'claro' ? '#FFFFFF' : '#1C2B3A';
+      ctx.fillStyle = col;
+      invAjustarTexto(ctx, nombre, W * 0.8, 76, 'bold');
+      ctx.fillText(nombre, W / 2, H * (ev.invPosNombre || 58) / 100);
+      ctx.font = '600 28px Arial, sans-serif'; ctx.globalAlpha = 0.85;
+      ctx.fillText('N° DE INSCRIPCIÓN', W / 2, H * (ev.invPosNumero || 70) / 100 - 62); ctx.globalAlpha = 1;
+      ctx.font = 'bold 120px Georgia, serif';
+      ctx.fillText(num, W / 2, H * (ev.invPosNumero || 70) / 100);
+      return;
+    }
+    // ── Diseño por defecto: se calcula el alto según el texto ──
+    const reemp = t => (t || '').replace(/\{nombre\}/g, nombre).replace(/\{evento\}/g, ev.nombre || 'el evento')
+      .replace(/\{fecha\}/g, invFechaTexto(ev)).replace(/\{hora\}/g, ev.hora || '').replace(/\{lugar\}/g, ev.lugar || '');
+    const parrafos = (t, ancho, fuente) => { ctx.font = fuente; const out = []; reemp(t).split(/\n+/).forEach(p => { if (p.trim()) invLineas(ctx, p.trim(), ancho).forEach(l => out.push(l)); out.push(null); }); if (out.length) out.pop(); return out; };
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = 'bold 80px Georgia, "Times New Roman", serif';
+    const lsEv = invLineas(ctx, ev.nombre || 'Nombre del evento', 960).slice(0, 4);
+    const fMsg = '500 34px Georgia, serif', fNota = 'italic bold 26px Georgia, serif';
+    const lsMsg = parrafos(ev.invMensaje != null && ev.invMensaje !== '' ? ev.invMensaje : INV_MENSAJE_DEFECTO, 920, fMsg);
+    const lsNota = ev.invNota ? parrafos(ev.invNota, 880, fNota) : [];
+    ctx.font = '500 38px Georgia, serif';
+    const detalles = [];
+    [invFechaTexto(ev).replace(/^./, c => c.toUpperCase()), invHoraTexto(ev), ev.lugar || ''].filter(Boolean).forEach(t => invLineas(ctx, t, 960).forEach(l => detalles.push(l)));
+    let y = 430; const yTitulo = y; y = 520;
+    const yEv = y; y += lsEv.length * 95 + 10;
+    const yDet = y; y += detalles.length * 58 + 30;
+    const yDiv = y; y += 50;
+    const yInv = y; y += 75;
+    const yNom = y; y += 90;
+    const yMsg = y; y += lsMsg.length * 50 + 40;
+    const yBox = y; y += 260;
+    let yNotaBox = 0, hNota = 0;
+    if (lsNota.length) { yNotaBox = y + 10; hNota = lsNota.length * 36 + 54; y = yNotaBox + hNota + 20; }
+    const yFoot = y + 30;
+    const H = Math.max(1700, yFoot + 70);
+    canvas.width = W; canvas.height = H;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#FFF8E1'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#1C2B3A'; ctx.fillRect(0, 0, W, 330);
+    ctx.fillStyle = '#E65100'; ctx.fillRect(0, 330, W, 10);
+    if (o.logo) { const lh = 150, lw = lh * o.logo.width / o.logo.height; ctx.drawImage(o.logo, (W - lw) / 2, 70, lw, lh); }
+    const ls6 = v => { if ('letterSpacing' in ctx) ctx.letterSpacing = v; };
+    ctx.fillStyle = '#FFFFFF'; ctx.font = '600 26px Arial, sans-serif'; ls6('3px');
+    ctx.fillText('SINDICATO DE TRABAJADORES UNIVERSIDAD CENTRAL', W / 2, 275);
+    ctx.fillStyle = '#E65100'; ctx.font = '600 30px Arial, sans-serif'; ls6('5px');
+    ctx.fillText('CONFIRMACIÓN DE ASISTENCIA', W / 2, yTitulo); ls6('0px');
+    ctx.fillStyle = '#1C2B3A'; ctx.font = 'bold 80px Georgia, "Times New Roman", serif';
+    lsEv.forEach((l, i) => ctx.fillText(l, W / 2, yEv + 45 + i * 95));
+    ctx.fillStyle = '#444'; ctx.font = '500 38px Georgia, serif';
+    detalles.forEach((d, i) => ctx.fillText(d, W / 2, yDet + 29 + i * 58));
+    ctx.fillStyle = '#E65100'; ctx.fillRect(W / 2 - 60, yDiv, 120, 5);
+    ctx.fillStyle = '#888'; ctx.font = '600 26px Arial, sans-serif'; ls6('5px');
+    ctx.fillText('INVITADO/A', W / 2, yInv + 20); ls6('0px');
+    ctx.fillStyle = '#1C2B3A'; invAjustarTexto(ctx, nombre, 960, 72, 'bold'); ctx.fillText(nombre, W / 2, yNom + 35);
+    ctx.fillStyle = '#333'; ctx.font = fMsg;
+    lsMsg.forEach((l, i) => { if (l) ctx.fillText(l, W / 2, yMsg + 25 + i * 50); });
+    ctx.setLineDash([14, 10]); ctx.strokeStyle = '#E65100'; ctx.lineWidth = 4;
+    ctx.strokeRect(W / 2 - 280, yBox, 560, 230); ctx.setLineDash([]);
+    ctx.fillStyle = '#555'; ctx.font = '600 26px Arial, sans-serif'; ls6('4px');
+    ctx.fillText('N° DE INSCRIPCIÓN', W / 2, yBox + 45); ls6('0px');
+    ctx.fillStyle = '#E65100'; ctx.font = 'bold 150px Georgia, serif'; ctx.fillText(num, W / 2, yBox + 155);
+    if (lsNota.length) {
+      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(100, yNotaBox, W - 200, hNota);
+      ctx.strokeStyle = '#E65100'; ctx.lineWidth = 2; ctx.strokeRect(100, yNotaBox, W - 200, hNota);
+      ctx.fillStyle = '#1A1A1A'; ctx.font = fNota;
+      lsNota.forEach((l, i) => { if (l) ctx.fillText(l, W / 2, yNotaBox + 45 + i * 36); });
+    }
+    ctx.fillStyle = '#999'; ctx.font = '500 26px Arial, sans-serif'; ctx.fillText('sindicatocentral.cl', W / 2, H - 55);
+    ctx.strokeStyle = '#E65100'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(30, 340); ctx.lineTo(30, H - 30); ctx.lineTo(W - 30, H - 30); ctx.lineTo(W - 30, 340); ctx.stroke();
+  }
+
+
+  window.descargarInvitacion = async (btn) => {
+    const ins = window.__inscrito; if (!ins) return;
+    const ev = window.__evento || {};
+    const txtOrig = btn.textContent; btn.disabled = true; btn.textContent = 'Generando...';
+    try {
+      let bg = null;
+      if (ev.tieneInvitacion) {
+        try { const sn = await getDoc(doc(db, 'config', 'invitacion')); if (sn.exists()) bg = await invCargarImg(sn.data().img); } catch(e) {}
+      }
+      const logo = await invCargarImg(document.querySelector('.nav-logo') ? document.querySelector('.nav-logo').src : '');
+      const c = document.createElement('canvas');
+      dibujarInvitacion(c, { evento: ev, nombre: ins.nombre, numero: ins.numero, bg, logo });
+      c.toBlob(b => {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+        a.download = 'invitacion_' + ins.numero + '.png'; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      }, 'image/png');
+    } finally { btn.disabled = false; btn.textContent = txtOrig; }
+  };
 
   window.enviarInscripcionEvento = async (ev) => {
     ev.preventDefault();
@@ -2505,7 +2635,8 @@ function convertirUrlVideo(url) {
       document.getElementById('formInscripcionEvento').style.display = 'none';
       document.getElementById('inscRequisito').style.display = 'none';
       const conf = document.getElementById('inscripcionConfirmacion');
-      conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>';
+      conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>' + ((window.__evento && window.__evento.generaInvitacion === false) ? '' : '<button type="button" class="inscripcion-btn" style="margin-top:1rem;" onclick="descargarInvitacion(this)">⬇ Descargar mi invitación</button>');
+      window.__inscrito = { nombre, numero: numTxt };
       conf.style.display = 'block';
     } catch(e) {
       alert('No se pudo registrar tu inscripción. Intenta de nuevo en unos minutos.');
