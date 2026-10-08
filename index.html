@@ -1175,6 +1175,8 @@
     min-width: 0;
   }
   .popup-mensaje { font-size: 0.88rem; color: #444; line-height: 1.6; white-space: pre-line; }
+  .popup-boton { display: inline-block; margin-top: 1rem; background: #E65100; color: #fff !important; padding: 0.75rem 1.5rem; border-radius: 2px; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.04em; text-decoration: none; text-align: center; }
+  .popup-boton:hover { background: #C64100; }
   .popup-img {
     width: auto; max-width: 60%;
     height: auto; max-height: 75vh;
@@ -2323,7 +2325,10 @@ function toggleFaq(btn) {
     </div>
     <div class="popup-contenido" id="popupContenido">
       <div class="popup-body" id="popupBody" style="display:none;">
-        <p class="popup-mensaje" id="popupMensaje"></p>
+        <div>
+          <p class="popup-mensaje" id="popupMensaje"></p>
+          <a class="popup-boton" id="popupBoton" href="#" target="_blank" rel="noopener noreferrer" style="display:none;"></a>
+        </div>
       </div>
       <img id="popupImg" class="popup-img" src="" alt="" style="display:none;">
     </div>
@@ -2783,6 +2788,7 @@ function convertirUrlVideo(url) {
       if (!snap.exists()) return;
       const d = snap.data();
       if (!d.activo) return;
+      const tieneBoton = !!(d.botonUrl && /^https?:\/\//i.test(d.botonUrl));
 
       // Título — siempre mostrar header con X, ocultar solo el título si no existe
       const header = document.getElementById('popupHeader');
@@ -2809,7 +2815,7 @@ function convertirUrlVideo(url) {
         img.src = d.imgUrl;
         img.style.display = 'block';
         // Si solo hay imagen (sin mensaje), ajustar popup al ancho de la imagen
-        if (!d.mensaje) {
+        if (!d.mensaje && !tieneBoton) {
           document.querySelector('.popup-box').classList.add('solo-img-box');
         }
       }
@@ -2817,8 +2823,13 @@ function convertirUrlVideo(url) {
       // Mensaje — si hay imagen y mensaje, layout horizontal; si solo imagen, vertical
       const body = document.getElementById('popupBody');
       const contenido = document.getElementById('popupContenido');
-      if (d.mensaje) {
-        document.getElementById('popupMensaje').textContent = d.mensaje;
+      if (tieneBoton) {
+        const bt = document.getElementById('popupBoton');
+        bt.href = d.botonUrl; bt.textContent = d.botonTexto || 'Abrir enlace'; bt.style.display = 'inline-block';
+      }
+      if (d.mensaje || tieneBoton) {
+        document.getElementById('popupMensaje').textContent = d.mensaje || '';
+        document.getElementById('popupMensaje').style.display = d.mensaje ? 'block' : 'none';
         body.style.display = 'block';
         contenido.classList.remove('solo-imagen');
       } else {

@@ -392,6 +392,14 @@
           <label>Mensaje</label>
           <textarea id="popupMensajeInput" placeholder="Escribe el mensaje del popup..." style="min-height:120px;"></textarea>
         </div>
+        <div class="form-group">
+          <label>Botón con enlace (opcional)</label>
+          <p style="font-size:0.78rem; color:#888; margin:0 0 0.6rem;">Úsalo solo cuando necesites que entren directo a un enlace, por ejemplo una encuesta. Si dejas el enlace vacío, no aparece ningún botón.</p>
+          <div style="display:grid; grid-template-columns:1fr 2fr; gap:0.8rem;">
+            <input type="text" id="popupBotonTexto" maxlength="40" placeholder="Texto del botón. Ej: Responder la encuesta">
+            <input type="url" id="popupBotonUrl" placeholder="Enlace: https://...">
+          </div>
+        </div>
                 <div class="form-group">
           <label>Multimedia (opcional)</label>
           <div style="display:flex; gap:0.5rem; margin-bottom:0.8rem;">
@@ -1120,6 +1128,8 @@
         else { vistaImg.style.display = 'none'; }
         document.getElementById('popupTituloInput').value  = d.titulo  || '';
         document.getElementById('popupMensajeInput').value = d.mensaje || '';
+        document.getElementById('popupBotonTexto').value   = d.botonTexto || '';
+        document.getElementById('popupBotonUrl').value     = d.botonUrl || '';
         document.getElementById('popupVideo').value        = d.videoUrl || '';
         popupImgPathActual = d.imgPath || '';
         const chk = document.getElementById('popupActivo');
@@ -1158,9 +1168,11 @@
       if (snapAct.exists() && snapAct.data().imgPath) {
         try { await deleteObject(ref(storage, snapAct.data().imgPath)); } catch(e) {}
       }
-      await setDoc(doc(db,'config','popup'), { titulo:'', mensaje:'', activo:false, imgUrl:'', imgPath:'', videoUrl:'' });
+      await setDoc(doc(db,'config','popup'), { titulo:'', mensaje:'', activo:false, imgUrl:'', imgPath:'', videoUrl:'', botonTexto:'', botonUrl:'' });
       document.getElementById('popupTituloInput').value  = '';
       document.getElementById('popupMensajeInput').value = '';
+      document.getElementById('popupBotonTexto').value   = '';
+      document.getElementById('popupBotonUrl').value     = '';
       document.getElementById('popupVideo').value        = '';
       popupImgPathActual = '';
       const chk = document.getElementById('popupActivo');
@@ -1178,6 +1190,11 @@
     const mensaje   = document.getElementById('popupMensajeInput').value.trim();
     const activo    = document.getElementById('popupActivo').checked;
     const videoUrl  = document.getElementById('popupVideo').value.trim();
+    let botonUrl    = document.getElementById('popupBotonUrl').value.trim();
+    let botonTexto  = document.getElementById('popupBotonTexto').value.trim();
+    if (botonUrl && !/^https?:\/\//i.test(botonUrl)) { mostrarToast('El enlace del botón debe empezar con https://','error'); return; }
+    if (!botonUrl) botonTexto = '';
+    else if (!botonTexto) botonTexto = 'Abrir enlace';
     const previewVisible = document.getElementById('previewImgPopup').style.display !== 'none'
       && document.getElementById('previewImgPopup').src;
     if (activo && !titulo && !mensaje && !archivoImgPop && !previewVisible && !videoUrl) { mostrarToast('Agrega título, mensaje, imagen o video para activar el popup.','error'); return; }
@@ -1205,7 +1222,7 @@
         imgUrl = ''; imgPath = '';
       }
 
-      await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl,imgPath,videoUrl:videoUrl||''});
+      await setDoc(doc(db,'config','popup'),{titulo,mensaje,activo,imgUrl,imgPath,videoUrl:videoUrl||'',botonTexto,botonUrl});
       popupImgPathActual = imgPath;
       mostrarToast('Popup guardado correctamente.','exito');
       archivoImgPop = null;
