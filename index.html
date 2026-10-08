@@ -2597,7 +2597,7 @@ function convertirUrlVideo(url) {
 
 
   window.descargarInvitacion = async (btn) => {
-    const ins = window.__inscrito; if (!ins) return;
+    const ins = window.__inscrito; if (!ins || window.__descargada) return;
     const ev = window.__evento || {};
     const txtOrig = btn.textContent; btn.disabled = true; btn.textContent = 'Generando...';
     try {
@@ -2608,19 +2608,24 @@ function convertirUrlVideo(url) {
       const logo = await invCargarImg(document.querySelector('.nav-logo') ? document.querySelector('.nav-logo').src : '');
       const c = document.createElement('canvas');
       dibujarInvitacion(c, { evento: ev, nombre: ins.nombre, numero: ins.numero, bg, logo });
-      c.toBlob(b => {
-        const a = document.createElement('a'); a.href = URL.createObjectURL(b);
-        a.download = 'invitacion_' + ins.numero + '.png'; document.body.appendChild(a); a.click(); a.remove(); window.__descargada = true;
+      c.toBlob(blob => {
+        if (!blob) { btn.disabled = false; btn.textContent = txtOrig; alert('No se pudo generar la invitación. Intenta de nuevo.'); return; }
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = 'invitacion_' + ins.numero + '.png'; document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        window.__descargada = true;
+        btn.textContent = '✓ Invitación descargada';
+        const nota = document.getElementById('invDescargaNota');
+        if (nota) nota.textContent = 'Revisa la carpeta de descargas de tu dispositivo. Si no la encuentras, comunícate con nosotros.';
       }, 'image/png');
-    } finally { btn.disabled = false; btn.textContent = txtOrig; }
+    } catch(e) { btn.disabled = false; btn.textContent = txtOrig; alert('No se pudo generar la invitación. Intenta de nuevo.'); }
   };
 
   window.nuevaInscripcion = () => {
     const conInv = !(window.__evento && window.__evento.generaInvitacion === false);
     if (conInv && window.__inscrito && !window.__descargada &&
         !confirm('Aún no has descargado tu invitación (N° ' + window.__inscrito.numero + '). ¿Quieres continuar de todos modos? Anota tu número antes de seguir.')) return;
-    window.__inscrito = null;
+    window.__inscrito = null; window.__descargada = false;
     const form = document.getElementById('formInscripcionEvento');
     form.reset();
     const btn = form.querySelector('.inscripcion-btn'); btn.disabled = false; btn.textContent = 'Inscribirme';
@@ -2651,9 +2656,10 @@ function convertirUrlVideo(url) {
       document.getElementById('formInscripcionEvento').style.display = 'none';
       document.getElementById('inscRequisito').style.display = 'none';
       const conf = document.getElementById('inscripcionConfirmacion');
-      conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>' + ((window.__evento && window.__evento.generaInvitacion === false) ? '' : '<button type="button" class="inscripcion-btn" style="margin-top:1rem;" onclick="descargarInvitacion(this)">⬇ Descargar mi invitación</button>')
+      conf.innerHTML = '✓ ¡Inscripción registrada! Nos vemos en el evento.<div class="inscripcion-numero"><span>Tu N° de inscripción</span><strong>' + numTxt + '</strong></div>' + ((window.__evento && window.__evento.generaInvitacion === false) ? '' : '<button type="button" class="inscripcion-btn" style="margin-top:1rem;" onclick="descargarInvitacion(this)">⬇ Descargar mi invitación</button><div id="invDescargaNota" style="font-size:0.78rem; color:#555; margin-top:0.5rem;">Podrás descargarla una sola vez. Si tienes problemas, comunícate con nosotros.</div>')
         + '<button type="button" class="inscripcion-btn inscripcion-btn-sec" style="margin-top:0.8rem;" onclick="nuevaInscripcion()">Inscribir a otra persona</button>';
       window.__inscrito = { nombre, numero: numTxt }; window.__descargada = false;
+      window.onbeforeunload = (e) => { const conInv = !(window.__evento && window.__evento.generaInvitacion === false); if (conInv && window.__inscrito && !window.__descargada) { e.preventDefault(); e.returnValue = ''; return ''; } };
       conf.style.display = 'block';
     } catch(e) {
       alert('No se pudo registrar tu inscripción. Intenta de nuevo en unos minutos.');
