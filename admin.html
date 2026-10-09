@@ -1993,7 +1993,8 @@
           const bc = document.createElement('button'); bc.className = 'btn-accion editar'; bc.textContent = 'Cancelar';
           bc.onclick = () => { f.style.display = 'flex'; pintar(); };
           bg.onclick = async () => {
-            const nombre = nIn.value.trim().replace(/\s+/g, ' ');
+            const nombreTitulo = t => t.trim().replace(/\s+/g, ' ').toLocaleLowerCase('es').replace(/(^|[\s\-'’.])(\p{L})/gu, (m, a, b) => a + b.toLocaleUpperCase('es'));
+            const nombre = nombreTitulo(nIn.value);
             if (!nombre) { mostrarToast('El nombre no puede quedar vacío.', 'error'); return; }
             bg.disabled = true; bg.textContent = 'Guardando...';
             try {
