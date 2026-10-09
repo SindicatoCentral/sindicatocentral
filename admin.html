@@ -292,6 +292,7 @@
       <button class="tab-p" onclick="cambiarTab('galeria', this)">Galería</button>
       <button class="tab-p" onclick="cambiarTab('documentos', this)">Documentos</button>
       <button class="tab-p" onclick="cambiarTab('inscripciones', this)">Inscripciones</button>
+      <button class="tab-p" onclick="cambiarTab('ingreso', this)">Control de ingreso</button>
 
     </div>
 
@@ -429,6 +430,26 @@
       </div>
 
     </div>
+    <!-- CONTROL DE INGRESO -->
+    <div class="seccion" id="sec-ingreso">
+      <div class="form-card" style="display:block;">
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; text-align:center; margin-bottom:1rem;">
+          <div style="background:var(--gris-claro); border-radius:3px; padding:0.7rem;"><div style="font-size:1.6rem; font-weight:700; color:var(--verde);" id="ingCuentaOk">0</div><div style="font-size:0.7rem; color:#888; text-transform:uppercase;">Ingresaron</div></div>
+          <div style="background:var(--gris-claro); border-radius:3px; padding:0.7rem;"><div style="font-size:1.6rem; font-weight:700; color:#E65100;" id="ingCuentaFalta">0</div><div style="font-size:0.7rem; color:#888; text-transform:uppercase;">Faltan</div></div>
+          <div style="background:var(--gris-claro); border-radius:3px; padding:0.7rem;"><div style="font-size:1.6rem; font-weight:700; color:var(--azul);" id="ingCuentaTotal">0</div><div style="font-size:0.7rem; color:#888; text-transform:uppercase;">Inscritos</div></div>
+        </div>
+        <input type="text" id="ingBuscar" placeholder="Buscar por nombre o N°..." oninput="ingRender()" style="width:100%; margin-bottom:0.6rem; font-size:1rem; padding:0.8rem 1rem;">
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.8rem;">
+          <button type="button" class="tab-media activo" id="ingF_todos" onclick="ingFiltro('todos')">Todos</button>
+          <button type="button" class="tab-media" id="ingF_pend" onclick="ingFiltro('pend')">Pendientes</button>
+          <button type="button" class="tab-media" id="ingF_ok" onclick="ingFiltro('ok')">Ingresados</button>
+          <button type="button" class="btn-accion editar" style="margin-left:auto;" onclick="ingExportar()">📊 Exportar asistencia</button>
+        </div>
+        <div id="ingLista" style="border:1px solid #ddd; border-radius:3px;"></div>
+        <p style="font-size:0.78rem; color:#888; margin:0.8rem 0 0;">La lista se actualiza en tiempo real entre todos los dispositivos conectados. Solo ingresan las personas inscritas. Al terminar el evento, exporta la asistencia y luego elimina las inscripciones desde la pestaña "Inscripciones": se borran también los registros de ingreso.</p>
+      </div>
+    </div>
+
     <!-- GALERÍA -->
     <div class="seccion" id="sec-galeria">
 
@@ -712,7 +733,7 @@
   import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc, writeBatch }
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where, setDoc, getDoc, writeBatch, onSnapshot }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject, listAll }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
@@ -803,7 +824,8 @@
     document.getElementById('seccionTitulo').textContent =
       tab === 'publicadas' ? 'Noticias y comunicados' :
       tab === 'historial'  ? 'Historial de noticias' :
-      tab === 'inscripciones' ? 'Inscripción a eventos' : 'Configuración del Popup';
+      tab === 'inscripciones' ? 'Inscripción a eventos' :
+      tab === 'ingreso' ? 'Control de ingreso' : 'Configuración del Popup';
     ocultarFormulario();
     if (tab === 'publicadas') cargarNoticias('publicada', 'noticiasList');
     if (tab === 'historial')  cargarNoticias('archivada', 'historialList');
@@ -811,6 +833,7 @@
     if (tab === 'galeria')    cargarGaleria();
     if (tab === 'documentos') cargarDocumentos();
     if (tab === 'inscripciones') cargarConfigEvento();
+    if (tab === 'ingreso') ingIniciar(); else ingDetener();
   };
 
   // ── FORMULARIO NOTICIAS ──
@@ -1959,6 +1982,70 @@
     } catch(e) { mostrarToast('Error al cargar los inscritos: ' + e.message, 'error'); }
   };
 
+
+  // ── CONTROL DE INGRESO (tiempo real) ──
+  let ingUnsub = null, ingDatos = [], ingFiltroActual = 'todos';
+  function ingHora(r) { return r.ingresoEn ? r.ingresoEn.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : ''; }
+  function ingDetener() { if (ingUnsub) { ingUnsub(); ingUnsub = null; } }
+  function ingIniciar() {
+    ingDetener();
+    ingUnsub = onSnapshot(collection(db, 'inscripciones'), snap => {
+      ingDatos = snap.docs.map(d => {
+        const x = d.data({ serverTimestamps: 'estimate' });
+        return { id: d.id, ...x, ingresoEn: x.ingresoEn && x.ingresoEn.toDate ? x.ingresoEn.toDate() : null };
+      }).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9));
+      ingRender();
+    }, e => mostrarToast('Error de conexión: ' + e.message, 'error'));
+  }
+  window.ingFiltro = (f) => {
+    ingFiltroActual = f;
+    ['todos','pend','ok'].forEach(k => document.getElementById('ingF_' + k).classList.toggle('activo', k === f));
+    ingRender();
+  };
+  function ingNorm(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  window.ingRender = () => {
+    const ok = ingDatos.filter(r => r.ingreso).length;
+    document.getElementById('ingCuentaOk').textContent = ok;
+    document.getElementById('ingCuentaFalta').textContent = ingDatos.length - ok;
+    document.getElementById('ingCuentaTotal').textContent = ingDatos.length;
+    const q = ingNorm(document.getElementById('ingBuscar').value).trim();
+    const lista = document.getElementById('ingLista'); lista.innerHTML = '';
+    const filas = ingDatos.filter(r => (ingFiltroActual === 'todos' || (ingFiltroActual === 'ok') === !!r.ingreso)
+      && (!q || ingNorm('n° ' + invNum(r) + ' ' + (r.nombre || '')).includes(q)));
+    if (!filas.length) {
+      const v = document.createElement('div'); v.style.cssText = 'padding:1rem; text-align:center; color:#888; font-size:0.9rem;';
+      v.textContent = ingDatos.length ? 'Sin resultados.' : 'Aún no hay inscritos.'; lista.appendChild(v); return;
+    }
+    filas.forEach(r => {
+      const f = document.createElement('div');
+      f.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:0.6rem; padding:0.7rem 0.9rem; border-bottom:1px solid #eee;' + (r.ingreso ? ' background:rgba(46,125,50,0.10);' : '');
+      const t = document.createElement('div'); t.style.cssText = 'font-size:1rem; line-height:1.3; min-width:0;';
+      const n = document.createElement('strong'); n.textContent = 'N° ' + invNum(r) + ' '; t.appendChild(n);
+      t.appendChild(document.createTextNode(r.nombre || ''));
+      if (r.ingreso) { const h = document.createElement('div'); h.style.cssText = 'font-size:0.75rem; color:var(--verde);'; h.textContent = '✓ Ingresó' + (ingHora(r) ? ' a las ' + ingHora(r) : ''); t.appendChild(h); }
+      f.appendChild(t);
+      const b = document.createElement('button');
+      if (!r.ingreso) {
+        b.className = 'btn-guardar'; b.style.cssText = 'padding:0.7rem 1rem; flex-shrink:0;'; b.textContent = '✓ Ingresó';
+        b.onclick = async () => { b.disabled = true; try { await updateDoc(doc(db, 'inscripciones', r.id), { ingreso: true, ingresoEn: serverTimestamp() }); } catch(e) { b.disabled = false; mostrarToast('Error: ' + e.message, 'error'); } };
+      } else {
+        b.className = 'btn-accion eliminar'; b.style.flexShrink = '0'; b.textContent = 'Deshacer';
+        b.onclick = async () => { if (!confirm('¿Quitar el ingreso de N° ' + invNum(r) + ' (' + (r.nombre || '') + ')?')) return; try { await updateDoc(doc(db, 'inscripciones', r.id), { ingreso: false, ingresoEn: null }); } catch(e) { mostrarToast('Error: ' + e.message, 'error'); } };
+      }
+      f.appendChild(b); lista.appendChild(f);
+    });
+  };
+  window.ingExportar = () => {
+    if (!ingDatos.length) { mostrarToast('No hay inscritos para exportar.', 'error'); return; }
+    const filas = [['N° inscripción', 'Nombre', 'Ingresó', 'Hora de ingreso']];
+    ingDatos.forEach(r => filas.push([r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.ingreso ? 'Sí' : 'No', ingHora(r)]));
+    const ws = XLSX.utils.aoa_to_sheet(filas);
+    ws['!cols'] = [{ wch: 16 }, { wch: 36 }, { wch: 10 }, { wch: 16 }];
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Asistencia');
+    const nombreEvento = (document.getElementById('inscNombreEvento').value || '').trim() || 'evento';
+    XLSX.writeFile(wb, 'asistencia_' + nombreEvento.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.xlsx');
+  };
+
   window.revisarDuplicadosInscripciones = async () => {
     const cont = document.getElementById('inscDuplicados');
     try {
@@ -2022,7 +2109,7 @@
   };
 
   window.eliminarTodasInscripciones = async () => {
-    if (!confirm('¿Eliminar TODAS las inscripciones? Asegúrate de haber descargado la planilla primero — esta acción no se puede deshacer.')) return;
+    if (!confirm('¿Eliminar TODAS las inscripciones y los registros de ingreso? El contador volverá a 001. Asegúrate de haber descargado la planilla y exportado la asistencia — esta acción no se puede deshacer. No lo uses si el evento sigue en curso.')) return;
     try {
       const snap = await getDocs(collection(db, 'inscripciones'));
       const batch = writeBatch(db);
