@@ -1965,16 +1965,48 @@
       filtro.type = 'text'; filtro.placeholder = 'Buscar por nombre o N°...'; filtro.style.cssText = 'width:100%; margin-bottom:0.6rem;';
       cont.appendChild(filtro);
       const caja = document.createElement('div'); caja.style.cssText = 'max-height:340px; overflow-y:auto; border:1px solid #ddd; border-radius:3px;';
+      const norm = x => x.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
       const filas = regs.map(r => {
         const f = document.createElement('div');
         f.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:0.6rem; flex-wrap:wrap; padding:0.5rem 0.8rem; border-bottom:1px solid #eee; font-size:0.85rem;';
-        const t = document.createElement('span'); t.textContent = 'N° ' + invNum(r) + ' — ' + (r.nombre || '') + (r.autorizaFotos ? '' : '  (no autoriza fotos)');
-        f.appendChild(t);
-        if (permite) {
-          const b = document.createElement('button'); b.className = 'btn-accion editar'; b.textContent = '⬇ Invitación';
-          b.onclick = () => invDescargarDeInscrito(r); f.appendChild(b);
-        }
-        f.dataset.k = ('n° ' + invNum(r) + ' ' + (r.nombre || '')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const pintar = () => {
+          f.innerHTML = '';
+          f.dataset.k = norm('n° ' + invNum(r) + ' ' + (r.nombre || ''));
+          const t = document.createElement('span'); t.textContent = 'N° ' + invNum(r) + ' — ' + (r.nombre || '') + (r.autorizaFotos ? '' : '  (no autoriza fotos)') + (r.menuVegetariano ? '  🥗 vegetariano' : '');
+          f.appendChild(t);
+          const bs = document.createElement('span'); bs.style.cssText = 'display:flex; gap:0.4rem; flex-wrap:wrap;';
+          const be = document.createElement('button'); be.className = 'btn-accion editar'; be.textContent = '✏ Editar';
+          be.onclick = editar; bs.appendChild(be);
+          if (permite) {
+            const b = document.createElement('button'); b.className = 'btn-accion editar'; b.textContent = '⬇ Invitación';
+            b.onclick = () => invDescargarDeInscrito(r); bs.appendChild(b);
+          }
+          f.appendChild(bs);
+        };
+        const editar = () => {
+          f.innerHTML = '';
+          f.style.display = 'block';
+          const nIn = document.createElement('input'); nIn.type = 'text'; nIn.value = r.nombre || ''; nIn.style.cssText = 'width:100%; margin-bottom:0.5rem;';
+          const lab = (txt, chk) => { const l = document.createElement('label'); l.style.cssText = 'display:flex; align-items:center; gap:0.5rem; margin:0.25rem 0; cursor:pointer;'; const c = document.createElement('input'); c.type = 'checkbox'; c.checked = chk; c.style.cssText = 'width:auto; margin:0;'; l.appendChild(c); l.appendChild(document.createTextNode(txt)); return [l, c]; };
+          const [lVeg, cVeg] = lab('Menú vegetariano', !!r.menuVegetariano);
+          const bg = document.createElement('button'); bg.className = 'btn-guardar'; bg.textContent = 'Guardar'; bg.style.marginRight = '0.4rem';
+          const bc = document.createElement('button'); bc.className = 'btn-accion editar'; bc.textContent = 'Cancelar';
+          bc.onclick = () => { f.style.display = 'flex'; pintar(); };
+          bg.onclick = async () => {
+            const nombre = nIn.value.trim().replace(/\s+/g, ' ');
+            if (!nombre) { mostrarToast('El nombre no puede quedar vacío.', 'error'); return; }
+            bg.disabled = true; bg.textContent = 'Guardando...';
+            try {
+              await updateDoc(doc(db, 'inscripciones', r.id), { nombre, menuVegetariano: cVeg.checked });
+              r.nombre = nombre; r.menuVegetariano = cVeg.checked;
+              f.style.display = 'flex'; pintar(); mostrarToast('Inscripción N° ' + invNum(r) + ' actualizada.', 'exito');
+            } catch(e) { bg.disabled = false; bg.textContent = 'Guardar'; mostrarToast('Error al guardar: ' + e.message, 'error'); }
+          };
+          f.appendChild(nIn); f.appendChild(lVeg);
+          const fila = document.createElement('div'); fila.style.marginTop = '0.5rem'; fila.appendChild(bg); fila.appendChild(bc); f.appendChild(fila);
+          nIn.focus();
+        };
+        pintar();
         caja.appendChild(f); return f;
       });
       filtro.oninput = () => { const q = filtro.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); filas.forEach(f => f.style.display = f.dataset.k.includes(q) ? 'flex' : 'none'); };
@@ -2021,7 +2053,7 @@
       f.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:0.6rem; padding:0.7rem 0.9rem; border-bottom:1px solid #eee;' + (r.ingreso ? ' background:rgba(46,125,50,0.10);' : '');
       const t = document.createElement('div'); t.style.cssText = 'font-size:1rem; line-height:1.3; min-width:0;';
       const n = document.createElement('strong'); n.textContent = 'N° ' + invNum(r) + ' '; t.appendChild(n);
-      t.appendChild(document.createTextNode(r.nombre || ''));
+      t.appendChild(document.createTextNode((r.nombre || '') + (r.menuVegetariano ? '  🥗' : '')));
       if (r.ingreso) { const h = document.createElement('div'); h.style.cssText = 'font-size:0.75rem; color:var(--verde);'; h.textContent = '✓ Ingresó' + (ingHora(r) ? ' a las ' + ingHora(r) : ''); t.appendChild(h); }
       f.appendChild(t);
       const b = document.createElement('button');
@@ -2037,10 +2069,10 @@
   };
   window.ingExportar = () => {
     if (!ingDatos.length) { mostrarToast('No hay inscritos para exportar.', 'error'); return; }
-    const filas = [['N° inscripción', 'Nombre', 'Ingresó', 'Hora de ingreso']];
-    ingDatos.forEach(r => filas.push([r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.ingreso ? 'Sí' : 'No', ingHora(r)]));
+    const filas = [['N° inscripción', 'Nombre', 'Menú vegetariano', 'Ingresó', 'Hora de ingreso']];
+    ingDatos.forEach(r => filas.push([r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.menuVegetariano ? 'Sí' : 'No', r.ingreso ? 'Sí' : 'No', ingHora(r)]));
     const ws = XLSX.utils.aoa_to_sheet(filas);
-    ws['!cols'] = [{ wch: 16 }, { wch: 36 }, { wch: 10 }, { wch: 16 }];
+    ws['!cols'] = [{ wch: 16 }, { wch: 36 }, { wch: 17 }, { wch: 10 }, { wch: 16 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Asistencia');
     const nombreEvento = (document.getElementById('inscNombreEvento').value || '').trim() || 'evento';
     XLSX.writeFile(wb, 'asistencia_' + nombreEvento.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.xlsx');
@@ -2088,7 +2120,7 @@
     try {
       const snap = await getDocs(collection(db, 'inscripciones'));
       if (snap.empty) { mostrarToast('No hay inscripciones para descargar.', 'error'); return; }
-      const filas = [['N° inscripción', 'Nombre', 'Autoriza fotografía', 'Revisar posible duplicado']];
+      const filas = [['N° inscripción', 'Nombre', 'Autoriza fotografía', 'Menú vegetariano', 'Revisar posible duplicado']];
       const regs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9));
       const dup = {};
       invPosiblesDuplicados(regs).forEach(([a, b]) => {
@@ -2096,10 +2128,10 @@
         (dup[b.id] = dup[b.id] || []).push('N° ' + invNum(a));
       });
       regs.forEach(data => {
-        filas.push([data.numero ? String(data.numero).padStart(3, '0') : '', data.nombre || '', data.autorizaFotos ? 'Sí' : 'No', dup[data.id] ? 'Coincide con ' + dup[data.id].join(', ') : '']);
+        filas.push([data.numero ? String(data.numero).padStart(3, '0') : '', data.nombre || '', data.autorizaFotos ? 'Sí' : 'No', data.menuVegetariano ? 'Sí' : 'No', dup[data.id] ? 'Coincide con ' + dup[data.id].join(', ') : '']);
       });
       const ws = XLSX.utils.aoa_to_sheet(filas);
-      ws['!cols'] = [{ wch: 16 }, { wch: 32 }, { wch: 20 }, { wch: 30 }];
+      ws['!cols'] = [{ wch: 16 }, { wch: 32 }, { wch: 20 }, { wch: 17 }, { wch: 30 }];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Inscritos');
       const nombreEvento = document.getElementById('inscNombreEvento').value.trim() || 'evento';
