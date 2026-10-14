@@ -1699,10 +1699,10 @@
 <section class="inscripcion-evento" id="inscripcion-evento" style="display:none;">
   <div class="inscripcion-box">
     <div class="inscripcion-icono">🎉</div>
-    <p class="inscripcion-eyebrow">Inscripciones abiertas</p>
+    <p class="inscripcion-eyebrow" id="inscEyebrow">Inscripciones abiertas</p>
     <h2 id="inscEventoNombre">Evento</h2>
     <p class="inscripcion-fecha" id="inscEventoFecha"></p>
-    <div class="inscripcion-consentimiento">
+    <div class="inscripcion-consentimiento" id="inscConsentimiento">
       Durante este evento se podrán tomar fotografías con fines de registro y difusión institucional. Al inscribirte, puedes autorizar o no que tu imagen sea publicada en la sección Galería del sitio web del sindicato.
     </div>
     <div class="inscripcion-requisito" id="inscRequisito">
@@ -1719,6 +1719,15 @@
       <label class="inscripcion-menu"><input type="checkbox" id="inscVegetariano"> Prefiero menú vegetariano</label>
       <button type="submit" class="inscripcion-btn">Inscribirme</button>
     </form>
+    <form class="inscripcion-form" id="formAnulacion" style="display:none;" onsubmit="enviarAnulacion(event)">
+      <p style="font-size:0.92rem; color:#444; margin:0 0 1.2rem; line-height:1.55;">Si ya no podrás asistir, ingresa tu nombre completo y tu N° de registro (aparece al inscribirte y en tu invitación) para solicitar la anulación de tu inscripción.</p>
+      <label for="anulNombre">Nombre completo</label>
+      <input type="text" id="anulNombre" required placeholder="Nombre con el que te inscribiste">
+      <label for="anulNumero">N° de registro</label>
+      <input type="text" id="anulNumero" inputmode="numeric" required placeholder="Ej: 014">
+      <button type="submit" class="inscripcion-btn">Solicitar anulación</button>
+    </form>
+    <div class="inscripcion-confirmacion" id="anulacionConfirmacion">✓ Solicitud recibida. La directiva revisará los datos y confirmará la anulación de tu inscripción.</div>
     <div class="inscripcion-confirmacion" id="inscripcionConfirmacion">✓ ¡Inscripción registrada! Nos vemos en el evento.</div>
   </div>
 </section>
@@ -2474,7 +2483,8 @@ function convertirUrlVideo(url) {
       const snap = await getDoc(doc(db, 'config', 'evento'));
       if (!snap.exists()) return;
       const d = snap.data();
-      if (!d.activo) return;
+      const modoAnular = !d.activo && !!d.permiteAnulacion && !!d.nombre;
+      if (!d.activo && !modoAnular) return;
       document.getElementById('inscEventoNombre').textContent = d.nombre || 'Evento';
       let fechaTexto = '';
       if (d.fecha) {
@@ -2485,11 +2495,19 @@ function convertirUrlVideo(url) {
       if (d.hora) fechaTexto += ` · ${d.hora}${d.horaFin ? ' a ' + d.horaFin : ''} hrs`;
       document.getElementById('inscEventoFecha').textContent = fechaTexto;
       window.__evento = d;
+      if (modoAnular) {
+        document.getElementById('inscEyebrow').textContent = 'Anulación de inscripción';
+        document.getElementById('inscConsentimiento').style.display = 'none';
+        document.getElementById('inscRequisito').style.display = 'none';
+        document.getElementById('formInscripcionEvento').style.display = 'none';
+        document.getElementById('formAnulacion').style.display = 'block';
+        const nav = document.querySelector('#navInscripcionLi a'); if (nav) nav.textContent = '↩ Anular inscripción';
+      }
       document.getElementById('inscripcion-evento').style.display = 'block';
       document.getElementById('navInscripcionLi').style.display = 'block';
       if (window.busquedaIndiceNoticias) {
         window.busquedaIndiceNoticias.push({
-          titulo: 'Inscríbete: ' + (d.nombre || 'Evento'),
+          titulo: (modoAnular ? 'Anular inscripción: ' : 'Inscríbete: ') + (d.nombre || 'Evento'),
           texto: fechaTexto, anchor: 'inscripcion-evento', tipo: 'Evento',
         });
       }
@@ -2629,6 +2647,23 @@ function convertirUrlVideo(url) {
         if (nota) nota.textContent = 'Revisa la carpeta de descargas de tu dispositivo. Si no la encuentras, comunícate con nosotros.';
       }, 'image/png');
     } catch(e) { btn.disabled = false; btn.textContent = txtOrig; alert('No se pudo generar la invitación. Intenta de nuevo.'); }
+  };
+
+  window.enviarAnulacion = async (ev) => {
+    ev.preventDefault();
+    const nombre = document.getElementById('anulNombre').value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('es').replace(/(^|[\s\-'’.])(\p{L})/gu, (m, a, b) => a + b.toLocaleUpperCase('es'));
+    const numero = parseInt(document.getElementById('anulNumero').value.replace(/\D/g, ''), 10);
+    if (!nombre || !numero) { alert('Revisa tu nombre y tu N° de registro.'); return; }
+    const btn = ev.target.querySelector('.inscripcion-btn');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    try {
+      await addDoc(collection(db, 'anulaciones'), { nombre, numero, creadoEn: serverTimestamp() });
+      ev.target.style.display = 'none';
+      document.getElementById('anulacionConfirmacion').style.display = 'block';
+    } catch(e) {
+      btn.disabled = false; btn.textContent = 'Solicitar anulación';
+      alert('No se pudo enviar la solicitud. Intenta de nuevo en unos minutos.');
+    }
   };
 
   window.nuevaInscripcion = () => {

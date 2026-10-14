@@ -614,11 +614,13 @@
             <button class="btn-accion editar" onclick="descargarPlanillaInscripciones()">📊 Descargar planilla</button>
             <button class="btn-accion editar" onclick="verInscritos()">👥 Ver inscritos</button>
             <button class="btn-accion editar" onclick="revisarDuplicadosInscripciones()">🔍 Revisar duplicados</button>
+            <button class="btn-accion editar" id="btnAnulaciones" onclick="verAnulaciones()">↩ Solicitudes de anulación</button>
             <button class="btn-accion eliminar" onclick="eliminarTodasInscripciones()">🗑 Eliminar inscripciones</button>
             <button class="btn-accion eliminar" onclick="eliminarEventoCompleto()">🗑 Eliminar evento</button>
           </div>
           <div id="inscLista" style="display:none; width:100%;"></div>
           <div id="inscDuplicados" style="display:none; width:100%;"></div>
+          <div id="inscAnulaciones" style="display:none; width:100%;"></div>
           <p style="font-size:0.78rem; color:#888; margin:0;">Recomendación: descarga la planilla antes de eliminar las inscripciones — una vez eliminadas, no se pueden recuperar.</p>
         </div>
       </div>
@@ -642,6 +644,15 @@
             <span class="toggle-slider"></span>
           </label>
           <span class="toggle-label" id="inscEstadoLabel">Desactivado</span>
+        </div>
+        <div class="toggle-wrap" style="flex-wrap:wrap;">
+          <label>Permitir anular inscripción</label>
+          <label class="toggle">
+            <input type="checkbox" id="inscPermiteAnular">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label" id="inscAnularLabel">Desactivado</span>
+          <p style="font-size:0.78rem; color:#888; margin:0.3rem 0 0; width:100%;">Se muestra en el sitio solo cuando el formulario de inscripción está desactivado, para que los socios inscritos soliciten anular su inscripción.</p>
         </div>
         <div class="form-group">
           <label>Nombre del evento</label>
@@ -1818,7 +1829,7 @@
         if (d.hora) fechaTexto += ` · ${d.hora}${d.horaFin ? ' a ' + d.horaFin : ''} hrs`;
         document.getElementById('inscVistaFecha').textContent = fechaTexto;
         const badge = document.getElementById('inscEstadoBadge');
-        badge.textContent = d.activo ? '● Activado' : '○ Desactivado';
+        badge.textContent = (d.activo ? '● Activado' : '○ Desactivado') + (d.permiteAnulacion ? ' · Anulación habilitada' : '');
         badge.style.color = d.activo ? 'var(--verde)' : '#888';
 
         document.getElementById('inscNombreEvento').value = d.nombre || '';
@@ -1837,6 +1848,8 @@
         invVistaPrevia();
         const chk = document.getElementById('inscActivo');
         chk.checked = !!d.activo;
+        document.getElementById('inscPermiteAnular').checked = !!d.permiteAnulacion;
+        document.getElementById('inscAnularLabel').textContent = d.permiteAnulacion ? 'Activado' : 'Desactivado';
         document.getElementById('inscEstadoLabel').textContent = d.activo ? 'Activado' : 'Desactivado';
       } else {
         vista.style.display = 'none';
@@ -1851,6 +1864,7 @@
         document.getElementById('invPosNombre').value = 58; document.getElementById('invPosNumero').value = 70; document.getElementById('invColor').value = 'oscuro';
         document.getElementById('invArchivo').value = ''; invBgData = null; invQuitado = false; invBgGuardado = null; invEventoGuardado = null; invVistaPrevia();
         document.getElementById('inscActivo').checked     = false;
+        document.getElementById('inscPermiteAnular').checked = false; document.getElementById('inscAnularLabel').textContent = 'Desactivado';
         document.getElementById('inscEstadoLabel').textContent = 'Desactivado';
       }
     } catch(e) { mostrarToast('Error cargando configuración: ' + e.message, 'error'); }
@@ -1872,12 +1886,16 @@
     document.getElementById('inscEstadoLabel').textContent = this.checked ? 'Activado' : 'Desactivado';
   });
 
+  document.getElementById('inscPermiteAnular')?.addEventListener('change', function() {
+    document.getElementById('inscAnularLabel').textContent = this.checked ? 'Activado' : 'Desactivado';
+  });
+
   window.guardarConfigEvento = async () => {
     const nombre = document.getElementById('inscNombreEvento').value.trim();
     const fecha  = document.getElementById('inscFechaEvento').value;
     const hora   = document.getElementById('inscHoraEvento').value;
     const activo = document.getElementById('inscActivo').checked;
-    if (activo && (!nombre || !fecha)) {
+    if ((activo || document.getElementById('inscPermiteAnular').checked) && (!nombre || !fecha)) {
       mostrarToast('Agrega al menos el nombre y la fecha del evento antes de activarlo.', 'error');
       return;
     }
@@ -1887,7 +1905,7 @@
       if (invBgData) await setDoc(doc(db, 'config', 'invitacion'), { img: invBgData });
       else if (invQuitado) { try { await deleteDoc(doc(db, 'config', 'invitacion')); } catch(e) {} }
       await setDoc(doc(db, 'config', 'evento'), {
-        nombre, fecha, hora, horaFin: document.getElementById('inscHoraFinEvento').value, activo, lugar, tieneInvitacion,
+        nombre, fecha, hora, horaFin: document.getElementById('inscHoraFinEvento').value, activo, permiteAnulacion: document.getElementById('inscPermiteAnular').checked, lugar, tieneInvitacion,
         generaInvitacion: document.getElementById('invGenerar').checked,
         invMensaje: document.getElementById('inscMensajeInv').value.trim(),
         invNota: document.getElementById('inscNotaInv').value.trim(),
@@ -1904,6 +1922,10 @@
     try {
       const snap = await getDocs(collection(db, 'inscripciones'));
       document.getElementById('inscConteo').textContent = snap.size;
+    } catch(e) { /* silencioso */ }
+    try {
+      const sa = await getDocs(collection(db, 'anulaciones'));
+      document.getElementById('btnAnulaciones').textContent = '↩ Solicitudes de anulación' + (sa.size ? ' (' + sa.size + ')' : '');
     } catch(e) { /* silencioso */ }
   }
 
@@ -2083,6 +2105,63 @@
     XLSX.writeFile(wb, 'asistencia_' + nombreEvento.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.xlsx');
   };
 
+  // ── SOLICITUDES DE ANULACIÓN: valida N° y nombre contra las inscripciones ──
+  function invComparaNombre(a, b) {
+    const A = new Set(invTokensNombre(a)), B = new Set(invTokensNombre(b));
+    if (!A.size || !B.size) return 'no';
+    const comunes = [...A].filter(t => B.has(t)).length;
+    if (comunes === A.size && comunes === B.size) return 'igual';
+    return comunes >= 2 ? 'parcial' : 'no';
+  }
+  window.verAnulaciones = async () => {
+    const cont = document.getElementById('inscAnulaciones');
+    if (cont.style.display === 'block') { cont.style.display = 'none'; return; }
+    try {
+      const [snapA, regs] = await Promise.all([getDocs(collection(db, 'anulaciones')), invLeerInscripciones()]);
+      const sols = snapA.docs.map(d => ({ id: d.id, ...d.data() })).sort((x, y) => (x.numero || 0) - (y.numero || 0));
+      cont.innerHTML = ''; cont.style.display = 'block';
+      const tit = document.createElement('div');
+      tit.style.cssText = 'font-weight:600; margin-bottom:0.5rem; color:#1C2B3A;';
+      tit.textContent = sols.length ? 'Solicitudes de anulación: ' + sols.length : 'No hay solicitudes de anulación.';
+      cont.appendChild(tit);
+      sols.forEach(sol => {
+        const reg = regs.find(r => r.numero === sol.numero);
+        const cmp = reg ? invComparaNombre(sol.nombre, reg.nombre) : 'no';
+        const f = document.createElement('div');
+        f.style.cssText = 'padding:0.7rem 0.9rem; border:1px solid #ddd; border-radius:3px; margin-bottom:0.5rem; font-size:0.88rem;';
+        const l1 = document.createElement('div');
+        const b1 = document.createElement('strong'); b1.textContent = 'N° ' + String(sol.numero).padStart(3, '0') + ' — ' + (sol.nombre || ''); l1.appendChild(b1);
+        const l2 = document.createElement('div'); l2.style.cssText = 'margin:0.3rem 0 0.6rem; font-weight:600; font-size:0.82rem;';
+        if (!reg) { l2.style.color = '#C62828'; l2.textContent = '✗ No existe una inscripción con ese N°'; }
+        else if (cmp === 'igual') { l2.style.color = '#2E7D32'; l2.textContent = '✓ Coincide con la inscripción N° ' + invNum(reg); }
+        else if (cmp === 'parcial') { l2.style.color = '#E65100'; l2.textContent = '⚠ Revisar: el N° ' + invNum(reg) + ' está a nombre de "' + (reg.nombre || '') + '"'; }
+        else { l2.style.color = '#C62828'; l2.textContent = '✗ No coincide: el N° ' + invNum(reg) + ' está a nombre de "' + (reg.nombre || '') + '"'; }
+        f.appendChild(l1); f.appendChild(l2);
+        const acc = document.createElement('div'); acc.style.cssText = 'display:flex; gap:0.5rem; flex-wrap:wrap;';
+        if (reg) {
+          const bc = document.createElement('button'); bc.className = 'btn-accion eliminar'; bc.textContent = 'Confirmar anulación';
+          bc.onclick = async () => {
+            const aviso = cmp === 'igual' ? '' : '\n\nOJO: el nombre no coincide exactamente. Verifica antes de continuar.';
+            if (!confirm('¿Anular la inscripción N° ' + invNum(reg) + ' (' + (reg.nombre || '') + ')? Se elimina de la lista de inscritos y del control de ingreso; el número no se reutiliza.' + aviso)) return;
+            bc.disabled = true;
+            try {
+              await deleteDoc(doc(db, 'inscripciones', reg.id));
+              await deleteDoc(doc(db, 'anulaciones', sol.id));
+              f.remove(); mostrarToast('Inscripción N° ' + invNum(reg) + ' anulada.', 'exito'); cargarConteoInscripciones();
+            } catch(e) { bc.disabled = false; mostrarToast('Error: ' + e.message, 'error'); }
+          };
+          acc.appendChild(bc);
+        }
+        const bd = document.createElement('button'); bd.className = 'btn-accion editar'; bd.textContent = 'Descartar solicitud';
+        bd.onclick = async () => {
+          if (!confirm('¿Descartar esta solicitud sin anular la inscripción?')) return;
+          try { await deleteDoc(doc(db, 'anulaciones', sol.id)); f.remove(); cargarConteoInscripciones(); } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+        };
+        acc.appendChild(bd); f.appendChild(acc); cont.appendChild(f);
+      });
+    } catch(e) { mostrarToast('Error al cargar las solicitudes: ' + e.message, 'error'); }
+  };
+
   window.revisarDuplicadosInscripciones = async () => {
     const cont = document.getElementById('inscDuplicados');
     try {
@@ -2152,6 +2231,7 @@
       const batch = writeBatch(db);
       snap.forEach(d => batch.delete(d.ref));
       await batch.commit();
+      try { const sa = await getDocs(collection(db, 'anulaciones')); const b2 = writeBatch(db); sa.forEach(d => b2.delete(d.ref)); await b2.commit(); } catch(e) {}
       await setDoc(doc(db, 'contadores', 'inscripciones'), { ultimo: 0 });
       mostrarToast('Inscripciones eliminadas.', 'exito');
       cargarConteoInscripciones();
@@ -2161,8 +2241,9 @@
   window.eliminarEventoCompleto = async () => {
     if (!confirm('¿Eliminar el evento completo? Esto también desactiva el formulario en el sitio. Si aún hay inscripciones sin descargar, descárgalas antes.')) return;
     try {
-      await setDoc(doc(db, 'config', 'evento'), { nombre: '', fecha: '', hora: '', activo: false });
+      await setDoc(doc(db, 'config', 'evento'), { nombre: '', fecha: '', hora: '', activo: false, permiteAnulacion: false });
       try { await deleteDoc(doc(db, 'config', 'invitacion')); } catch(e) {}
+      try { const sa = await getDocs(collection(db, 'anulaciones')); const b2 = writeBatch(db); sa.forEach(d => b2.delete(d.ref)); await b2.commit(); } catch(e) {}
       await setDoc(doc(db, 'contadores', 'inscripciones'), { ultimo: 0 });
       mostrarToast('Evento eliminado.', 'exito');
       cargarConfigEvento();
