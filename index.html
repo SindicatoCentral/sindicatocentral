@@ -1146,23 +1146,25 @@
 
   .popup-cerrar:hover { background: rgba(0,0,0,0.5); }
   .popup-box.solo-img-box {
-    width: auto !important;
+    width: min(720px, 92vw) !important;
     max-width: 92vw !important;
     background: transparent !important;
     box-shadow: none !important;
   }
+  /* Imagen horizontal: se muestra más ancha, sin recortar */
+  .popup-box.solo-img-box.img-ancha { width: min(960px, 92vw) !important; }
   .popup-box.solo-img-box .popup-header {
     background: rgba(28,43,58,0.85);
     backdrop-filter: blur(4px);
   }
   .popup-box.solo-img-box .popup-img {
-    width: auto; min-width: min(700px, 90vw); max-width: 92vw;
+    width: 100%; min-width: 0; max-width: 100%;
     height: auto; max-height: none;
     display: block;
   }
   .popup-box.solo-img-box .popup-contenido {
     overflow-y: auto;
-    max-height: 85vh;
+    max-height: calc(92vh - 48px);
   }
   .popup-contenido {
     display: flex; flex-direction: row;
@@ -1186,8 +1188,8 @@
     display: block; flex-shrink: 0; align-self: center;
   }
   .popup-contenido.solo-imagen .popup-img {
-    width: 100%; min-width: unset; height: auto; max-height: 82vh;
-    object-fit: contain; margin: 0; display: block; background: #000;
+    width: 100%; min-width: 0; max-width: 100%; height: auto; max-height: none;
+    object-fit: contain; margin: 0; display: block; background: transparent;
   }
 
 
@@ -2822,6 +2824,8 @@ function convertirUrlVideo(url) {
         // Si solo hay imagen (sin mensaje), ajustar popup al ancho de la imagen
         if (!d.mensaje && !tieneBoton) {
           document.querySelector('.popup-box').classList.add('solo-img-box');
+          const marcarAncha = () => { if (img.naturalWidth > img.naturalHeight * 1.15) document.querySelector('.popup-box').classList.add('img-ancha'); };
+          if (img.complete && img.naturalWidth) marcarAncha(); else img.addEventListener('load', marcarAncha, { once: true });
         }
       }
 
