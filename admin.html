@@ -1968,9 +1968,16 @@
       document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     }, 'image/png');
   }
+  // Los tres paneles (inscritos, duplicados, anulaciones): se abren de a uno; volver a presionar el botón lo cierra
+  const INSC_PANELES = ['inscLista', 'inscDuplicados', 'inscAnulaciones'];
+  function inscAlternarPanel(id) {
+    const cont = document.getElementById(id);
+    if (cont.style.display === 'block') { cont.style.display = 'none'; return null; }
+    INSC_PANELES.forEach(o => { if (o !== id) { const e = document.getElementById(o); if (e) e.style.display = 'none'; } });
+    return cont;
+  }
   window.verInscritos = async () => {
-    const cont = document.getElementById('inscLista');
-    if (cont.style.display === 'block') { cont.style.display = 'none'; return; }
+    const cont = inscAlternarPanel('inscLista'); if (!cont) return;
     try {
       const regs = await invLeerInscripciones();
       cont.innerHTML = ''; cont.style.display = 'block';
@@ -2114,8 +2121,7 @@
     return comunes >= 2 ? 'parcial' : 'no';
   }
   window.verAnulaciones = async () => {
-    const cont = document.getElementById('inscAnulaciones');
-    if (cont.style.display === 'block') { cont.style.display = 'none'; return; }
+    const cont = inscAlternarPanel('inscAnulaciones'); if (!cont) return;
     try {
       const [snapA, regs] = await Promise.all([getDocs(collection(db, 'anulaciones')), invLeerInscripciones()]);
       const sols = snapA.docs.map(d => ({ id: d.id, ...d.data() })).sort((x, y) => (x.numero || 0) - (y.numero || 0));
@@ -2163,7 +2169,7 @@
   };
 
   window.revisarDuplicadosInscripciones = async () => {
-    const cont = document.getElementById('inscDuplicados');
+    const cont = inscAlternarPanel('inscDuplicados'); if (!cont) return;
     try {
       const regs = await invLeerInscripciones();
       const pares = invPosiblesDuplicados(regs);
