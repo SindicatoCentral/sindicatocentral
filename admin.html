@@ -2158,9 +2158,10 @@
           const bc = document.createElement('button'); bc.className = 'btn-accion eliminar'; bc.textContent = 'Confirmar anulación';
           bc.onclick = async () => {
             const aviso = cmp === 'igual' ? '' : '\n\nOJO: el nombre no coincide exactamente. Verifica antes de continuar.';
-            if (!confirm('¿Anular la inscripción N° ' + invNum(reg) + ' (' + (reg.nombre || '') + ')? Se elimina de la lista de inscritos y del control de ingreso; el número no se reutiliza.' + aviso)) return;
+            if (!confirm('¿Anular la inscripción N° ' + invNum(reg) + ' (' + (reg.nombre || '') + ')? Se elimina de la lista de inscritos y del control de ingreso (queda anotada en la hoja "Anuladas" de la planilla); el número no se reutiliza.' + aviso)) return;
             bc.disabled = true;
             try {
+              await setDoc(doc(db, 'anuladas', reg.id), { numero: reg.numero || null, nombre: reg.nombre || '', anuladaEn: serverTimestamp() });
               await deleteDoc(doc(db, 'inscripciones', reg.id));
               await deleteDoc(doc(db, 'anulaciones', sol.id));
               f.remove(); mostrarToast('Inscripción N° ' + invNum(reg) + ' anulada.', 'exito'); cargarConteoInscripciones();
@@ -2219,7 +2220,9 @@
   window.descargarPlanillaInscripciones = async () => {
     try {
       const snap = await getDocs(collection(db, 'inscripciones'));
-      if (snap.empty) { mostrarToast('No hay inscripciones para descargar.', 'error'); return; }
+      let anuladas = [];
+      try { anuladas = (await getDocs(collection(db, 'anuladas'))).docs.map(d => d.data()).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9)); } catch(e) {}
+      if (snap.empty && !anuladas.length) { mostrarToast('No hay inscripciones para descargar.', 'error'); return; }
       const filas = [['N° inscripción', 'Nombre', 'Autoriza fotografía', 'Menú vegetariano', 'Revisar posible duplicado']];
       const regs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9));
       const dup = {};
@@ -2234,6 +2237,13 @@
       ws['!cols'] = [{ wch: 16 }, { wch: 32 }, { wch: 20 }, { wch: 17 }, { wch: 30 }];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Inscritos');
+      if (anuladas.length) {
+        const fa = [['N° inscripción', 'Nombre', 'Fecha de anulación']];
+        anuladas.forEach(a => fa.push([a.numero ? String(a.numero).padStart(3, '0') : '', a.nombre || '', a.anuladaEn && a.anuladaEn.toDate ? a.anuladaEn.toDate().toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }) : '']));
+        const wa = XLSX.utils.aoa_to_sheet(fa);
+        wa['!cols'] = [{ wch: 16 }, { wch: 32 }, { wch: 20 }];
+        XLSX.utils.book_append_sheet(wb, wa, 'Anuladas');
+      }
       const nombreEvento = document.getElementById('inscNombreEvento').value.trim() || 'evento';
       const nombreArchivo = 'inscripciones_' + nombreEvento.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.xlsx';
       XLSX.writeFile(wb, nombreArchivo);
@@ -2253,7 +2263,8 @@
     if (!confirm('¿Eliminar TODAS las inscripciones y los registros de ingreso? El contador volverá a 001. Asegúrate de haber descargado la planilla y exportado la asistencia — esta acción no se puede deshacer. No lo uses si el evento sigue en curso.')) return;
     try {
       await borrarColeccion('inscripciones');
-      try { const sa = await getDocs(collection(db, 'anulaciones')); const b2 = writeBatch(db); sa.forEach(d => b2.delete(d.ref)); await b2.commit(); } catch(e) {}
+      try { await borrarColeccion('anulaciones'); } catch(e) {}
+      try { await borrarColeccion('anuladas'); } catch(e) {}
       await setDoc(doc(db, 'contadores', 'inscripciones'), { ultimo: 0 });
       mostrarToast('Inscripciones eliminadas.', 'exito');
       cargarConteoInscripciones();
@@ -2279,6 +2290,7 @@
     try {
       await borrarColeccion('inscripciones');
       try { await borrarColeccion('anulaciones'); } catch(e) {}
+      try { await borrarColeccion('anuladas'); } catch(e) {}
       await setDoc(doc(db, 'config', 'evento'), { nombre: '', fecha: '', hora: '', activo: false, permiteAnulacion: false });
       try { await deleteDoc(doc(db, 'config', 'invitacion')); } catch(e) {}
       await setDoc(doc(db, 'contadores', 'inscripciones'), { ultimo: 0 });
