@@ -2101,16 +2101,26 @@
       f.appendChild(b); lista.appendChild(f);
     });
   };
-  window.ingExportar = () => {
-    if (!ingDatos.length) { mostrarToast('No hay inscritos para exportar.', 'error'); return; }
+  window.ingExportar = () => ingExportarDatos(ingDatos);
+  // Descarga la asistencia leyendo los datos actuales de la base (sin depender de la pestaña Control de ingreso)
+  window.descargarAsistenciaDirecta = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'inscripciones'));
+      const datos = snap.docs.map(d => { const x = d.data(); return { id: d.id, ...x, ingresoEn: x.ingresoEn && x.ingresoEn.toDate ? x.ingresoEn.toDate() : null }; })
+        .sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9));
+      ingExportarDatos(datos);
+    } catch(e) { mostrarToast('Error al generar la asistencia: ' + e.message, 'error'); }
+  };
+  function ingExportarDatos(datos) {
+    if (!datos.length) { mostrarToast('No hay inscritos para exportar.', 'error'); return; }
     const filas = [['N° inscripción', 'Nombre', 'Menú vegetariano', 'Ingresó', 'Hora de ingreso']];
-    ingDatos.forEach(r => filas.push([r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.menuVegetariano ? 'Sí' : 'No', r.ingreso ? 'Sí' : 'No', ingHora(r)]));
+    datos.forEach(r => filas.push([r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.menuVegetariano ? 'Sí' : 'No', r.ingreso ? 'Sí' : 'No', ingHora(r)]));
     const ws = XLSX.utils.aoa_to_sheet(filas);
     ws['!cols'] = [{ wch: 16 }, { wch: 36 }, { wch: 17 }, { wch: 10 }, { wch: 16 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Asistencia');
     const nombreEvento = (document.getElementById('inscNombreEvento').value || '').trim() || 'evento';
     XLSX.writeFile(wb, 'asistencia_' + nombreEvento.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.xlsx');
-  };
+  }
 
   // ── SOLICITUDES DE ANULACIÓN: valida N° y nombre contra las inscripciones ──
   function invComparaNombre(a, b) {
@@ -2230,13 +2240,19 @@
     } catch(e) { mostrarToast('Error al generar la planilla: ' + e.message, 'error'); }
   };
 
+  // Borra todos los documentos de una colección, en lotes (Firestore admite hasta 500 por lote)
+  async function borrarColeccion(nombre) {
+    const snap = await getDocs(collection(db, nombre));
+    for (let i = 0; i < snap.docs.length; i += 400) {
+      const b = writeBatch(db);
+      snap.docs.slice(i, i + 400).forEach(d => b.delete(d.ref));
+      await b.commit();
+    }
+  }
   window.eliminarTodasInscripciones = async () => {
     if (!confirm('¿Eliminar TODAS las inscripciones y los registros de ingreso? El contador volverá a 001. Asegúrate de haber descargado la planilla y exportado la asistencia — esta acción no se puede deshacer. No lo uses si el evento sigue en curso.')) return;
     try {
-      const snap = await getDocs(collection(db, 'inscripciones'));
-      const batch = writeBatch(db);
-      snap.forEach(d => batch.delete(d.ref));
-      await batch.commit();
+      await borrarColeccion('inscripciones');
       try { const sa = await getDocs(collection(db, 'anulaciones')); const b2 = writeBatch(db); sa.forEach(d => b2.delete(d.ref)); await b2.commit(); } catch(e) {}
       await setDoc(doc(db, 'contadores', 'inscripciones'), { ultimo: 0 });
       mostrarToast('Inscripciones eliminadas.', 'exito');
@@ -2245,13 +2261,28 @@
   };
 
   window.eliminarEventoCompleto = async () => {
-    if (!confirm('¿Eliminar el evento completo? Esto también desactiva el formulario en el sitio. Si aún hay inscripciones sin descargar, descárgalas antes.')) return;
+    let n = 0;
+    try { n = (await getDocs(collection(db, 'inscripciones'))).size; }
+    catch(e) { mostrarToast('No se pudo comprobar las inscripciones: ' + e.message, 'error'); return; }
+    if (n > 0) {
+      const listo = confirm('Hay ' + n + ' inscripciones guardadas.\n\n¿Ya descargaste la planilla de inscripciones y la asistencia del evento?\n\nAceptar = SÍ, ya las descargué\nCancelar = NO todavía');
+      if (!listo) {
+        if (confirm('No se eliminó nada.\n\n¿Quieres descargar ahora la planilla de inscripciones y la asistencia?\n\nAceptar = descargar ahora\nCancelar = salir')) {
+          await descargarPlanillaInscripciones();
+          setTimeout(() => descargarAsistenciaDirecta(), 700);
+          mostrarToast('Descargando las planillas. Revísalas y vuelve a presionar "Eliminar evento".', 'exito');
+        }
+        return;
+      }
+      if (!confirm('ÚLTIMA CONFIRMACIÓN: se eliminarán el evento, las ' + n + ' inscripciones, los registros de ingreso y las solicitudes de anulación, y el contador volverá a 001. Esta acción no se puede deshacer.')) return;
+    } else if (!confirm('¿Eliminar el evento completo? Esto también desactiva el formulario en el sitio.')) return;
     try {
+      await borrarColeccion('inscripciones');
+      try { await borrarColeccion('anulaciones'); } catch(e) {}
       await setDoc(doc(db, 'config', 'evento'), { nombre: '', fecha: '', hora: '', activo: false, permiteAnulacion: false });
       try { await deleteDoc(doc(db, 'config', 'invitacion')); } catch(e) {}
-      try { const sa = await getDocs(collection(db, 'anulaciones')); const b2 = writeBatch(db); sa.forEach(d => b2.delete(d.ref)); await b2.commit(); } catch(e) {}
       await setDoc(doc(db, 'contadores', 'inscripciones'), { ultimo: 0 });
-      mostrarToast('Evento eliminado.', 'exito');
+      mostrarToast('Evento e inscripciones eliminados.', 'exito');
       cargarConfigEvento();
     } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
   };
