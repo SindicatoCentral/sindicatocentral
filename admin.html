@@ -1993,6 +1993,14 @@
       const filtro = document.createElement('input');
       filtro.type = 'text'; filtro.placeholder = 'Buscar por nombre o N°...'; filtro.style.cssText = 'width:100%; margin-bottom:0.6rem;';
       cont.appendChild(filtro);
+      const nVeg = regs.filter(r => r.menuVegetariano).length;
+      const lvWrap = document.createElement('label');
+      lvWrap.style.cssText = 'display:flex; align-items:center; gap:0.5rem; margin:0 0 0.6rem; font-size:0.85rem; cursor:pointer;';
+      const chkVeg = document.createElement('input'); chkVeg.type = 'checkbox'; chkVeg.style.cssText = 'width:auto; margin:0;';
+      lvWrap.appendChild(chkVeg);
+      const lvTxt = document.createElement('span'); lvTxt.textContent = '🥗 Mostrar solo menú vegetariano (' + nVeg + ')'; lvWrap.appendChild(lvTxt);
+      cont.appendChild(lvWrap);
+      let aplicarFiltro = () => {};
       const caja = document.createElement('div'); caja.style.cssText = 'max-height:340px; overflow-y:auto; border:1px solid #ddd; border-radius:3px;';
       const norm = x => x.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
       const filas = regs.map(r => {
@@ -2000,7 +2008,8 @@
         f.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:0.6rem; flex-wrap:wrap; padding:0.5rem 0.8rem; border-bottom:1px solid #eee; font-size:0.85rem;';
         const pintar = () => {
           f.innerHTML = '';
-          f.dataset.k = norm('n° ' + invNum(r) + ' ' + (r.nombre || ''));
+          f.dataset.k = norm('n° ' + invNum(r) + ' ' + (r.nombre || '') + (r.menuVegetariano ? ' vegetariano' : ''));
+          f.dataset.veg = r.menuVegetariano ? '1' : '0';
           const t = document.createElement('span'); t.textContent = 'N° ' + invNum(r) + ' — ' + (r.nombre || '') + (r.autorizaFotos ? '' : '  (no autoriza fotos)') + (r.menuVegetariano ? '  🥗 vegetariano' : '');
           f.appendChild(t);
           const bs = document.createElement('span'); bs.style.cssText = 'display:flex; gap:0.4rem; flex-wrap:wrap;';
@@ -2029,7 +2038,7 @@
             try {
               await updateDoc(doc(db, 'inscripciones', r.id), { nombre, menuVegetariano: cVeg.checked });
               r.nombre = nombre; r.menuVegetariano = cVeg.checked;
-              f.style.display = 'flex'; pintar(); mostrarToast('Inscripción N° ' + invNum(r) + ' actualizada.', 'exito');
+              f.style.display = 'flex'; pintar(); aplicarFiltro(); mostrarToast('Inscripción N° ' + invNum(r) + ' actualizada.', 'exito');
             } catch(e) { bg.disabled = false; bg.textContent = 'Guardar'; mostrarToast('Error al guardar: ' + e.message, 'error'); }
           };
           f.appendChild(nIn); f.appendChild(lVeg);
@@ -2039,7 +2048,18 @@
         pintar();
         caja.appendChild(f); return f;
       });
-      filtro.oninput = () => { const q = filtro.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); filas.forEach(f => f.style.display = f.dataset.k.includes(q) ? 'flex' : 'none'); };
+      aplicarFiltro = () => {
+        const q = filtro.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        let visibles = 0;
+        filas.forEach(f => {
+          const ok = f.dataset.k.includes(q) && (!chkVeg.checked || f.dataset.veg === '1');
+          if (ok) visibles++;
+          f.style.display = ok ? (f.style.display === 'none' ? 'flex' : f.style.display) : 'none';
+        });
+        lvTxt.textContent = '🥗 Mostrar solo menú vegetariano (' + filas.filter(f => f.dataset.veg === '1').length + ')';
+        tit.textContent = 'Inscritos: ' + regs.length + (visibles !== regs.length ? ' · mostrando ' + visibles : '');
+      };
+      filtro.oninput = aplicarFiltro; chkVeg.onchange = aplicarFiltro;
       cont.appendChild(caja);
     } catch(e) { mostrarToast('Error al cargar los inscritos: ' + e.message, 'error'); }
   };
