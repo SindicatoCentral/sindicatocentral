@@ -1458,6 +1458,21 @@
     .neg-tabla thead th { background:#0f1a24; }
     .neg-punto { border-color:#1a1a1a; }
   }
+
+  /* ── NAV MÓVIL: que el botón Afíliate se vea completo ── */
+  @media (max-width: 480px) {
+    nav { grid-template-columns: auto 1fr auto; }
+    nav .nav-logo { height: 32px; margin-left: 0.5rem; }
+    nav .nav-right { gap: 0.25rem; padding-right: 0.35rem; min-width: 0; }
+    nav .nav-right img.nav-logo-ucen { height: 28px; margin-right: 0; }
+    nav .nav-right .nav-cta { font-size: 0.64rem !important; padding: 0.42rem 0.6rem !important; letter-spacing: 0.03em; }
+    nav .hamburguesa { padding: 0 0.45rem; }
+  }
+  @media (max-width: 340px) {
+    nav .nav-logo { height: 28px; margin-left: 0.4rem; }
+    nav .nav-right img.nav-logo-ucen { height: 24px; }
+    nav .nav-right .nav-cta { font-size: 0.58rem !important; padding: 0.4rem 0.5rem !important; }
+  }
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
