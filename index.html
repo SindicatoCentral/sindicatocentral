@@ -139,6 +139,34 @@
   }
   .busqueda-vacio { padding: 1.5rem 1.2rem; color: #999; font-size: 0.85rem; text-align: center; }
 
+  /* ── BÚSQUEDA: colores propios (buen contraste en modo claro y oscuro) ── */
+  .busqueda-panel { background: #ffffff; }
+  .busqueda-input-wrap { border-bottom: 1px solid #e3e7eb; }
+  #busquedaInput { background: transparent; color: #1C2B3A; }
+  #busquedaInput::placeholder { color: #6b7782; }
+  .busqueda-item { border-bottom: 1px solid #eceff2; }
+  .busqueda-item:hover, .busqueda-item.activo { background: #eef3f8; }
+  .busqueda-item-titulo { font-size: 0.95rem; color: #1C2B3A; }
+  .busqueda-item-tipo { color: #2E5F8A; }
+  .busqueda-item-texto { font-size: 0.82rem; color: #4a5560; line-clamp: 2; -webkit-line-clamp: 2; }
+  .busqueda-vacio { color: #55606b; }
+  .busqueda-cerrar { color: #55606b; }
+  @media (prefers-color-scheme: dark) {
+    .busqueda-overlay { background: rgba(0,0,0,0.72); }
+    .busqueda-panel { background: #1f2933; border: 1px solid #3a4752; }
+    .busqueda-input-wrap { border-bottom: 1px solid #3a4752; }
+    .busqueda-input-wrap span { color: #cfd6dd; }
+    #busquedaInput { background: transparent; color: #ffffff; }
+    #busquedaInput::placeholder { color: #9aa7b3; }
+    .busqueda-item { border-bottom: 1px solid #323f4b; }
+    .busqueda-item:hover, .busqueda-item.activo { background: #2c3a47; }
+    .busqueda-item-titulo { color: #ffffff; }
+    .busqueda-item-tipo { color: #8DB8E0; }
+    .busqueda-item-texto { color: #d3dae1; }
+    .busqueda-vacio { color: #c3ccd5; }
+    .busqueda-cerrar { color: #cfd6dd; }
+  }
+
   /* ── HERO ── */
   .hero {
     background: #1C2B3A;
@@ -2295,7 +2323,9 @@ function construirIndiceDOM() {
     const tituloSec = limpiar(h2 ? h2.textContent : id);
     const base = { anchor: id, esOculta: oculta };
     // 1) la sección completa (se busca en todo su texto)
-    const textoSec = limpiar(sec.textContent);
+    const copia = sec.cloneNode(true);
+    copia.querySelectorAll('#faqSinResultados, .faq-buscador-wrap, script, style, form, .neg-tabla').forEach(n => n.remove());
+    const textoSec = limpiar(copia.textContent) + ' ' + limpiar([...sec.querySelectorAll('.neg-tabla')].map(t => t.textContent).join(' '));
     out.push({ ...base, titulo: tituloSec, texto: textoSec.slice(0, 200), buscable: textoSec, tipo: 'Sección' });
     // 2) preguntas frecuentes
     sec.querySelectorAll('.faq-item').forEach(it => {
