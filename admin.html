@@ -445,6 +445,7 @@
           <button type="button" class="tab-media" id="ingF_pend" onclick="ingFiltro('pend')">Pendientes</button>
           <button type="button" class="tab-media" id="ingF_ok" onclick="ingFiltro('ok')">Ingresados</button>
           <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; cursor:pointer; margin:0;"><input type="checkbox" id="ingSoloVeg" onchange="ingRender()" style="width:auto; margin:0;"> <span id="ingSoloVegTxt">🥗 Solo menú vegetariano</span></label>
+          <select id="ingFotos" onchange="ingRender()" style="width:auto; margin:0; font-size:0.85rem; padding:0.3rem 0.5rem;"><option value="">📷 Fotos: todos</option><option value="si" id="ingFotosSi">📷 Autorizan fotos</option><option value="no" id="ingFotosNo">🚫 No autorizan fotos</option></select>
           <button type="button" class="btn-accion editar" style="margin-left:auto;" onclick="ingExportar()">📊 Exportar asistencia</button>
         </div>
         <div id="ingLista" style="border:1px solid #ddd; border-radius:3px;"></div>
@@ -2004,6 +2005,10 @@
       lvWrap.appendChild(chkVeg);
       const lvTxt = document.createElement('span'); lvTxt.textContent = '🥗 Mostrar solo menú vegetariano (' + nVeg + ')'; lvWrap.appendChild(lvTxt);
       cont.appendChild(lvWrap);
+      const fotoSel = document.createElement('select'); fotoSel.style.cssText = 'width:auto; margin:0 0 0.6rem; font-size:0.85rem; padding:0.3rem 0.5rem;';
+      const opFoto = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; fotoSel.appendChild(o); return o; };
+      const oF0 = opFoto('', ''), oF1 = opFoto('si', ''), oF2 = opFoto('no', '');
+      cont.appendChild(fotoSel);
       let aplicarFiltro = () => {};
       const caja = document.createElement('div'); caja.style.cssText = 'max-height:340px; overflow-y:auto; border:1px solid #ddd; border-radius:3px;';
       const norm = x => x.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -2014,6 +2019,7 @@
           f.innerHTML = '';
           f.dataset.k = norm('n° ' + invNum(r) + ' ' + (r.nombre || '') + (r.menuVegetariano ? ' vegetariano' : ''));
           f.dataset.veg = r.menuVegetariano ? '1' : '0';
+          f.dataset.fot = r.autorizaFotos ? '1' : '0';
           const t = document.createElement('span'); t.textContent = 'N° ' + invNum(r) + ' — ' + (r.nombre || '') + (r.autorizaFotos ? '' : '  (no autoriza fotos)') + (r.menuVegetariano ? '  🥗 vegetariano' : '');
           f.appendChild(t);
           const bs = document.createElement('span'); bs.style.cssText = 'display:flex; gap:0.4rem; flex-wrap:wrap;';
@@ -2056,14 +2062,17 @@
         const q = filtro.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
         let visibles = 0;
         filas.forEach(f => {
-          const ok = f.dataset.k.includes(q) && (!chkVeg.checked || f.dataset.veg === '1');
+          const ok = f.dataset.k.includes(q) && (!chkVeg.checked || f.dataset.veg === '1') && (!fotoSel.value || f.dataset.fot === (fotoSel.value === 'si' ? '1' : '0'));
           if (ok) visibles++;
           f.style.display = ok ? (f.style.display === 'none' ? 'flex' : f.style.display) : 'none';
         });
         lvTxt.textContent = '🥗 Mostrar solo menú vegetariano (' + filas.filter(f => f.dataset.veg === '1').length + ')';
+        const nSi = filas.filter(f => f.dataset.fot === '1').length;
+        oF0.textContent = '📷 Fotos: todos'; oF1.textContent = '📷 Autorizan fotos (' + nSi + ')'; oF2.textContent = '🚫 No autorizan fotos (' + (filas.length - nSi) + ')';
         tit.textContent = 'Inscritos: ' + regs.length + (visibles !== regs.length ? ' · mostrando ' + visibles : '');
       };
-      filtro.oninput = aplicarFiltro; chkVeg.onchange = aplicarFiltro;
+      filtro.oninput = aplicarFiltro; chkVeg.onchange = aplicarFiltro; fotoSel.onchange = aplicarFiltro;
+      aplicarFiltro();
       cont.appendChild(caja);
     } catch(e) { mostrarToast('Error al cargar los inscritos: ' + e.message, 'error'); }
   };
@@ -2098,8 +2107,13 @@
     const lista = document.getElementById('ingLista'); lista.innerHTML = '';
     const soloVeg = document.getElementById('ingSoloVeg').checked;
     document.getElementById('ingSoloVegTxt').textContent = '🥗 Solo menú vegetariano (' + ingDatos.filter(r => r.menuVegetariano).length + ')';
+    const fFoto = document.getElementById('ingFotos').value;
+    const nFotoSi = ingDatos.filter(r => r.autorizaFotos).length;
+    document.getElementById('ingFotosSi').textContent = '📷 Autorizan fotos (' + nFotoSi + ')';
+    document.getElementById('ingFotosNo').textContent = '🚫 No autorizan fotos (' + (ingDatos.length - nFotoSi) + ')';
     const filas = ingDatos.filter(r => (ingFiltroActual === 'todos' || (ingFiltroActual === 'ok') === !!r.ingreso)
       && (!soloVeg || r.menuVegetariano)
+      && (!fFoto || !!r.autorizaFotos === (fFoto === 'si'))
       && (!q || ingNorm('n° ' + invNum(r) + ' ' + (r.nombre || '') + (r.menuVegetariano ? ' vegetariano' : '')).includes(q)));
     if (!filas.length) {
       const v = document.createElement('div'); v.style.cssText = 'padding:1rem; text-align:center; color:#888; font-size:0.9rem;';
