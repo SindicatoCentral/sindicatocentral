@@ -2236,6 +2236,7 @@ const busquedaIndiceEstatico = [
   { titulo: 'Formulario de inscripción', texto: 'Descarga el formulario de afiliación', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Contrato colectivo', texto: 'Descarga el contrato colectivo vigente', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Afíliate', texto: 'Sé parte del sindicato, formulario de inscripción', anchor: 'afiliacion', tipo: 'Sección', esOculta: true },
+  { titulo: 'Avances de las negociaciones colectivas', texto: 'Comparativo 2017–2027 de los contratos colectivos: bono de término, reajuste IPC, incremento a sueldo base, colación, movilización, jornada de 42 horas, permisos y becas', anchor: 'negociaciones', tipo: 'Negociación colectiva', esOculta: true },
   { titulo: 'Contacto', texto: 'Escríbenos, formulario de contacto', anchor: 'contacto', tipo: 'Sección' },
   { titulo: 'Política de Privacidad', texto: 'Qué datos recolecta el sitio, para qué los usa y tus derechos', anchor: 'privacidad', tipo: 'Sección', esOculta: true },
 ];
@@ -2250,6 +2251,7 @@ window.abrirBusqueda = () => {
   cerrarMenu();
   const overlay = document.getElementById('busquedaOverlay');
   overlay.classList.add('visible');
+  try { window.busquedaIndiceDOM = construirIndiceDOM(); } catch(e) { window.busquedaIndiceDOM = []; }
   const input = document.getElementById('busquedaInput');
   input.value = '';
   ejecutarBusqueda('');
@@ -2268,19 +2270,190 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Índice generado desde el propio contenido de la página: todo lo que se agregue o cambie en el sitio queda buscable
+function construirIndiceDOM() {
+  const out = [];
+  const limpiar = t => (t || '').replace(/\s+/g, ' ').replace(/[+↗]\s*$/,'').trim();
+  const visible = (el, sec) => {
+    for (let n = el; n && n !== sec; n = n.parentElement) {
+      if (getComputedStyle(n).display === 'none') return false;
+    }
+    return true;
+  };
+  const etiquetas = {
+    sobre: 'Sección', 'afiliacion-proceso': 'Afiliación', derechos: 'Derechos y obligaciones', comisiones: 'Comisiones',
+    faq: 'Pregunta frecuente', beneficios: 'Beneficio', 'acoso-laboral': 'Ley Karin', directiva: 'Directiva',
+    noticias: 'Noticias', galeria: 'Galería', negociaciones: 'Negociación colectiva', documentos: 'Documento',
+    afiliacion: 'Afiliación', contacto: 'Contacto', enlaces: 'Sitio de interés', privacidad: 'Privacidad'
+  };
+  document.querySelectorAll('section[id]').forEach(sec => {
+    const id = sec.id;
+    if (id === 'inscripcion-evento') return; // se agrega aparte cuando hay un evento activo
+    const oculta = sec.style.display === 'none';
+    const tipo = etiquetas[id] || 'Sección';
+    const h2 = sec.querySelector('h2');
+    const tituloSec = limpiar(h2 ? h2.textContent : id);
+    const base = { anchor: id, esOculta: oculta };
+    // 1) la sección completa (se busca en todo su texto)
+    const textoSec = limpiar(sec.textContent);
+    out.push({ ...base, titulo: tituloSec, texto: textoSec.slice(0, 200), buscable: textoSec, tipo: 'Sección' });
+    // 2) preguntas frecuentes
+    sec.querySelectorAll('.faq-item').forEach(it => {
+      const q = it.querySelector('.faq-pregunta'), r = it.querySelector('.faq-respuesta');
+      if (!q || !r) return;
+      out.push({ ...base, titulo: limpiar(q.textContent), texto: limpiar(r.textContent), tipo: 'Pregunta frecuente', faq: it });
+    });
+    // 3) filas de las tablas comparativas de negociaciones
+    sec.querySelectorAll('.neg-tabla').forEach(tb => {
+      const cab = [...tb.querySelectorAll('thead th')].slice(1).map(th => limpiar(th.textContent));
+      tb.querySelectorAll('tbody tr').forEach(tr => {
+        const th = tr.querySelector('th'); if (!th) return;
+        const vals = [...tr.querySelectorAll('td')].map((td, i) => (cab[i] ? cab[i] + ': ' : '') + limpiar(td.textContent));
+        out.push({ ...base, titulo: limpiar(th.textContent), texto: vals.join(' · '), tipo: 'Negociación colectiva', el: tr });
+      });
+    });
+    sec.querySelectorAll('.neg-nodo').forEach(n => {
+      out.push({ ...base, titulo: 'Contrato colectivo ' + limpiar(n.querySelector('.neg-anio')?.textContent), texto: limpiar(n.textContent), tipo: 'Negociación colectiva', el: n });
+    });
+    // 4) enlaces de interés
+    if (id === 'enlaces') {
+      sec.querySelectorAll('a[href]').forEach(a => {
+        out.push({ ...base, titulo: limpiar(a.textContent), texto: a.getAttribute('href').replace(/^https?:\/\//, ''), tipo: 'Sitio de interés', el: a });
+      });
+    }
+    // 5) subtítulos y bloques de texto de cada sección (tarjetas, derechos, obligaciones, comisiones, pasos, etc.)
+    if (id !== 'negociaciones') {
+      let grupo = tituloSec;
+      sec.querySelectorAll('h3, li, p, .faq-respuesta').forEach(el => {
+        if (el.closest('.faq-item') || el.closest('form') || el.closest('.neg-tabla')) return;
+        if (!visible(el, sec)) return;
+        const t = limpiar(el.textContent);
+        if (el.tagName === 'H3') {
+          grupo = t;
+          if (t && t !== tituloSec) {
+            const sig = el.nextElementSibling;
+            out.push({ ...base, titulo: t, texto: limpiar(sig ? sig.textContent : ''), tipo, el });
+          }
+        } else if (t.length > 30 && !el.closest('nav')) {
+          out.push({ ...base, titulo: grupo, texto: t, tipo, el });
+        }
+      });
+    }
+  });
+  return out;
+}
+
+// Búsqueda aproximada: tolera faltas de ortografía comunes (b/v, s/c/z, h muda, ll/y, g/j, k/qu) y letras de más o de menos
+function fonetizar(str) {
+  return normalizarBusqueda(str)
+    .replace(/ch/g, 'X').replace(/ll/g, 'y')
+    .replace(/qu(?=[ei])/g, 'k').replace(/gu(?=[ei])/g, 'g')
+    .replace(/c(?=[eiy])/g, 's').replace(/c/g, 'k').replace(/z/g, 's')
+    .replace(/v/g, 'b').replace(/w/g, 'b').replace(/h/g, '')
+    .replace(/g(?=[ei])/g, 'j').replace(/x/g, 'ks').replace(/X/g, 'ch')
+    .replace(/(.)\1+/g, '$1');
+}
+function palabrasFonetizadas(texto) {
+  return fonetizar(texto).split(/[^a-z0-9]+/).filter(w => w.length >= 2);
+}
+function distanciaEdicion(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let minFila = i;
+    for (let j = 1; j <= b.length; j++) {
+      const c = a[i - 1] === b[j - 1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + c);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) cur[j] = Math.min(cur[j], prev[j - 2] + 1);
+      if (cur[j] < minFila) minFila = cur[j];
+    }
+    if (minFila > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+// devuelve el costo total (0 = exacto) o -1 si algún término no se parece a ninguna palabra
+function coincidenciaPalabras(palabras, tokens) {
+  let total = 0;
+  for (const t of tokens) {
+    const tol = t.length <= 3 ? 0 : t.length <= 6 ? 1 : 2;
+    let mejor = Infinity;
+    for (const w of palabras) {
+      if (w.startsWith(t) || (t.length >= 4 && w.includes(t))) { mejor = 0; break; }
+      const d = distanciaEdicion(w, t, tol);
+      if (d <= tol && d < mejor) mejor = d;
+    }
+    if (mejor === Infinity) return -1;
+    total += mejor;
+  }
+  return total;
+}
+// devuelve 0 si no coincide; si coincide, un puntaje menor a 1 (más alto cuanto más se parece y si está en el título)
+function coincidenciaAproximada(item, tokens) {
+  if (!item._palT) item._palT = palabrasFonetizadas(item.titulo || '');
+  const cT = coincidenciaPalabras(item._palT, tokens);
+  if (cT >= 0) return 0.9 - 0.1 * cT;
+  if (!item._pal) item._pal = [...new Set(palabrasFonetizadas((item.titulo || '') + ' ' + (item.buscable || item.texto || '')))];
+  const cX = coincidenciaPalabras(item._pal, tokens);
+  return cX >= 0 ? 0.5 - 0.1 * cX : 0;
+}
+
+function fragmentoBusqueda(texto, q) {
+  const t = texto || '';
+  const i = normalizarBusqueda(t).indexOf(q);
+  if (t.length <= 170 || i < 0) return t.slice(0, 170) + (t.length > 170 ? '…' : '');
+  const ini = Math.max(0, i - 50);
+  return (ini > 0 ? '…' : '') + t.slice(ini, ini + 170) + (ini + 170 < t.length ? '…' : '');
+}
+
 window.ejecutarBusqueda = (valor) => {
   const cont = document.getElementById('busquedaResultados');
   const q = normalizarBusqueda(valor.trim());
 
   if (!q) {
-    cont.innerHTML = '<div class="busqueda-vacio">Escribe para buscar en todo el sitio: secciones, beneficios, directiva, documentos y noticias.</div>';
+    cont.innerHTML = '<div class="busqueda-vacio">Escribe para buscar en todo el sitio: secciones, beneficios, negociaciones colectivas, directiva, preguntas frecuentes, documentos y noticias.</div>';
     return;
   }
 
-  const todos = [...busquedaIndiceEstatico, ...(window.busquedaIndiceNoticias || [])];
-  const resultados = todos.filter(item => {
-    return normalizarBusqueda(item.titulo).includes(q) || normalizarBusqueda(item.texto).includes(q);
-  }).slice(0, 20);
+  const todos = [...busquedaIndiceEstatico, ...(window.busquedaIndiceNoticias || []), ...(window.busquedaIndiceDOM || [])];
+  const vistos = new Set();
+  const puntuados = [];
+  todos.forEach(item => {
+    const t = normalizarBusqueda(item.titulo);
+    const x = normalizarBusqueda(item.buscable || item.texto);
+    let p = 0;
+    if (t.startsWith(q)) p = 4; else if (t.includes(q)) p = 3; else if (x.includes(q)) p = 1;
+    if (!p) return;
+    const clave = t + '|' + normalizarBusqueda(item.texto).slice(0, 40) + '|' + item.anchor;
+    if (vistos.has(clave)) return;
+    vistos.add(clave);
+    puntuados.push({ item, p });
+  });
+  let aproximada = false;
+  if (puntuados.length < 5) {
+    const tokens = palabrasFonetizadas(valor.trim()).filter(t => t.length >= 3);
+    if (tokens.length) {
+      const incluidos = new Set(puntuados.map(r => r.item));
+      todos.forEach(item => {
+        if (incluidos.has(item)) return;
+        const pa = coincidenciaAproximada(item, tokens);
+        if (!pa) return;
+        const clave = normalizarBusqueda(item.titulo) + '|' + normalizarBusqueda(item.texto).slice(0, 40) + '|' + item.anchor;
+        if (vistos.has(clave)) return;
+        vistos.add(clave);
+        puntuados.push({ item, p: pa });
+        aproximada = true;
+      });
+    }
+  }
+  puntuados.sort((a, b) => b.p - a.p);
+  // evita filas casi idénticas: 1 por sección y hasta 2 por título dentro de una misma sección
+  const cuenta = {};
+  const resultados = puntuados.filter(({ item }) => {
+    const k = normalizarBusqueda(item.titulo) + '|' + item.anchor + '|' + (item.tipo === 'Sección');
+    cuenta[k] = (cuenta[k] || 0) + 1;
+    return cuenta[k] <= (item.tipo === 'Sección' ? 1 : 2);
+  }).slice(0, 25).map(r => r.item);
 
   if (resultados.length === 0) {
     cont.innerHTML = '<div class="busqueda-vacio">Sin resultados para "' + valor.replace(/</g,'&lt;') + '".</div>';
@@ -2288,11 +2461,17 @@ window.ejecutarBusqueda = (valor) => {
   }
 
   cont.innerHTML = '';
+  if (aproximada && puntuados.every(r => r.p < 1)) {
+    const av = document.createElement('div'); av.className = 'busqueda-vacio'; av.style.padding = '0.6rem 1.2rem 0.2rem'; av.textContent = 'No hay coincidencias exactas. Quizás buscabas:';
+    cont.appendChild(av);
+  }
   resultados.forEach(item => {
     const btn = document.createElement('button');
     btn.className = 'busqueda-item';
-    btn.innerHTML = `<span class="busqueda-item-titulo">${item.titulo}</span><span class="busqueda-item-tipo">${item.tipo}</span>
-      <div class="busqueda-item-texto">${item.texto}</div>`;
+    const sT = document.createElement('span'); sT.className = 'busqueda-item-titulo'; sT.textContent = item.titulo;
+    const sP = document.createElement('span'); sP.className = 'busqueda-item-tipo'; sP.textContent = item.tipo;
+    const dX = document.createElement('div'); dX.className = 'busqueda-item-texto'; dX.textContent = fragmentoBusqueda(item.texto, q);
+    btn.appendChild(sT); btn.appendChild(sP); btn.appendChild(dX);
     btn.onclick = () => irAResultadoBusqueda(item);
     cont.appendChild(btn);
   });
@@ -2301,12 +2480,13 @@ window.ejecutarBusqueda = (valor) => {
 function irAResultadoBusqueda(item) {
   cerrarBusqueda();
   ocultarSecciones();
-  const el = document.getElementById(item.anchor);
-  if (!el) return;
-  if (item.esOculta) {
-    el.style.display = 'block';
-  }
-  setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 80);
+  const sec = document.getElementById(item.anchor);
+  if (!sec) return;
+  if (item.esOculta) sec.style.display = 'block';
+  let destino = sec;
+  if (item.faq) { item.faq.style.display = 'block'; item.faq.classList.add('abierto'); destino = item.faq; }
+  else if (item.el && document.body.contains(item.el)) destino = item.el;
+  setTimeout(() => destino.scrollIntoView({ behavior: 'smooth', block: item.el || item.faq ? 'center' : 'start' }), 80);
 }
 </script>
 
@@ -2497,6 +2677,7 @@ function convertirUrlVideo(url) {
         window.busquedaIndiceNoticias.push({
           titulo: n.titulo || 'Noticia',
           texto: (n.contenido || '').slice(0, 140),
+          buscable: (n.titulo || '') + ' ' + (n.contenido || ''),
           anchor: 'noticias',
           tipo: 'Noticia',
         });
