@@ -2154,10 +2154,10 @@
   };
   function ingExportarDatos(datos) {
     if (!datos.length) { mostrarToast('No hay inscritos para exportar.', 'error'); return; }
-    const filas = [['N° inscripción', 'Nombre', 'Menú vegetariano', 'Ingresó', 'Hora de ingreso']];
-    datos.forEach(r => filas.push([r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.menuVegetariano ? 'Sí' : 'No', r.ingreso ? 'Sí' : 'No', ingHora(r)]));
+    const filas = [['Correlativo', 'N° inscripción', 'Nombre', 'Menú vegetariano', 'Ingresó', 'Hora de ingreso']];
+    datos.forEach((r, i) => filas.push([i + 1, r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.menuVegetariano ? 'Sí' : 'No', r.ingreso ? 'Sí' : 'No', ingHora(r)]));
     const ws = XLSX.utils.aoa_to_sheet(filas);
-    ws['!cols'] = [{ wch: 16 }, { wch: 36 }, { wch: 17 }, { wch: 10 }, { wch: 16 }];
+    ws['!cols'] = [{ wch: 12 }, { wch: 16 }, { wch: 36 }, { wch: 17 }, { wch: 10 }, { wch: 16 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Asistencia');
     const nombreEvento = (document.getElementById('inscNombreEvento').value || '').trim() || 'evento';
     XLSX.writeFile(wb, 'asistencia_' + nombreEvento.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.xlsx');
@@ -2328,25 +2328,25 @@
       let anuladas = [];
       try { anuladas = (await getDocs(collection(db, 'anuladas'))).docs.map(d => d.data()).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9)); } catch(e) {}
       if (snap.empty && !anuladas.length) { mostrarToast('No hay inscripciones para descargar.', 'error'); return; }
-      const filas = [['N° inscripción', 'Nombre', 'Autoriza fotografía', 'Menú vegetariano', 'Revisar posible duplicado']];
+      const filas = [['Correlativo', 'N° inscripción', 'Nombre', 'Autoriza fotografía', 'Menú vegetariano', 'Revisar posible duplicado']];
       const regs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9));
       const dup = {};
       invPosiblesDuplicados(regs).forEach(([a, b]) => {
         (dup[a.id] = dup[a.id] || []).push('N° ' + invNum(b));
         (dup[b.id] = dup[b.id] || []).push('N° ' + invNum(a));
       });
-      regs.forEach(data => {
-        filas.push([data.numero ? String(data.numero).padStart(3, '0') : '', data.nombre || '', data.autorizaFotos ? 'Sí' : 'No', data.menuVegetariano ? 'Sí' : 'No', dup[data.id] ? 'Coincide con ' + dup[data.id].join(', ') : '']);
+      regs.forEach((data, i) => {
+        filas.push([i + 1, data.numero ? String(data.numero).padStart(3, '0') : '', data.nombre || '', data.autorizaFotos ? 'Sí' : 'No', data.menuVegetariano ? 'Sí' : 'No', dup[data.id] ? 'Coincide con ' + dup[data.id].join(', ') : '']);
       });
       const ws = XLSX.utils.aoa_to_sheet(filas);
-      ws['!cols'] = [{ wch: 16 }, { wch: 32 }, { wch: 20 }, { wch: 17 }, { wch: 30 }];
+      ws['!cols'] = [{ wch: 12 }, { wch: 16 }, { wch: 32 }, { wch: 20 }, { wch: 17 }, { wch: 30 }];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Inscritos');
       if (anuladas.length) {
-        const fa = [['N° inscripción', 'Nombre', 'Fecha de anulación']];
-        anuladas.forEach(a => fa.push([a.numero ? String(a.numero).padStart(3, '0') : '', a.nombre || '', a.anuladaEn && a.anuladaEn.toDate ? a.anuladaEn.toDate().toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }) : '']));
+        const fa = [['Correlativo', 'N° inscripción', 'Nombre', 'Fecha de anulación']];
+        anuladas.forEach((a, i) => fa.push([i + 1, a.numero ? String(a.numero).padStart(3, '0') : '', a.nombre || '', a.anuladaEn && a.anuladaEn.toDate ? a.anuladaEn.toDate().toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' }) : '']));
         const wa = XLSX.utils.aoa_to_sheet(fa);
-        wa['!cols'] = [{ wch: 16 }, { wch: 32 }, { wch: 20 }];
+        wa['!cols'] = [{ wch: 12 }, { wch: 16 }, { wch: 32 }, { wch: 20 }];
         XLSX.utils.book_append_sheet(wb, wa, 'Anuladas');
       }
       const nombreEvento = document.getElementById('inscNombreEvento').value.trim() || 'evento';
