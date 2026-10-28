@@ -2671,7 +2671,7 @@ function convertirUrlVideo(url) {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc, addDoc, serverTimestamp, runTransaction }
+  import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc, addDoc, serverTimestamp, runTransaction, onSnapshot }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -2771,43 +2771,81 @@ function convertirUrlVideo(url) {
 
   cargarNoticias();
 
-  // ── INSCRIPCIÓN A EVENTOS ──
-  async function cargarEventoInscripcion() {
-    try {
-      const snap = await getDoc(doc(db, 'config', 'evento'));
-      if (!snap.exists()) return;
-      const d = snap.data();
-      const modoAnular = !d.activo && !!d.permiteAnulacion && !!d.nombre;
-      if (!d.activo && !modoAnular) return;
-      document.getElementById('inscEventoNombre').textContent = d.nombre || 'Evento';
-      let fechaTexto = '';
-      if (d.fecha) {
-        const [anio, mes, dia] = d.fecha.split('-');
-        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-        fechaTexto = `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${anio}`;
-      }
-      if (d.hora) fechaTexto += ` · ${d.hora}${d.horaFin ? ' a ' + d.horaFin : ''} hrs`;
-      document.getElementById('inscEventoFecha').textContent = fechaTexto;
-      window.__evento = d;
-      if (modoAnular) {
-        document.getElementById('inscEyebrow').textContent = 'Anulación de inscripción';
-        document.getElementById('inscConsentimiento').style.display = 'none';
-        document.getElementById('inscRequisito').style.display = 'none';
-        document.getElementById('formInscripcionEvento').style.display = 'none';
-        document.getElementById('formAnulacion').style.display = 'block';
-        const nav = document.querySelector('#navInscripcionLi a'); if (nav) nav.textContent = '↩ Anular inscripción';
-      }
-      document.getElementById('inscripcion-evento').style.display = 'block';
-      document.getElementById('navInscripcionLi').style.display = 'block';
-      if (window.busquedaIndiceNoticias) {
-        window.busquedaIndiceNoticias.push({
-          titulo: (modoAnular ? 'Anular inscripción: ' : 'Inscríbete: ') + (d.nombre || 'Evento'),
-          texto: fechaTexto, anchor: 'inscripcion-evento', tipo: 'Evento',
-        });
-      }
-    } catch(e) { /* si falla, simplemente no se muestra la sección */ }
+  // ── INSCRIPCIÓN A EVENTOS (en tiempo real) ──
+  // Si desde el panel o la app se abren/cierran las inscripciones o las anulaciones, la sección
+  // aparece, desaparece o cambia de modo sin recargar la página. Para no interrumpir a nadie:
+  // si la persona está escribiendo en el formulario, o acaba de inscribirse (ve su N° / invitación),
+  // el cambio de modo espera a que termine; y al enviar se revisa el estado vigente.
+  window.__eventoLive = null;          // último estado conocido de config/evento
+  let eventoModoMostrado = 'oculto';   // 'oculto' | 'inscripcion' | 'anulacion'
+  let eventoEntradaBusqueda = null;
+  function eventoModo(d) {
+    if (!d) return 'oculto';
+    if (d.activo) return 'inscripcion';
+    if (d.permiteAnulacion && d.nombre) return 'anulacion';
+    return 'oculto';
   }
-  cargarEventoInscripcion();
+  function eventoOcupado() {
+    if (window.__inscrito) return true;
+    if (['inscripcionConfirmacion', 'anulacionConfirmacion'].some(id => document.getElementById(id).style.display === 'block')) return true;
+    return ['inscNombreInput', 'anulNombre', 'anulNumero'].some(id => {
+      const el = document.getElementById(id);
+      return el && el.offsetParent !== null && el.value.trim() !== '';
+    });
+  }
+  function eventoRender() {
+    const d = window.__eventoLive, modo = eventoModo(d);
+    const cambiaModo = modo !== eventoModoMostrado;
+    if (cambiaModo && eventoOcupado()) return; // se aplica cuando la persona termine
+    const sec = document.getElementById('inscripcion-evento');
+    const navLi = document.getElementById('navInscripcionLi');
+    const nav = navLi.querySelector('a');
+    if (eventoEntradaBusqueda && window.busquedaIndiceNoticias) {
+      const k = window.busquedaIndiceNoticias.indexOf(eventoEntradaBusqueda);
+      if (k >= 0) window.busquedaIndiceNoticias.splice(k, 1);
+    }
+    eventoEntradaBusqueda = null;
+    if (modo === 'oculto') {
+      sec.style.display = 'none'; navLi.style.display = 'none';
+      eventoModoMostrado = 'oculto';
+      return;
+    }
+    const modoAnular = modo === 'anulacion';
+    document.getElementById('inscEventoNombre').textContent = d.nombre || 'Evento';
+    let fechaTexto = '';
+    if (d.fecha) {
+      const [anio, mes, dia] = d.fecha.split('-');
+      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      fechaTexto = `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${anio}`;
+    }
+    if (d.hora) fechaTexto += ` · ${d.hora}${d.horaFin ? ' a ' + d.horaFin : ''} hrs`;
+    document.getElementById('inscEventoFecha').textContent = fechaTexto;
+    window.__evento = d;
+    if (cambiaModo) {
+      document.getElementById('inscEyebrow').textContent = modoAnular ? 'Anulación de inscripción' : 'Inscripciones abiertas';
+      document.getElementById('inscConsentimiento').style.display = modoAnular ? 'none' : '';
+      document.getElementById('inscRequisito').style.display = modoAnular ? 'none' : '';
+      document.getElementById('formInscripcionEvento').style.display = modoAnular ? 'none' : '';
+      document.getElementById('formAnulacion').style.display = modoAnular ? 'block' : 'none';
+      document.getElementById('inscripcionConfirmacion').style.display = '';
+      document.getElementById('anulacionConfirmacion').style.display = '';
+      if (nav) nav.textContent = modoAnular ? '↩ Anular inscripción' : '🎉 Inscríbete';
+      sec.style.display = 'block';
+      navLi.style.display = 'block';
+      eventoModoMostrado = modo;
+    }
+    if (window.busquedaIndiceNoticias) {
+      eventoEntradaBusqueda = {
+        titulo: (modoAnular ? 'Anular inscripción: ' : 'Inscríbete: ') + (d.nombre || 'Evento'),
+        texto: fechaTexto, anchor: 'inscripcion-evento', tipo: 'Evento',
+      };
+      window.busquedaIndiceNoticias.push(eventoEntradaBusqueda);
+    }
+  }
+  onSnapshot(doc(db, 'config', 'evento'), snap => {
+    window.__eventoLive = snap.exists() ? snap.data() : null;
+    eventoRender();
+  }, () => { /* si falla, se mantiene lo que se ve */ });
 
   // ── INVITACIÓN (generada en el navegador; no se guarda nada por inscrito) ──
   const INV_MENSAJE_DEFECTO = "Se confirma su asistencia. Le solicitamos imprimir esta invitación y presentarla al ingreso del recinto.";
@@ -2945,6 +2983,10 @@ function convertirUrlVideo(url) {
 
   window.enviarAnulacion = async (ev) => {
     ev.preventDefault();
+    if (eventoModo(window.__eventoLive) !== 'anulacion') {
+      alert('Las solicitudes de anulación se cerraron mientras completabas el formulario.');
+      ev.target.reset(); eventoRender(); return;
+    }
     const nombre = document.getElementById('anulNombre').value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('es').replace(/(^|[\s\-'’.])(\p{L})/gu, (m, a, b) => a + b.toLocaleUpperCase('es'));
     const numero = parseInt(document.getElementById('anulNumero').value.replace(/\D/g, ''), 10);
     if (!nombre || !numero) { alert('Revisa tu nombre y tu N° de registro.'); return; }
@@ -2972,10 +3014,15 @@ function convertirUrlVideo(url) {
     document.getElementById('inscRequisito').style.display = 'block';
     document.getElementById('inscripcionConfirmacion').style.display = 'none';
     document.getElementById('inscNombreInput').focus();
+    eventoRender(); // si mientras tanto se cerraron las inscripciones o cambió el modo, se refleja ahora
   };
 
   window.enviarInscripcionEvento = async (ev) => {
     ev.preventDefault();
+    if (eventoModo(window.__eventoLive) !== 'inscripcion') {
+      alert('Las inscripciones se cerraron mientras completabas el formulario.');
+      ev.target.reset(); eventoRender(); return;
+    }
     const nombreTitulo = t => t.trim().replace(/\s+/g, ' ').toLocaleLowerCase('es').replace(/(^|[\s\-'’.])(\p{L})/gu, (m, a, b) => a + b.toLocaleUpperCase('es'));
     const nombre = nombreTitulo(document.getElementById('inscNombreInput').value);
     const autoriza = document.querySelector('input[name="inscAutoriza"]:checked').value === 'si';
@@ -3116,73 +3163,99 @@ function convertirUrlVideo(url) {
   verificarNoticiasNuevas();
   cargarDocumentos();
 
-  // ── POPUP ──
-  async function cargarPopup() {
-    if (sessionStorage.getItem('popupCerrado')) return;
-    try {
-      const snap = await getDoc(doc(db, 'config', 'popup'));
-      if (!snap.exists()) return;
-      const d = snap.data();
-      if (!d.activo) return;
-      const tieneBoton = !!(d.botonUrl && /^https?:\/\//i.test(d.botonUrl));
-
-      // Título — siempre mostrar header con X, ocultar solo el título si no existe
-      const header = document.getElementById('popupHeader');
-      header.style.display = 'flex';
-      if (d.titulo) {
-        document.getElementById('popupTitulo').textContent = d.titulo;
-      } else {
-        document.getElementById('popupTitulo').textContent = '';
-      }
-
-      // Video o imagen
-      const embedUrlPopup = typeof convertirUrlVideo === 'function' ? convertirUrlVideo(d.videoUrl) : null;
-      if (embedUrlPopup) {
-        // Mostrar video en lugar de imagen
-        const popupContenido = document.getElementById('popupContenido');
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText = 'width:100%;aspect-ratio:16/9;border:none;display:block;';
-        iframe.src = embedUrlPopup;
-        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-        iframe.allowFullscreen = true;
-        popupContenido.insertBefore(iframe, popupContenido.firstChild);
-      } else if (d.imgUrl) {
-        const img = document.getElementById('popupImg');
-        img.src = d.imgUrl;
-        img.style.display = 'block';
-        // Si solo hay imagen (sin mensaje), ajustar popup al ancho de la imagen
-        if (!d.mensaje && !tieneBoton) {
-          document.querySelector('.popup-box').classList.add('solo-img-box');
-          const marcarAncha = () => { if (img.naturalWidth > img.naturalHeight * 1.15) document.querySelector('.popup-box').classList.add('img-ancha'); };
-          if (img.complete && img.naturalWidth) marcarAncha(); else img.addEventListener('load', marcarAncha, { once: true });
-        }
-      }
-
-      // Mensaje — si hay imagen y mensaje, layout horizontal; si solo imagen, vertical
-      const body = document.getElementById('popupBody');
-      const contenido = document.getElementById('popupContenido');
-      if (tieneBoton) {
-        const bt = document.getElementById('popupBoton');
-        bt.href = d.botonUrl; bt.textContent = d.botonTexto || 'Abrir enlace'; bt.style.display = 'inline-block';
-      }
-      if (d.mensaje || tieneBoton) {
-        document.getElementById('popupMensaje').textContent = d.mensaje || '';
-        document.getElementById('popupMensaje').style.display = d.mensaje ? 'block' : 'none';
-        body.style.display = 'block';
-        contenido.classList.remove('solo-imagen');
-      } else {
-        body.style.display = 'none';
-        contenido.classList.add('solo-imagen');
-      }
-
-      // Mostrar popup con un pequeño retraso
-      setTimeout(() => {
-        document.getElementById('popupOverlay').classList.add('visible');
-      }, 800);
-    } catch(e) { console.error('Error cargando popup:', e); }
+  // ── POPUP (en tiempo real) ──
+  // Si se activa desde el panel o la app, aparece a quien tenga la página abierta; si se desactiva,
+  // se cierra solo. Si el visitante ya lo cerró en esta visita, no vuelve a salir.
+  let popupYaMostrado = false, popupOcultoPorSistema = false, popupPrimeraVez = true;
+  let popupTimer = null, popupFirma = null;
+  function popupLimpiarDom() {
+    const contenido = document.getElementById('popupContenido');
+    contenido.querySelectorAll('iframe').forEach(f => f.remove());
+    const img = document.getElementById('popupImg'); img.style.display = 'none'; img.removeAttribute('src');
+    const box = document.querySelector('.popup-box'); if (box) box.classList.remove('solo-img-box', 'img-ancha');
+    document.getElementById('popupBoton').style.display = 'none';
+    document.getElementById('popupBody').style.display = 'none';
+    contenido.classList.remove('solo-imagen');
   }
+  function popupConstruir(d) {
+    popupLimpiarDom();
+    const tieneBoton = !!(d.botonUrl && /^https?:\/\//i.test(d.botonUrl));
 
-  cargarPopup();
+    // Título — siempre mostrar header con X, ocultar solo el título si no existe
+    const header = document.getElementById('popupHeader');
+    header.style.display = 'flex';
+    document.getElementById('popupTitulo').textContent = d.titulo || '';
+
+    // Video o imagen
+    const embedUrlPopup = typeof convertirUrlVideo === 'function' ? convertirUrlVideo(d.videoUrl) : null;
+    if (embedUrlPopup) {
+      const popupContenido = document.getElementById('popupContenido');
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%;aspect-ratio:16/9;border:none;display:block;';
+      iframe.src = embedUrlPopup;
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      popupContenido.insertBefore(iframe, popupContenido.firstChild);
+    } else if (d.imgUrl) {
+      const img = document.getElementById('popupImg');
+      img.src = d.imgUrl;
+      img.style.display = 'block';
+      // Si solo hay imagen (sin mensaje), ajustar popup al ancho de la imagen
+      if (!d.mensaje && !tieneBoton) {
+        document.querySelector('.popup-box').classList.add('solo-img-box');
+        const marcarAncha = () => { if (img.naturalWidth > img.naturalHeight * 1.15) document.querySelector('.popup-box').classList.add('img-ancha'); };
+        if (img.complete && img.naturalWidth) marcarAncha(); else img.addEventListener('load', marcarAncha, { once: true });
+      }
+    }
+
+    // Mensaje — si hay imagen y mensaje, layout horizontal; si solo imagen, vertical
+    const body = document.getElementById('popupBody');
+    const contenido = document.getElementById('popupContenido');
+    if (tieneBoton) {
+      const bt = document.getElementById('popupBoton');
+      bt.href = d.botonUrl; bt.textContent = d.botonTexto || 'Abrir enlace'; bt.style.display = 'inline-block';
+    }
+    if (d.mensaje || tieneBoton) {
+      document.getElementById('popupMensaje').textContent = d.mensaje || '';
+      document.getElementById('popupMensaje').style.display = d.mensaje ? 'block' : 'none';
+      body.style.display = 'block';
+      contenido.classList.remove('solo-imagen');
+    } else {
+      body.style.display = 'none';
+      contenido.classList.add('solo-imagen');
+    }
+  }
+  function popupOcultar() {
+    const overlay = document.getElementById('popupOverlay');
+    const estabaVisible = overlay.classList.contains('visible') || !!popupTimer;
+    if (popupTimer) { clearTimeout(popupTimer); popupTimer = null; }
+    if (overlay.classList.contains('visible')) {
+      overlay.classList.remove('visible');
+      document.getElementById('popupContenido').querySelectorAll('iframe').forEach(f => f.remove()); // detiene el video
+    }
+    popupFirma = null;
+    // Solo si lo cerró el sistema (no el visitante) puede volver a aparecer si se reactiva
+    if (estabaVisible) popupOcultoPorSistema = true;
+  }
+  function popupActualizar(d) {
+    const overlay = document.getElementById('popupOverlay');
+    if (!d || !d.activo) { popupOcultar(); return; }
+    if (sessionStorage.getItem('popupCerrado')) return;
+    const visible = overlay.classList.contains('visible') || !!popupTimer;
+    if (popupYaMostrado && !visible && !popupOcultoPorSistema) return; // lo cerró el visitante
+    const firma = JSON.stringify([d.titulo, d.mensaje, d.imgUrl, d.videoUrl, d.botonTexto, d.botonUrl]);
+    if (visible && firma === popupFirma) return; // mismo contenido: no se reinicia (ni el video)
+    popupConstruir(d); popupFirma = firma;
+    if (!visible) {
+      popupYaMostrado = true; popupOcultoPorSistema = false;
+      // Mostrar popup con un pequeño retraso
+      popupTimer = setTimeout(() => { popupTimer = null; overlay.classList.add('visible'); }, popupPrimeraVez ? 800 : 0);
+    }
+    popupPrimeraVez = false;
+  }
+  onSnapshot(doc(db, 'config', 'popup'), snap => {
+    try { popupActualizar(snap.exists() ? snap.data() : null); } catch(e) { console.error('Error cargando popup:', e); }
+  }, e => console.error('Error cargando popup:', e));
 
   // ── GALERÍA ──
   async function cargarGaleria() {

@@ -796,7 +796,9 @@
       document.getElementById('topbarUser').textContent  = user.email;
       document.getElementById('loginError').style.display = 'none';
       cargarNoticias('publicada', 'noticiasList');
+      iniciarConteos();
     } else {
+      detenerTiempoReal();
       document.getElementById('loginWrap').style.display = 'flex';
       document.getElementById('panelWrap').style.display = 'none';
     }
@@ -1139,19 +1141,47 @@
     document.getElementById('btnQuitarImgPopup').style.display='none';
   };
 
-  document.getElementById('popupActivo').addEventListener('change', function() {
+  document.getElementById('popupActivo').addEventListener('change', function(e) {
+    if (e.isTrusted) popupChkTocado = true; // lo cambió la persona (no una actualización en vivo)
     const label = document.getElementById('popupEstadoLabel');
     label.textContent = this.checked ? 'Activado' : 'Desactivado';
     label.style.color = this.checked ? 'var(--azul)' : '#888';
   });
 
+  // ── POPUP EN TIEMPO REAL: si se activa/desactiva desde la app, el panel lo muestra al instante ──
+  let popupUnsub = null, popupSnapUltimo = null, popupChkTocado = false;
+  function iniciarPopupTiempoReal() {
+    if (popupUnsub) return;
+    popupUnsub = onSnapshot(doc(db,'config','popup'), snap => {
+      popupSnapUltimo = snap;
+      pintarPopup(snap, false);
+    }, e => console.error('Error popup:', e));
+  }
   async function cargarPopup() {
+    iniciarPopupTiempoReal();
+    if (popupSnapUltimo) pintarPopup(popupSnapUltimo, true);
+    else document.getElementById('formPopup').style.display = 'none';
+  }
+  // forzar = apertura de la pestaña o fin de edición: cierra el formulario y lo rellena.
+  // Si llega un cambio en vivo con el formulario abierto, no se pisa lo que se está editando:
+  // solo se actualiza el interruptor "activo" (si la persona no lo tocó).
+  function pintarPopup(snap, forzar) {
     try {
-      const snap = await getDoc(doc(db,'config','popup'));
       const vista  = document.getElementById('popupVista');
       const vacio  = document.getElementById('popupVacio');
       const form   = document.getElementById('formPopup');
-      form.style.display = 'none';
+      if (forzar) form.style.display = 'none';
+      if (form.style.display === 'block') {
+        if (!popupChkTocado && snap.exists()) {
+          const chk = document.getElementById('popupActivo');
+          if (chk.checked !== !!snap.data().activo) {
+            chk.checked = !!snap.data().activo;
+            chk.dispatchEvent(new Event('change'));
+            mostrarToast('El estado del popup cambió desde otro dispositivo.', 'exito');
+          }
+        }
+        return;
+      }
 
       if (snap.exists() && (snap.data().titulo || snap.data().mensaje || snap.data().imgUrl)) {
         const d = snap.data();
@@ -1187,6 +1217,7 @@
   }
 
   window.mostrarFormularioPopup = () => {
+    popupChkTocado = false;
     document.getElementById('popupVista').style.display = 'none';
     document.getElementById('popupVacio').style.display = 'none';
     document.getElementById('formPopup').style.display = 'block';
@@ -1813,12 +1844,44 @@
     rd.readAsDataURL(f);
   };
 
+  // ── CONFIGURACIÓN DEL EVENTO EN TIEMPO REAL: los cambios hechos desde la app aparecen al instante ──
+  let eventoUnsub = null, eventoSnapUltimo = null, inscChkTocado = { activo: false, anular: false };
+  function iniciarEventoTiempoReal() {
+    if (eventoUnsub) return;
+    eventoUnsub = onSnapshot(doc(db, 'config', 'evento'), snap => {
+      eventoSnapUltimo = snap;
+      pintarConfigEvento(snap, false);
+    }, e => mostrarToast('Error cargando configuración: ' + e.message, 'error'));
+  }
   window.cargarConfigEvento = async () => {
+    iniciarEventoTiempoReal();
+    if (eventoSnapUltimo) await pintarConfigEvento(eventoSnapUltimo, true);
+    else document.getElementById('formInscripcionAdmin').style.display = 'none';
+    cargarConteoInscripciones();
+  };
+  // forzar = apertura de la pestaña o fin de edición: cierra el formulario y lo rellena.
+  // Con el formulario abierto, un cambio en vivo solo actualiza los dos interruptores (si no los tocaste),
+  // para que al guardar no se pise lo que se cambió desde la app.
+  async function pintarConfigEvento(snap, forzar) {
     try {
-      const snap = await getDoc(doc(db, 'config', 'evento'));
       const vista = document.getElementById('inscVista');
       const vacio = document.getElementById('inscVacio');
-      document.getElementById('formInscripcionAdmin').style.display = 'none';
+      const formEv = document.getElementById('formInscripcionAdmin');
+      if (forzar) formEv.style.display = 'none';
+      if (formEv.style.display === 'block') {
+        if (snap.exists()) {
+          const d = snap.data(); let cambio = false;
+          const cA = document.getElementById('inscActivo'), cP = document.getElementById('inscPermiteAnular');
+          if (!inscChkTocado.activo && cA.checked !== !!d.activo) {
+            cA.checked = !!d.activo; document.getElementById('inscEstadoLabel').textContent = d.activo ? 'Activado' : 'Desactivado'; cambio = true;
+          }
+          if (!inscChkTocado.anular && cP.checked !== !!d.permiteAnulacion) {
+            cP.checked = !!d.permiteAnulacion; document.getElementById('inscAnularLabel').textContent = d.permiteAnulacion ? 'Activado' : 'Desactivado'; cambio = true;
+          }
+          if (cambio) mostrarToast('El estado del evento cambió desde otro dispositivo.', 'exito');
+        }
+        return;
+      }
 
       if (snap.exists() && snap.data().nombre) {
         const d = snap.data();
@@ -1873,10 +1936,10 @@
         document.getElementById('inscEstadoLabel').textContent = 'Desactivado';
       }
     } catch(e) { mostrarToast('Error cargando configuración: ' + e.message, 'error'); }
-    cargarConteoInscripciones();
-  };
+  }
 
   window.mostrarFormularioInscripcion = () => {
+    inscChkTocado = { activo: false, anular: false };
     document.getElementById('inscVista').style.display = 'none';
     document.getElementById('inscVacio').style.display = 'none';
     document.getElementById('formInscripcionAdmin').style.display = 'block';
@@ -1887,11 +1950,13 @@
     cargarConfigEvento();
   };
 
-  document.getElementById('inscActivo')?.addEventListener('change', function() {
+  document.getElementById('inscActivo')?.addEventListener('change', function(e) {
+    if (e.isTrusted) inscChkTocado.activo = true;
     document.getElementById('inscEstadoLabel').textContent = this.checked ? 'Activado' : 'Desactivado';
   });
 
-  document.getElementById('inscPermiteAnular')?.addEventListener('change', function() {
+  document.getElementById('inscPermiteAnular')?.addEventListener('change', function(e) {
+    if (e.isTrusted) inscChkTocado.anular = true;
     document.getElementById('inscAnularLabel').textContent = this.checked ? 'Activado' : 'Desactivado';
   });
 
@@ -1923,15 +1988,25 @@
     } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
   };
 
-  async function cargarConteoInscripciones() {
-    try {
-      const snap = await getDocs(collection(db, 'inscripciones'));
-      document.getElementById('inscConteo').textContent = snap.size;
-    } catch(e) { /* silencioso */ }
-    try {
-      const sa = await getDocs(collection(db, 'anulaciones'));
-      document.getElementById('btnAnulaciones').textContent = '↩ Solicitudes de anulación' + (sa.size ? ' (' + sa.size + ')' : '');
-    } catch(e) { /* silencioso */ }
+  // ── CONTADORES EN TIEMPO REAL: inscritos y solicitudes de anulación (cambian solos al anular, restaurar o inscribir) ──
+  let conteoUnsubs = [];
+  function iniciarConteos() {
+    if (conteoUnsubs.length) return;
+    conteoUnsubs.push(onSnapshot(collection(db, 'inscripciones'), s => {
+      document.getElementById('inscConteo').textContent = s.size;
+    }, () => { /* silencioso */ }));
+    conteoUnsubs.push(onSnapshot(collection(db, 'anulaciones'), s => {
+      document.getElementById('btnAnulaciones').textContent = '↩ Solicitudes de anulación' + (s.size ? ' (' + s.size + ')' : '');
+    }, () => { /* silencioso */ }));
+  }
+  // Se mantiene el nombre porque se llama desde varias partes del panel; ahora solo asegura los listeners
+  async function cargarConteoInscripciones() { iniciarConteos(); }
+
+  function detenerTiempoReal() {
+    conteoUnsubs.forEach(u => u()); conteoUnsubs = [];
+    if (eventoUnsub) { eventoUnsub(); eventoUnsub = null; } eventoSnapUltimo = null;
+    if (popupUnsub) { popupUnsub(); popupUnsub = null; } popupSnapUltimo = null;
+    anulDetener(); anuladasDetener(); ingDetener();
   }
 
 
@@ -1975,10 +2050,11 @@
   }
   // Los tres paneles (inscritos, duplicados, anulaciones): se abren de a uno; volver a presionar el botón lo cierra
   const INSC_PANELES = ['inscLista', 'inscDuplicados', 'inscAnulaciones', 'inscAnuladas'];
+  const INSC_DETENER = { inscAnulaciones: () => anulDetener(), inscAnuladas: () => anuladasDetener() };
   function inscAlternarPanel(id) {
     const cont = document.getElementById(id);
-    if (cont.style.display === 'block') { cont.style.display = 'none'; return null; }
-    INSC_PANELES.forEach(o => { if (o !== id) { const e = document.getElementById(o); if (e) e.style.display = 'none'; } });
+    if (cont.style.display === 'block') { cont.style.display = 'none'; if (INSC_DETENER[id]) INSC_DETENER[id](); return null; }
+    INSC_PANELES.forEach(o => { if (o !== id) { const e = document.getElementById(o); if (e) { if (e.style.display === 'block' && INSC_DETENER[o]) INSC_DETENER[o](); e.style.display = 'none'; } } });
     return cont;
   }
   window.verInscritos = async () => {
@@ -2171,118 +2247,168 @@
     if (comunes === A.size && comunes === B.size) return 'igual';
     return comunes >= 2 ? 'parcial' : 'no';
   }
+  // En tiempo real: si un socio envía una solicitud, o se anula/descarta desde la app, la lista se actualiza sola
+  let anulUnsubs = [], anulSols = null, anulRegs = null;
+  const anulEnProceso = new Set();
+  function anulDetener() { anulUnsubs.forEach(u => u()); anulUnsubs = []; anulSols = null; anulRegs = null; }
   window.verAnulaciones = async () => {
     const cont = inscAlternarPanel('inscAnulaciones'); if (!cont) return;
-    try {
-      const [snapA, regs] = await Promise.all([getDocs(collection(db, 'anulaciones')), invLeerInscripciones()]);
-      const sols = snapA.docs.map(d => ({ id: d.id, ...d.data() })).sort((x, y) => (x.numero || 0) - (y.numero || 0));
-      cont.innerHTML = ''; cont.style.display = 'block';
-      const tit = document.createElement('div');
-      tit.style.cssText = 'font-weight:600; margin-bottom:0.5rem; color:#1C2B3A;';
-      tit.textContent = sols.length ? 'Solicitudes de anulación: ' + sols.length : 'No hay solicitudes de anulación.';
-      cont.appendChild(tit);
-      sols.forEach(sol => {
-        const reg = regs.find(r => r.numero === sol.numero);
-        const cmp = reg ? invComparaNombre(sol.nombre, reg.nombre) : 'no';
-        const f = document.createElement('div');
-        f.style.cssText = 'padding:0.7rem 0.9rem; border:1px solid #ddd; border-radius:3px; margin-bottom:0.5rem; font-size:0.88rem;';
-        const l1 = document.createElement('div');
-        const b1 = document.createElement('strong'); b1.textContent = 'N° ' + String(sol.numero).padStart(3, '0') + ' — ' + (sol.nombre || ''); l1.appendChild(b1);
-        const l2 = document.createElement('div'); l2.style.cssText = 'margin:0.3rem 0 0.6rem; font-weight:600; font-size:0.82rem;';
-        if (!reg) { l2.style.color = '#C62828'; l2.textContent = '✗ No existe una inscripción con ese N°'; }
-        else if (cmp === 'igual') { l2.style.color = '#2E7D32'; l2.textContent = '✓ Coincide con la inscripción N° ' + invNum(reg); }
-        else if (cmp === 'parcial') { l2.style.color = '#E65100'; l2.textContent = '⚠ Revisar: el N° ' + invNum(reg) + ' está a nombre de "' + (reg.nombre || '') + '"'; }
-        else { l2.style.color = '#C62828'; l2.textContent = '✗ No coincide: el N° ' + invNum(reg) + ' está a nombre de "' + (reg.nombre || '') + '"'; }
-        f.appendChild(l1); f.appendChild(l2);
-        const acc = document.createElement('div'); acc.style.cssText = 'display:flex; gap:0.5rem; flex-wrap:wrap;';
-        if (reg) {
-          const bc = document.createElement('button'); bc.className = 'btn-accion eliminar'; bc.textContent = 'Confirmar anulación';
-          bc.onclick = async () => {
-            const aviso = cmp === 'igual' ? '' : '\n\nOJO: el nombre no coincide exactamente. Verifica antes de continuar.';
-            if (!confirm('¿Anular la inscripción N° ' + invNum(reg) + ' (' + (reg.nombre || '') + ')? Se elimina de la lista de inscritos y del control de ingreso (queda anotada en la hoja "Anuladas" de la planilla); el número no se reutiliza.' + aviso)) return;
-            bc.disabled = true;
-            try {
-              await setDoc(doc(db, 'anuladas', reg.id), { numero: reg.numero || null, nombre: reg.nombre || '', autorizaFotos: !!reg.autorizaFotos, menuVegetariano: !!reg.menuVegetariano, anuladaEn: serverTimestamp() });
-              await deleteDoc(doc(db, 'inscripciones', reg.id));
-              await deleteDoc(doc(db, 'anulaciones', sol.id));
-              f.remove(); mostrarToast('Inscripción N° ' + invNum(reg) + ' anulada.', 'exito'); cargarConteoInscripciones();
-            } catch(e) { bc.disabled = false; mostrarToast('Error: ' + e.message, 'error'); }
-          };
-          acc.appendChild(bc);
-        }
-        const bd = document.createElement('button'); bd.className = 'btn-accion editar'; bd.textContent = 'Descartar solicitud';
-        bd.onclick = async () => {
-          if (!confirm('¿Descartar esta solicitud sin anular la inscripción?')) return;
-          try { await deleteDoc(doc(db, 'anulaciones', sol.id)); f.remove(); cargarConteoInscripciones(); } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
-        };
-        acc.appendChild(bd); f.appendChild(acc); cont.appendChild(f);
-      });
-    } catch(e) { mostrarToast('Error al cargar las solicitudes: ' + e.message, 'error'); }
+    anulDetener();
+    cont.innerHTML = '<div style="color:#888; font-size:0.85rem;">Cargando...</div>'; cont.style.display = 'block';
+    const err = e => mostrarToast('Error al cargar las solicitudes: ' + e.message, 'error');
+    anulUnsubs.push(onSnapshot(collection(db, 'anulaciones'), snapA => {
+      anulSols = snapA.docs.map(d => ({ id: d.id, ...d.data() })).sort((x, y) => (x.numero || 0) - (y.numero || 0));
+      anulRender(cont);
+    }, err));
+    anulUnsubs.push(onSnapshot(collection(db, 'inscripciones'), snapI => {
+      anulRegs = snapI.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9));
+      anulRender(cont);
+    }, err));
   };
+  function anulRender(cont) {
+    if (!anulSols || !anulRegs || cont.style.display !== 'block') return;
+    const sols = anulSols, regs = anulRegs;
+    cont.innerHTML = '';
+    const tit = document.createElement('div');
+    tit.style.cssText = 'font-weight:600; margin-bottom:0.5rem; color:#1C2B3A;';
+    tit.textContent = sols.length ? 'Solicitudes de anulación: ' + sols.length : 'No hay solicitudes de anulación.';
+    cont.appendChild(tit);
+    sols.forEach(sol => {
+      const reg = regs.find(r => r.numero === sol.numero);
+      const cmp = reg ? invComparaNombre(sol.nombre, reg.nombre) : 'no';
+      const ocupado = anulEnProceso.has(sol.id);
+      const f = document.createElement('div');
+      f.style.cssText = 'padding:0.7rem 0.9rem; border:1px solid #ddd; border-radius:3px; margin-bottom:0.5rem; font-size:0.88rem;';
+      const l1 = document.createElement('div');
+      const b1 = document.createElement('strong'); b1.textContent = 'N° ' + String(sol.numero).padStart(3, '0') + ' — ' + (sol.nombre || ''); l1.appendChild(b1);
+      const l2 = document.createElement('div'); l2.style.cssText = 'margin:0.3rem 0 0.6rem; font-weight:600; font-size:0.82rem;';
+      if (!reg) { l2.style.color = '#C62828'; l2.textContent = '✗ No existe una inscripción con ese N°'; }
+      else if (cmp === 'igual') { l2.style.color = '#2E7D32'; l2.textContent = '✓ Coincide con la inscripción N° ' + invNum(reg); }
+      else if (cmp === 'parcial') { l2.style.color = '#E65100'; l2.textContent = '⚠ Revisar: el N° ' + invNum(reg) + ' está a nombre de "' + (reg.nombre || '') + '"'; }
+      else { l2.style.color = '#C62828'; l2.textContent = '✗ No coincide: el N° ' + invNum(reg) + ' está a nombre de "' + (reg.nombre || '') + '"'; }
+      f.appendChild(l1); f.appendChild(l2);
+      const acc = document.createElement('div'); acc.style.cssText = 'display:flex; gap:0.5rem; flex-wrap:wrap;';
+      if (reg) {
+        const bc = document.createElement('button'); bc.className = 'btn-accion eliminar'; bc.textContent = 'Confirmar anulación'; bc.disabled = ocupado;
+        bc.onclick = async () => {
+          const aviso = cmp === 'igual' ? '' : '\n\nOJO: el nombre no coincide exactamente. Verifica antes de continuar.';
+          if (!confirm('¿Anular la inscripción N° ' + invNum(reg) + ' (' + (reg.nombre || '') + ')? Se elimina de la lista de inscritos y del control de ingreso (queda anotada en la hoja "Anuladas" de la planilla); el número no se reutiliza.' + aviso)) return;
+          anulEnProceso.add(sol.id); anulRender(cont);
+          try {
+            // Un solo lote: se aplican los tres pasos juntos (o ninguno), así la app y el panel nunca ven una anulación a medias
+            const lote = writeBatch(db);
+            lote.set(doc(db, 'anuladas', reg.id), { numero: reg.numero || null, nombre: reg.nombre || '', autorizaFotos: !!reg.autorizaFotos, menuVegetariano: !!reg.menuVegetariano, anuladaEn: serverTimestamp() });
+            lote.delete(doc(db, 'inscripciones', reg.id));
+            lote.delete(doc(db, 'anulaciones', sol.id));
+            await lote.commit();
+            mostrarToast('Inscripción N° ' + invNum(reg) + ' anulada.', 'exito');
+          } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+          finally { anulEnProceso.delete(sol.id); anulRender(cont); }
+        };
+        acc.appendChild(bc);
+      }
+      const bd = document.createElement('button'); bd.className = 'btn-accion editar'; bd.textContent = 'Descartar solicitud'; bd.disabled = ocupado;
+      bd.onclick = async () => {
+        if (!confirm('¿Descartar esta solicitud sin anular la inscripción?')) return;
+        anulEnProceso.add(sol.id); anulRender(cont);
+        try { await deleteDoc(doc(db, 'anulaciones', sol.id)); } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+        finally { anulEnProceso.delete(sol.id); anulRender(cont); }
+      };
+      acc.appendChild(bd); f.appendChild(acc); cont.appendChild(f);
+    });
+  }
 
 
   // ── ANULADAS: ver el registro y, si fue un error, restaurar la inscripción o quitarla de la lista ──
+  // En tiempo real: si se anula o restaura desde la app, la lista se actualiza sola.
+  // Las confirmaciones de restauración abiertas (y sus casillas) se conservan al refrescar.
+  let anuladasUnsub = null, anuladasLista = null;
+  const anuladasConf = new Map();      // id -> { f: autorizaFotos, v: menuVegetariano } de las confirmaciones abiertas
+  const anuladasEnProceso = new Set();
+  function anuladasDetener() { if (anuladasUnsub) { anuladasUnsub(); anuladasUnsub = null; } anuladasLista = null; anuladasConf.clear(); }
   window.verAnuladas = async () => {
     const cont = inscAlternarPanel('inscAnuladas'); if (!cont) return;
-    try {
-      const [snap, regs] = await Promise.all([getDocs(collection(db, 'anuladas')), invLeerInscripciones()]);
-      const lista = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9));
-      cont.innerHTML = ''; cont.style.display = 'block';
-      const tit = document.createElement('div');
-      tit.style.cssText = 'font-weight:600; margin-bottom:0.3rem; color:#1C2B3A;';
-      tit.textContent = lista.length ? 'Inscripciones anuladas: ' + lista.length : 'No hay inscripciones anuladas.';
-      cont.appendChild(tit);
-      if (lista.length) {
-        const nota = document.createElement('p');
-        nota.style.cssText = 'font-size:0.78rem; color:#888; margin:0 0 0.6rem;';
-        nota.textContent = 'Si anulaste por error, usa "Restaurar inscripción" (vuelve a la lista con su mismo N°). "Quitar de anuladas" solo borra el registro de esta lista y de la hoja "Anuladas" de la planilla, sin restaurar la inscripción.';
-        cont.appendChild(nota);
-      }
-      lista.forEach(a => {
-        const f = document.createElement('div');
-        f.style.cssText = 'padding:0.7rem 0.9rem; border:1px solid #ddd; border-radius:3px; margin-bottom:0.5rem; font-size:0.88rem;';
-        const fecha = a.anuladaEn && a.anuladaEn.toDate ? a.anuladaEn.toDate().toLocaleDateString('es-CL') : '';
-        const l1 = document.createElement('div');
-        const b1 = document.createElement('strong'); b1.textContent = 'N° ' + (a.numero ? String(a.numero).padStart(3, '0') : 's/n') + ' — ' + (a.nombre || '');
-        l1.appendChild(b1);
-        if (fecha) { const sp = document.createElement('span'); sp.style.cssText = 'color:#888; font-size:0.8rem;'; sp.textContent = '  · anulada el ' + fecha; l1.appendChild(sp); }
-        f.appendChild(l1);
-        const acc = document.createElement('div'); acc.style.cssText = 'display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;';
-        const bR = document.createElement('button'); bR.className = 'btn-accion editar'; bR.textContent = '↩ Restaurar inscripción';
-        const bQ = document.createElement('button'); bQ.className = 'btn-accion eliminar'; bQ.textContent = 'Quitar de anuladas';
-        acc.appendChild(bR); acc.appendChild(bQ); f.appendChild(acc);
-        // panel de confirmación de la restauración (pregunta fotos y menú si no quedaron guardados)
-        const conf = document.createElement('div'); conf.style.cssText = 'display:none; margin-top:0.6rem; padding-top:0.6rem; border-top:1px dashed #ddd;';
-        const guardado = ('autorizaFotos' in a) || ('menuVegetariano' in a);
-        const mk = (txt, val) => { const l = document.createElement('label'); l.style.cssText = 'display:flex; align-items:center; gap:0.4rem; margin:0.25rem 0; cursor:pointer;'; const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!val; l.appendChild(c); l.appendChild(document.createTextNode(txt)); conf.appendChild(l); return c; };
-        const info = document.createElement('div'); info.style.cssText = 'font-size:0.8rem; color:#666; margin-bottom:0.3rem;';
-        info.textContent = guardado ? 'Se restaurará con los datos que tenía al anularse (puedes ajustarlos):' : 'Esta anulación no guardó los datos de fotos y menú. Márcalos según lo que la persona indicó:';
-        conf.appendChild(info);
-        const cF = mk('Autoriza el uso de fotografías', a.autorizaFotos);
-        const cV = mk('Prefiere menú vegetariano', a.menuVegetariano);
-        const bOk = document.createElement('button'); bOk.className = 'btn-accion editar'; bOk.style.marginTop = '0.4rem'; bOk.textContent = 'Confirmar restauración';
-        conf.appendChild(bOk); f.appendChild(conf);
-        bR.onclick = () => { conf.style.display = conf.style.display === 'none' ? 'block' : 'none'; };
-        bOk.onclick = async () => {
-          bOk.disabled = true;
-          try {
-            const actuales = await invLeerInscripciones();
-            if (a.numero && actuales.some(r => r.numero === a.numero)) { mostrarToast('Ya existe una inscripción con el N° ' + String(a.numero).padStart(3, '0') + '.', 'error'); bOk.disabled = false; return; }
-            const otra = actuales.find(r => invComparaNombre(a.nombre, r.nombre) === 'igual');
-            if (otra && !confirm('Ya hay una inscripción a nombre de "' + (otra.nombre || '') + '" (N° ' + invNum(otra) + '). Si restauras esta, la persona quedará duplicada hasta que elimines una. ¿Restaurar igual?')) { bOk.disabled = false; return; }
-            await setDoc(doc(db, 'inscripciones', a.id), { nombre: a.nombre || '', autorizaFotos: cF.checked, menuVegetariano: cV.checked, numero: a.numero || null, creadoEn: serverTimestamp() });
-            await deleteDoc(doc(db, 'anuladas', a.id));
-            f.remove(); mostrarToast('Inscripción N° ' + (a.numero ? String(a.numero).padStart(3, '0') : '') + ' restaurada.', 'exito'); cargarConteoInscripciones();
-          } catch(e) { bOk.disabled = false; mostrarToast('Error: ' + e.message, 'error'); }
-        };
-        bQ.onclick = async () => {
-          if (!confirm('¿Quitar a ' + (a.nombre || '') + ' de las anuladas? La inscripción NO se restaura; solo desaparece de este registro y de la hoja "Anuladas".')) return;
-          try { await deleteDoc(doc(db, 'anuladas', a.id)); f.remove(); mostrarToast('Quitada de anuladas.', 'exito'); } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
-        };
-        cont.appendChild(f);
-      });
-    } catch(e) { mostrarToast('Error al cargar las anuladas: ' + e.message, 'error'); }
+    anuladasDetener();
+    cont.innerHTML = '<div style="color:#888; font-size:0.85rem;">Cargando...</div>'; cont.style.display = 'block';
+    anuladasUnsub = onSnapshot(collection(db, 'anuladas'), snap => {
+      anuladasLista = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.numero || 1e9) - (b.numero || 1e9));
+      anuladasRender(cont);
+    }, e => mostrarToast('Error al cargar las anuladas: ' + e.message, 'error'));
   };
+  function anuladasRender(cont) {
+    if (!anuladasLista || cont.style.display !== 'block') return;
+    const lista = anuladasLista;
+    [...anuladasConf.keys()].forEach(id => { if (!lista.some(a => a.id === id)) anuladasConf.delete(id); });
+    cont.innerHTML = '';
+    const tit = document.createElement('div');
+    tit.style.cssText = 'font-weight:600; margin-bottom:0.3rem; color:#1C2B3A;';
+    tit.textContent = lista.length ? 'Inscripciones anuladas: ' + lista.length : 'No hay inscripciones anuladas.';
+    cont.appendChild(tit);
+    if (lista.length) {
+      const nota = document.createElement('p');
+      nota.style.cssText = 'font-size:0.78rem; color:#888; margin:0 0 0.6rem;';
+      nota.textContent = 'Si anulaste por error, usa "Restaurar inscripción" (vuelve a la lista con su mismo N°). "Quitar de anuladas" solo borra el registro de esta lista y de la hoja "Anuladas" de la planilla, sin restaurar la inscripción.';
+      cont.appendChild(nota);
+    }
+    lista.forEach(a => {
+      const ocupado = anuladasEnProceso.has(a.id);
+      const f = document.createElement('div');
+      f.style.cssText = 'padding:0.7rem 0.9rem; border:1px solid #ddd; border-radius:3px; margin-bottom:0.5rem; font-size:0.88rem;';
+      const fecha = a.anuladaEn && a.anuladaEn.toDate ? a.anuladaEn.toDate().toLocaleDateString('es-CL') : '';
+      const l1 = document.createElement('div');
+      const b1 = document.createElement('strong'); b1.textContent = 'N° ' + (a.numero ? String(a.numero).padStart(3, '0') : 's/n') + ' — ' + (a.nombre || '');
+      l1.appendChild(b1);
+      if (fecha) { const sp = document.createElement('span'); sp.style.cssText = 'color:#888; font-size:0.8rem;'; sp.textContent = '  · anulada el ' + fecha; l1.appendChild(sp); }
+      f.appendChild(l1);
+      const acc = document.createElement('div'); acc.style.cssText = 'display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;';
+      const bR = document.createElement('button'); bR.className = 'btn-accion editar'; bR.textContent = '↩ Restaurar inscripción'; bR.disabled = ocupado;
+      const bQ = document.createElement('button'); bQ.className = 'btn-accion eliminar'; bQ.textContent = 'Quitar de anuladas'; bQ.disabled = ocupado;
+      acc.appendChild(bR); acc.appendChild(bQ); f.appendChild(acc);
+      // panel de confirmación de la restauración (pregunta fotos y menú si no quedaron guardados)
+      const abierta = anuladasConf.get(a.id);
+      const conf = document.createElement('div'); conf.style.cssText = 'display:' + (abierta ? 'block' : 'none') + '; margin-top:0.6rem; padding-top:0.6rem; border-top:1px dashed #ddd;';
+      const guardado = ('autorizaFotos' in a) || ('menuVegetariano' in a);
+      const mk = (txt, val) => { const l = document.createElement('label'); l.style.cssText = 'display:flex; align-items:center; gap:0.4rem; margin:0.25rem 0; cursor:pointer;'; const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!val; l.appendChild(c); l.appendChild(document.createTextNode(txt)); conf.appendChild(l); return c; };
+      const info = document.createElement('div'); info.style.cssText = 'font-size:0.8rem; color:#666; margin-bottom:0.3rem;';
+      info.textContent = guardado ? 'Se restaurará con los datos que tenía al anularse (puedes ajustarlos):' : 'Esta anulación no guardó los datos de fotos y menú. Márcalos según lo que la persona indicó:';
+      conf.appendChild(info);
+      const cF = mk('Autoriza el uso de fotografías', abierta ? abierta.f : a.autorizaFotos);
+      const cV = mk('Prefiere menú vegetariano', abierta ? abierta.v : a.menuVegetariano);
+      const recordar = () => { if (anuladasConf.has(a.id)) anuladasConf.set(a.id, { f: cF.checked, v: cV.checked }); };
+      cF.onchange = recordar; cV.onchange = recordar;
+      const bOk = document.createElement('button'); bOk.className = 'btn-accion editar'; bOk.style.marginTop = '0.4rem'; bOk.textContent = 'Confirmar restauración'; bOk.disabled = ocupado;
+      conf.appendChild(bOk); f.appendChild(conf);
+      bR.onclick = () => {
+        if (anuladasConf.has(a.id)) { anuladasConf.delete(a.id); conf.style.display = 'none'; }
+        else { anuladasConf.set(a.id, { f: cF.checked, v: cV.checked }); conf.style.display = 'block'; }
+      };
+      bOk.onclick = async () => {
+        anuladasEnProceso.add(a.id); anuladasRender(cont);
+        try {
+          const actuales = await invLeerInscripciones();
+          if (a.numero && actuales.some(r => r.numero === a.numero)) { mostrarToast('Ya existe una inscripción con el N° ' + String(a.numero).padStart(3, '0') + '.', 'error'); return; }
+          const otra = actuales.find(r => invComparaNombre(a.nombre, r.nombre) === 'igual');
+          if (otra && !confirm('Ya hay una inscripción a nombre de "' + (otra.nombre || '') + '" (N° ' + invNum(otra) + '). Si restauras esta, la persona quedará duplicada hasta que elimines una. ¿Restaurar igual?')) return;
+          // Un solo lote: se crea la inscripción y se quita de anuladas juntas (o ninguna de las dos)
+          const lote = writeBatch(db);
+          lote.set(doc(db, 'inscripciones', a.id), { nombre: a.nombre || '', autorizaFotos: cF.checked, menuVegetariano: cV.checked, numero: a.numero || null, creadoEn: serverTimestamp() });
+          lote.delete(doc(db, 'anuladas', a.id));
+          await lote.commit();
+          anuladasConf.delete(a.id);
+          mostrarToast('Inscripción N° ' + (a.numero ? String(a.numero).padStart(3, '0') : '') + ' restaurada.', 'exito');
+        } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+        finally { anuladasEnProceso.delete(a.id); anuladasRender(cont); }
+      };
+      bQ.onclick = async () => {
+        if (!confirm('¿Quitar a ' + (a.nombre || '') + ' de las anuladas? La inscripción NO se restaura; solo desaparece de este registro y de la hoja "Anuladas".')) return;
+        anuladasEnProceso.add(a.id); anuladasRender(cont);
+        try { await deleteDoc(doc(db, 'anuladas', a.id)); anuladasConf.delete(a.id); mostrarToast('Quitada de anuladas.', 'exito'); }
+        catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+        finally { anuladasEnProceso.delete(a.id); anuladasRender(cont); }
+      };
+      cont.appendChild(f);
+    });
+  }
 
   window.revisarDuplicadosInscripciones = async () => {
     const cont = inscAlternarPanel('inscDuplicados'); if (!cont) return;
