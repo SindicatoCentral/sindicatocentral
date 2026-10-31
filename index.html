@@ -4,6 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sindicato de Trabajadores – Universidad Central</title>
+<meta name="description" content="Sitio oficial del Sindicato de Trabajadores de la Universidad Central de Chile: beneficios, avances de las negociaciones colectivas, documentos, noticias, eventos y afiliación.">
+<meta name="theme-color" content="#1C2B3A">
+<link rel="canonical" href="https://sindicatocentral.cl/">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Vista previa al compartir el enlace (WhatsApp, Facebook, X, correo) -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CL">
+<meta property="og:site_name" content="Sindicato de Trabajadores Central">
+<meta property="og:title" content="Sindicato de Trabajadores – Universidad Central">
+<meta property="og:description" content="Beneficios, negociaciones colectivas, documentos, noticias, eventos y afiliación del sindicato.">
+<meta property="og:url" content="https://sindicatocentral.cl/">
+<meta property="og:image" content="https://sindicatocentral.cl/og-imagen.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Logo del Sindicato de Trabajadores Universidad Central">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sindicato de Trabajadores – Universidad Central">
+<meta name="twitter:description" content="Beneficios, negociaciones colectivas, documentos, noticias, eventos y afiliación del sindicato.">
+<meta name="twitter:image" content="https://sindicatocentral.cl/og-imagen.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -1935,10 +1957,24 @@
     <h2 class="section-title">Galería</h2>
     <p class="section-body">Revive los momentos más importantes de nuestra organización.</p>
     <div class="eventos-grid" id="eventosGrid">
-      <p class="section-body" style="grid-column:1/-1; color:#666;">Cargando galería...</p>
+      <p class="section-body" id="galeriaCargando" style="grid-column:1/-1; color:#666;">Cargando galería...</p>
     </div>
   </div>
 </section>
+<script>
+// Respaldo: si la galería no logra ni siquiera iniciar (por ejemplo, sin conexión), no se queda en "Cargando..." para siempre
+setTimeout(function () {
+  var p = document.getElementById('galeriaCargando');
+  if (!p || !p.isConnected) return;
+  p.removeAttribute('id');
+  p.textContent = 'No se pudo cargar la galería. Revisa tu conexión e inténtalo de nuevo. ';
+  p.appendChild(document.createElement('br'));
+  var b = document.createElement('button');
+  b.type = 'button'; b.className = 'btn-primary'; b.style.cssText = 'margin-top:0.8rem; display:inline-block; cursor:pointer; border:none;';
+  b.textContent = 'Reintentar'; b.onclick = function () { location.reload(); };
+  p.appendChild(b);
+}, 20000);
+</script>
 
 <!-- MODAL GALERÍA -->
 <div class="galeria-modal" id="galeriaModal">
@@ -3258,10 +3294,25 @@ function convertirUrlVideo(url) {
   }, e => console.error('Error cargando popup:', e));
 
   // ── GALERÍA ──
+  function galeriaError(grid) {
+    grid.innerHTML = '';
+    const p = document.createElement('p');
+    p.className = 'section-body'; p.style.cssText = 'grid-column:1/-1;';
+    p.textContent = 'No se pudo cargar la galería. Revisa tu conexión e inténtalo de nuevo. ';
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn-primary'; b.style.cssText = 'margin-top:0.8rem; display:inline-block; cursor:pointer; border:none;';
+    b.textContent = 'Reintentar';
+    b.onclick = () => cargarGaleria();
+    p.appendChild(document.createElement('br')); p.appendChild(b);
+    grid.appendChild(p);
+  }
   async function cargarGaleria() {
     const grid = document.getElementById('eventosGrid');
+    grid.innerHTML = '<p class="section-body" style="grid-column:1/-1; color:#666;">Cargando galería...</p>';
     try {
-      const snap = await getDocs(query(collection(db, 'galeria'), orderBy('fecha', 'desc')));
+      // Si la conexión no responde, no se deja la pantalla en "Cargando..." para siempre
+      const espera = new Promise((_, rej) => setTimeout(() => rej(new Error('tiempo agotado')), 15000));
+      const snap = await Promise.race([getDocs(query(collection(db, 'galeria'), orderBy('fecha', 'desc'))), espera]);
       if (snap.empty) {
         grid.innerHTML = '<p class="section-body" style="grid-column:1/-1; color:#666;">Próximamente compartiremos fotos de nuestros eventos.</p>';
         return;
@@ -3281,14 +3332,14 @@ function convertirUrlVideo(url) {
         if (fotos.length === 0) {
           thumbHtml = '<div class="evento-thumb-vacio">🖼️</div>';
         } else if (fotos.length === 1) {
-          thumbHtml = `<div class="evento-thumb una-foto"><img src="${fotos[0].url}" alt=""></div>`;
+          thumbHtml = `<div class="evento-thumb una-foto"><img src="${fotos[0].url}" alt="" loading="lazy" decoding="async"></div>`;
         } else if (fotos.length === 2) {
-          thumbHtml = `<div class="evento-thumb"><img src="${fotos[0].url}" alt=""><img src="${fotos[1].url}" alt=""></div>`;
+          thumbHtml = `<div class="evento-thumb"><img src="${fotos[0].url}" alt="" loading="lazy" decoding="async"><img src="${fotos[1].url}" alt="" loading="lazy" decoding="async"></div>`;
         } else {
           thumbHtml = `<div class="evento-thumb tres-fotos">
-            <img src="${fotos[0].url}" alt="" class="thumb-1">
-            <img src="${fotos[1].url}" alt="">
-            <img src="${fotos[2].url}" alt="">
+            <img src="${fotos[0].url}" alt="" loading="lazy" decoding="async" class="thumb-1">
+            <img src="${fotos[1].url}" alt="" loading="lazy" decoding="async">
+            <img src="${fotos[2].url}" alt="" loading="lazy" decoding="async">
           </div>`;
         }
         card.innerHTML = thumbHtml + `
@@ -3302,7 +3353,8 @@ function convertirUrlVideo(url) {
         grid.appendChild(card);
       }
     } catch(err) {
-      grid.innerHTML = '<p class="section-body" style="grid-column:1/-1;">Próximamente compartiremos fotos de nuestros eventos.</p>';
+      console.error('Error cargando galería:', err);
+      galeriaError(grid);
     }
   }
 
