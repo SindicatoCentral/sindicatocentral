@@ -2347,7 +2347,7 @@
     if (lista.length) {
       const nota = document.createElement('p');
       nota.style.cssText = 'font-size:0.78rem; color:#888; margin:0 0 0.6rem;';
-      nota.textContent = 'Si anulaste por error, usa "Restaurar inscripción" (vuelve a la lista con su mismo N°). "Quitar de anuladas" solo borra el registro de esta lista y de la hoja "Anuladas" de la planilla, sin restaurar la inscripción.';
+      nota.textContent = 'Si anulaste por error, usa "Restaurar inscripción" (vuelve a la lista con su mismo N°). Las anuladas se conservan como registro y solo se borran al limpiar los datos del evento.';
       cont.appendChild(nota);
     }
     lista.forEach(a => {
@@ -2362,8 +2362,7 @@
       f.appendChild(l1);
       const acc = document.createElement('div'); acc.style.cssText = 'display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;';
       const bR = document.createElement('button'); bR.className = 'btn-accion editar'; bR.textContent = '↩ Restaurar inscripción'; bR.disabled = ocupado;
-      const bQ = document.createElement('button'); bQ.className = 'btn-accion eliminar'; bQ.textContent = 'Quitar de anuladas'; bQ.disabled = ocupado;
-      acc.appendChild(bR); acc.appendChild(bQ); f.appendChild(acc);
+      acc.appendChild(bR); f.appendChild(acc);
       // panel de confirmación de la restauración (pregunta fotos y menú si no quedaron guardados)
       const abierta = anuladasConf.get(a.id);
       const conf = document.createElement('div'); conf.style.cssText = 'display:' + (abierta ? 'block' : 'none') + '; margin-top:0.6rem; padding-top:0.6rem; border-top:1px dashed #ddd;';
@@ -2397,13 +2396,6 @@
           anuladasConf.delete(a.id);
           mostrarToast('Inscripción N° ' + (a.numero ? String(a.numero).padStart(3, '0') : '') + ' restaurada.', 'exito');
         } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
-        finally { anuladasEnProceso.delete(a.id); anuladasRender(cont); }
-      };
-      bQ.onclick = async () => {
-        if (!confirm('¿Quitar a ' + (a.nombre || '') + ' de las anuladas? La inscripción NO se restaura; solo desaparece de este registro y de la hoja "Anuladas".')) return;
-        anuladasEnProceso.add(a.id); anuladasRender(cont);
-        try { await deleteDoc(doc(db, 'anuladas', a.id)); anuladasConf.delete(a.id); mostrarToast('Quitada de anuladas.', 'exito'); }
-        catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
         finally { anuladasEnProceso.delete(a.id); anuladasRender(cont); }
       };
       cont.appendChild(f);
