@@ -2710,6 +2710,10 @@ function convertirUrlVideo(url) {
   import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc, addDoc, serverTimestamp, runTransaction, onSnapshot }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+  // Escapa texto guardado antes de mostrarlo como HTML (defensa en profundidad)
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const urlSegura = u => /^https:\/\//i.test(String(u || '')) ? esc(u) : '';
+
   const firebaseConfig = {
     apiKey: "AIzaSyAVabxEzbuyOllC1-iJXZVCX1a0hI1SItQ",
     authDomain: "sindicato-central.firebaseapp.com",
@@ -2739,7 +2743,7 @@ function convertirUrlVideo(url) {
       window.busquedaIndiceNoticias = [];
       snap.forEach(d => {
         const n = d.data();
-        const contenido = (n.contenido || '').replace(/\n/g, '<br>');
+        const contenido = esc(n.contenido || '').replace(/\n/g, '<br>');
         window.busquedaIndiceNoticias.push({
           titulo: n.titulo || 'Noticia',
           texto: (n.contenido || '').slice(0, 140),
@@ -3145,11 +3149,11 @@ function convertirUrlVideo(url) {
               <div style="display:flex; align-items:center; gap:0.6rem;">
                 <span style="font-size:0.9rem;">📋</span>
                 <div>
-                  <div style="font-weight:600; font-size:0.85rem; color:var(--carbon);">${c.nombre}</div>
-                  <div style="font-size:0.72rem; color:#888;">Vigencia: ${c.anoInicio} — ${c.anoFin}</div>
+                  <div style="font-weight:600; font-size:0.85rem; color:var(--carbon);">${esc(c.nombre)}</div>
+                  <div style="font-size:0.72rem; color:#888;">Vigencia: ${esc(c.anoInicio)} — ${esc(c.anoFin)}</div>
                 </div>
               </div>
-              <button class="btn-descarga" style="font-size:0.72rem; padding:0.4rem 0.8rem;" data-url="${c.url}" data-nombre="${c.nombre}.pdf" onclick="descargarArchivo(this)">⬇ Descargar</button>
+              <button class="btn-descarga" style="font-size:0.72rem; padding:0.4rem 0.8rem;" data-url="${urlSegura(c.url)}" data-nombre="${esc(c.nombre)}.pdf" onclick="descargarArchivo(this)">⬇ Descargar</button>
             </div>
           `).join('');
         }
@@ -3332,19 +3336,19 @@ function convertirUrlVideo(url) {
         if (fotos.length === 0) {
           thumbHtml = '<div class="evento-thumb-vacio">🖼️</div>';
         } else if (fotos.length === 1) {
-          thumbHtml = `<div class="evento-thumb una-foto"><img src="${fotos[0].url}" alt="" loading="lazy" decoding="async"></div>`;
+          thumbHtml = `<div class="evento-thumb una-foto"><img src="${urlSegura(fotos[0].url)}" alt="" loading="lazy" decoding="async"></div>`;
         } else if (fotos.length === 2) {
-          thumbHtml = `<div class="evento-thumb"><img src="${fotos[0].url}" alt="" loading="lazy" decoding="async"><img src="${fotos[1].url}" alt="" loading="lazy" decoding="async"></div>`;
+          thumbHtml = `<div class="evento-thumb"><img src="${urlSegura(fotos[0].url)}" alt="" loading="lazy" decoding="async"><img src="${urlSegura(fotos[1].url)}" alt="" loading="lazy" decoding="async"></div>`;
         } else {
           thumbHtml = `<div class="evento-thumb tres-fotos">
-            <img src="${fotos[0].url}" alt="" loading="lazy" decoding="async" class="thumb-1">
-            <img src="${fotos[1].url}" alt="" loading="lazy" decoding="async">
-            <img src="${fotos[2].url}" alt="" loading="lazy" decoding="async">
+            <img src="${urlSegura(fotos[0].url)}" alt="" loading="lazy" decoding="async" class="thumb-1">
+            <img src="${urlSegura(fotos[1].url)}" alt="" loading="lazy" decoding="async">
+            <img src="${urlSegura(fotos[2].url)}" alt="" loading="lazy" decoding="async">
           </div>`;
         }
         card.innerHTML = thumbHtml + `
           <div class="evento-pub-info">
-            <h3>${e.nombre}</h3>
+            <h3>${esc(e.nombre)}</h3>
             <div class="evento-pub-meta">
               <span>📅 ${fechaStr}</span>
               <span>📷 ${fotos.length} foto${fotos.length !== 1 ? 's' : ''}</span>

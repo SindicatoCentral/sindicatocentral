@@ -451,6 +451,27 @@
         <div id="ingLista" style="border:1px solid #ddd; border-radius:3px;"></div>
         <p style="font-size:0.78rem; color:#888; margin:0.8rem 0 0;">La lista se actualiza en tiempo real entre todos los dispositivos conectados. Solo ingresan las personas inscritas. Al terminar el evento, exporta la asistencia y luego elimina las inscripciones desde la pestaña "Inscripciones": se borran también los registros de ingreso.</p>
       </div>
+
+      <!-- APP PARA EL CELULAR -->
+      <div class="form-card" style="display:block; margin-top:1rem;">
+        <h3 style="font-size:1rem; margin:0 0 0.4rem;">📱 Aplicación de control de ingreso para el celular</h3>
+        <p id="appEstado" style="font-size:0.85rem; color:#666; margin:0 0 0.8rem;">Cargando...</p>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-bottom:0.8rem;">
+          <button type="button" class="btn-accion editar" id="btnAppDescargar" onclick="descargarApp()" disabled>⬇ Descargar app (APK)</button>
+        </div>
+        <p style="font-size:0.78rem; color:#888; margin:0 0 1rem;">Para instalarla: abre el archivo descargado en el celular y, si Android lo pide, permite "instalar apps de orígenes desconocidos" para el navegador que usaste. Si aparece un aviso de Play Protect, elige "Instalar de todos modos". Inicia sesión en la app con una cuenta autorizada.</p>
+        <details>
+          <summary style="cursor:pointer; font-size:0.85rem; font-weight:600;">Subir una nueva versión</summary>
+          <div style="margin-top:0.7rem;">
+            <label style="font-size:0.8rem; display:block; margin-bottom:0.3rem;">Número de versión (por ejemplo 1.2)</label>
+            <input type="text" id="appVersion" maxlength="20" placeholder="1.2" style="width:100%; max-width:200px; margin-bottom:0.6rem;">
+            <input type="file" id="appArchivo" accept=".apk,application/vnd.android.package-archive" style="margin-bottom:0.6rem; display:block;">
+            <button type="button" class="btn-accion editar" id="btnAppSubir" onclick="subirApp()">⬆ Subir y reemplazar</button>
+            <div id="appBarra" style="display:none; margin-top:0.6rem; height:8px; background:#ddd; border-radius:4px; overflow:hidden;"><div id="appRelleno" style="height:100%; width:0; background:var(--azul);"></div></div>
+            <p style="font-size:0.78rem; color:#888; margin:0.6rem 0 0;">Sube un APK firmado con la misma clave de lanzamiento de siempre; si cambia la firma, Android exige desinstalar la versión anterior antes de instalar la nueva. Conviene hacerlo desde un computador. Reemplaza la versión actual.</p>
+          </div>
+        </details>
+      </div>
     </div>
 
     <!-- GALERÍA -->
@@ -772,8 +793,15 @@
   // Solo estos correos pueden acceder al panel admin, aunque inicien sesión con Google
   const CORREOS_PERMITIDOS = [
     "trabajadores@sindicatocentral.cl",
-    "ogonzalez.morales@gmail.com" // Respaldo temporal mientras la cuenta institucional está suspendida
+    "ogonzalez.morales@gmail.com", // Respaldo temporal mientras la cuenta institucional está suspendida
+    "rvillalo@ucentral.cl",
+    "mmarchantc@ucentral.cl",
+    "andrea.pizarro@ucentral.cl"
   ];
+
+  // Escapa texto guardado antes de mostrarlo como HTML (defensa en profundidad)
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const urlSegura = u => /^https:\/\//i.test(String(u || '')) ? esc(u) : '';
 
   let tabActual    = 'publicada';
   let archivoImg   = null;
@@ -1052,10 +1080,10 @@
         const resumen  = (n.contenido||'').substring(0,100) + ((n.contenido||'').length>100?'...':'');
         const fechaStr = n.createdAt ? new Date(n.createdAt.seconds*1000).toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'}) : '';
         item.innerHTML =
-          (n.imgUrl ? '<img class="noticia-item-img" src="'+n.imgUrl+'" alt="">' : '') +
+          (urlSegura(n.imgUrl) ? '<img class="noticia-item-img" src="'+urlSegura(n.imgUrl)+'" alt="">' : '') +
           '<div class="noticia-info">' +
-            '<div class="noticia-titulo-item">'+(n.titulo||'')+(fechaStr?'<span class="historial-badge">'+fechaStr+'</span>':'')+'</div>'+
-            '<div class="noticia-resumen-item">'+resumen+'</div>'+
+            '<div class="noticia-titulo-item">'+esc(n.titulo||'')+(fechaStr?'<span class="historial-badge">'+esc(fechaStr)+'</span>':'')+'</div>'+
+            '<div class="noticia-resumen-item">'+esc(resumen)+'</div>'+
           '</div>'+
           '<div class="noticia-acciones">'+
             (!esHistorial ? '<button class="btn-accion editar">Editar</button><button class="btn-accion archivar">Archivar</button>' : '')+
@@ -1355,15 +1383,18 @@
         card.className = 'noticia-item';
         card.innerHTML = `
           <div class="noticia-info">
-            <div class="noticia-titulo-item">${e.nombre}</div>
-            <div class="noticia-resumen-item">📅 ${fechaStr} &nbsp;·&nbsp; 📷 ${fotos.length} foto${fotos.length !== 1 ? 's' : ''}</div>
+            <div class="noticia-titulo-item">${esc(e.nombre)}</div>
+            <div class="noticia-resumen-item">📅 ${esc(fechaStr)} &nbsp;·&nbsp; 📷 ${fotos.length} foto${fotos.length !== 1 ? 's' : ''}</div>
           </div>
           <div class="noticia-acciones">
-            <button class="btn-accion editar" onclick="abrirFormFotos('${d.id}', '${e.nombre.replace(/'/g, "\'")}')">+ Fotos</button>
-            <button class="btn-accion restaurar" onclick="verFotosEvento('${d.id}', '${e.nombre.replace(/'/g, "\'")}')">Ver fotos</button>
-            <button class="btn-accion eliminar" onclick="eliminarEvento('${d.id}')">Eliminar</button>
+            <button class="btn-accion editar" data-act="fotos">+ Fotos</button>
+            <button class="btn-accion restaurar" data-act="ver">Ver fotos</button>
+            <button class="btn-accion eliminar" data-act="del">Eliminar</button>
           </div>
         `;
+        card.querySelector('[data-act="fotos"]').addEventListener('click', () => abrirFormFotos(d.id, e.nombre));
+        card.querySelector('[data-act="ver"]').addEventListener('click', () => verFotosEvento(d.id, e.nombre));
+        card.querySelector('[data-act="del"]').addEventListener('click', () => eliminarEvento(d.id));
         lista.appendChild(card);
       }
     } catch(e) {
@@ -1661,16 +1692,17 @@
         item.innerHTML = `
           <div class="noticia-info">
             <div class="noticia-titulo-item">
-              ${c.nombre}
+              ${esc(c.nombre)}
               ${c.vigente ? '<span class="historial-badge" style="background:#e8f5e9; color:#2E7D32;">● Vigente</span>' : '<span class="historial-badge">Anterior</span>'}
             </div>
-            <div class="noticia-resumen-item">Período: ${c.anoInicio} - ${c.anoFin}</div>
+            <div class="noticia-resumen-item">Período: ${esc(c.anoInicio)} - ${esc(c.anoFin)}</div>
           </div>
           <div class="noticia-acciones">
-            <a href="${c.url}" target="_blank" class="btn-accion editar">Ver</a>
-            <button class="btn-accion eliminar" onclick="eliminarContrato('${d.id}', '${c.path}')">Eliminar</button>
+            <a href="${urlSegura(c.url)}" target="_blank" rel="noopener noreferrer" class="btn-accion editar">Ver</a>
+            <button class="btn-accion eliminar" data-act="del">Eliminar</button>
           </div>
         `;
+        item.querySelector('[data-act="del"]').addEventListener('click', () => eliminarContrato(d.id, c.path));
         lista.appendChild(item);
       });
     } catch(e) {
@@ -2154,12 +2186,72 @@
   };
 
 
+  // ── APP DE CONTROL DE INGRESO: descarga y subida del APK (solo con sesión autorizada) ──
+  // El archivo vive en Storage (app/); las reglas deben limitar su escritura a los correos autorizados.
+  const APP_RUTA = 'app/ControlIngreso.apk';
+  function appFormatoTamano(b) { return b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.round(b / 1024) + ' KB'; }
+  async function appCargarEstado() {
+    const est = document.getElementById('appEstado'), btn = document.getElementById('btnAppDescargar');
+    if (!est || !btn) return;
+    try {
+      const snap = await getDoc(doc(db, 'config', 'app'));
+      if (snap.exists() && snap.data().version) {
+        const d = snap.data();
+        const fecha = d.subidoEn && d.subidoEn.toDate ? d.subidoEn.toDate().toLocaleDateString('es-CL') : '';
+        est.textContent = 'Versión ' + d.version + (fecha ? ' · subida el ' + fecha : '') + (d.tamano ? ' · ' + appFormatoTamano(d.tamano) : '') + (d.sha256 ? ' · huella SHA-256: ' + String(d.sha256).slice(0, 16) + '…' : '');
+        btn.disabled = false;
+      } else {
+        est.textContent = 'Aún no hay una versión de la app subida.';
+        btn.disabled = true;
+      }
+    } catch(e) { est.textContent = 'No se pudo leer el estado de la app.'; }
+  }
+  window.descargarApp = async () => {
+    const btn = document.getElementById('btnAppDescargar'); const txt = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Preparando...';
+    try {
+      const url = await getDownloadURL(ref(storage, APP_RUTA));
+      const a = document.createElement('a'); a.href = url; a.download = 'ControlIngreso.apk'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch(e) { mostrarToast('No se pudo descargar la app: ' + e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = txt; }
+  };
+  window.subirApp = async () => {
+    const version = document.getElementById('appVersion').value.trim();
+    const input = document.getElementById('appArchivo'); const file = input.files[0];
+    if (!version) { mostrarToast('Escribe el número de versión.', 'error'); return; }
+    if (!file) { mostrarToast('Selecciona el archivo APK.', 'error'); return; }
+    if (!/\.apk$/i.test(file.name)) { mostrarToast('El archivo debe ser un APK (.apk).', 'error'); return; }
+    if (file.size > 100 * 1024 * 1024) { mostrarToast('El archivo supera los 100 MB.', 'error'); return; }
+    if (!confirm('¿Subir la versión ' + version + ' (' + appFormatoTamano(file.size) + ') y reemplazar la app actual?')) return;
+    const btn = document.getElementById('btnAppSubir'); const barra = document.getElementById('appBarra'), fill = document.getElementById('appRelleno');
+    btn.disabled = true; btn.textContent = 'Subiendo...'; barra.style.display = 'block'; fill.style.width = '0';
+    try {
+      let sha = '';
+      try {
+        const h = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+        sha = Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, '0')).join('');
+      } catch(e) { /* si el navegador no puede calcularla, se sube igual */ }
+      const meta = { contentType: 'application/vnd.android.package-archive', contentDisposition: 'attachment; filename="ControlIngreso.apk"' };
+      await new Promise((resolve, reject) => {
+        const tarea = uploadBytesResumable(ref(storage, APP_RUTA), file, meta);
+        tarea.on('state_changed', s => { fill.style.width = (s.bytesTransferred / s.totalBytes * 100) + '%'; }, reject, resolve);
+      });
+      await setDoc(doc(db, 'config', 'app'), { version, tamano: file.size, sha256: sha, subidoEn: serverTimestamp() });
+      mostrarToast('Versión ' + version + ' subida correctamente.', 'exito');
+      input.value = ''; document.getElementById('appVersion').value = '';
+      appCargarEstado();
+    } catch(e) { mostrarToast('Error al subir la app: ' + e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = '⬆ Subir y reemplazar'; barra.style.display = 'none'; }
+  };
+
   // ── CONTROL DE INGRESO (tiempo real) ──
   let ingUnsub = null, ingDatos = [], ingFiltroActual = 'todos';
   function ingHora(r) { return r.ingresoEn ? r.ingresoEn.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : ''; }
   function ingDetener() { if (ingUnsub) { ingUnsub(); ingUnsub = null; } }
   function ingIniciar() {
     ingDetener();
+    appCargarEstado();
     ingUnsub = onSnapshot(collection(db, 'inscripciones'), snap => {
       ingDatos = snap.docs.map(d => {
         const x = d.data({ serverTimestamps: 'estimate' });
