@@ -2092,7 +2092,6 @@ setTimeout(function () {
       <p class="section-eyebrow">Transparencia</p>
       <h3 style="font-size:1.3rem; margin:0 0 0.4rem;">Presupuesto y revisión de cuentas</h3>
       <p class="section-body" style="margin-bottom:0.6rem;">Presupuesto anual del sindicato y resultados de la revisión de la Comisión Revisadora de Cuentas, ordenados por año.</p>
-      <p class="transp-nota">Cada archivo muestra su huella digital (SHA-256). Para comprobar que tu copia es idéntica a la oficial, calcula su huella (en Windows, PowerShell: <code>Get-FileHash "archivo.pdf"</code>) y verifica que sea igual.</p>
       <div id="transpLista"></div>
     </div>
 
@@ -2774,23 +2773,18 @@ function convertirUrlVideo(url) {
           <summary>${esc(a)}</summary>
           <div class="transp-lista">
             ${['presupuesto', 'revision'].flatMap(t => docs.filter(x => x.ano === a && x.tipo === t)).map(x => {
-              const hash = /^[0-9a-f]{64}$/.test(x.sha256 || '') ? x.sha256 : '';
               return `
               <div class="transp-item">
                 <div class="transp-icono">${x.tipo === 'revision' ? '✅' : '📊'}</div>
                 <div class="transp-info">
                   <div class="transp-titulo">${esc((TIPOS[x.tipo] || ['', x.tipo])[1])}</div>
                   <div class="transp-meta">${esc(x.titulo || '')}${x.titulo ? ' · ' : ''}${esc(String(x.ext || '').toUpperCase())}</div>
-                  ${hash ? '<div class="transp-hash">Huella SHA-256 · <button type="button" class="transp-copiar" data-hash="' + hash + '">Copiar</button><code>' + hash + '</code></div>' : ''}
                 </div>
                 <button class="btn-descarga" data-url="${urlSegura(x.url)}" data-nombre="${esc(x.nombreArchivo || 'documento')}" onclick="descargarArchivo(this)">⬇ Descargar</button>
               </div>`;
             }).join('')}
           </div>
         </details>`).join('');
-      document.querySelectorAll('.transp-copiar').forEach(b => b.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(b.dataset.hash); const t = b.textContent; b.textContent = '¡Copiada!'; setTimeout(() => b.textContent = t, 1500); } catch (e) {}
-      }));
       document.getElementById('transpWrap').style.display = 'block';
     } catch (e) { console.error('Transparencia:', e); }
   }
