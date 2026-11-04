@@ -668,6 +668,25 @@
     transition: box-shadow 0.2s, transform 0.2s;
   }
   .doc-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.08); transform: translateY(-3px); }
+
+  /* Transparencia financiera */
+  .transp-ano { background: var(--gris-claro); border: 1px solid var(--borde); border-radius: 3px; margin-bottom: 0.7rem; }
+  .transp-ano > summary { cursor: pointer; padding: 0.9rem 1.1rem; font-weight: 700; font-size: 1.05rem; color: var(--carbon); list-style: none; display: flex; align-items: center; justify-content: space-between; }
+  .transp-ano > summary::-webkit-details-marker { display: none; }
+  .transp-ano > summary::after { content: '+'; font-size: 1.3rem; font-weight: 400; color: #888; }
+  .transp-ano[open] > summary::after { content: '–'; }
+  .transp-lista { display: flex; flex-direction: column; gap: 0.6rem; padding: 0 1.1rem 1.1rem; }
+  .transp-item { display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1rem; background: var(--blanco); border: 1px solid var(--borde); border-radius: 3px; }
+  .transp-icono { font-size: 1.5rem; flex-shrink: 0; }
+  .transp-info { flex: 1; min-width: 0; }
+  .transp-titulo { font-weight: 600; font-size: 0.95rem; color: var(--carbon); line-height: 1.3; }
+  .transp-meta { font-size: 0.78rem; color: #888; margin-top: 0.15rem; }
+  .transp-hash { margin-top: 0.4rem; font-size: 0.7rem; color: #888; }
+  .transp-hash code { font-family: ui-monospace, Consolas, monospace; word-break: break-all; display: block; margin-top: 0.15rem; opacity: 0.85; }
+  .transp-copiar { background: none; border: none; padding: 0; color: #5B8DB8; cursor: pointer; font-size: 0.7rem; font-weight: 600; font-family: inherit; text-decoration: underline; }
+  .transp-item .btn-descarga { margin-top: 0; width: auto; flex-shrink: 0; padding: 0.6rem 1rem; font-size: 0.75rem; }
+  .transp-nota { font-size: 0.8rem; color: #888; margin: 0 0 1.2rem; max-width: 640px; }
+  @media (max-width: 600px) { .transp-item { flex-wrap: wrap; } .transp-item .btn-descarga { width: 100%; } }
   .doc-icon { font-size: 2.5rem; margin-bottom: 1rem; }
   .doc-card h3 {
     font-family: 'Playfair Display', serif;
@@ -827,6 +846,13 @@
     .doc-card { background: #1a2a3a; border-color: #2a3a4a; }
     .doc-card h3 { color: #f0f0f0; }
     .doc-tipo { background: #333; color: #aaa; }
+    .transp-ano { background: #1a2a3a; border-color: #2a3a4a; }
+    .transp-ano > summary { color: #f0f0f0; }
+    .transp-ano > summary::after { color: #9aa7b3; }
+    .transp-item { background: #14212d; border-color: #2a3a4a; }
+    .transp-titulo { color: #f0f0f0; }
+    .transp-meta, .transp-hash, .transp-nota { color: #9aa7b3; }
+    .transp-copiar { color: #8DB8E0; }
 
     /* Acoso laboral / Ley Karin */
     .acoso-laboral { background: #1a1a1a; }
@@ -2065,8 +2091,9 @@ setTimeout(function () {
     <div id="transpWrap" style="display:none; margin-top:2rem; border-top:1px solid var(--borde); padding-top:1.4rem;">
       <p class="section-eyebrow">Transparencia</p>
       <h3 style="font-size:1.3rem; margin:0 0 0.4rem;">Presupuesto y revisión de cuentas</h3>
-      <p class="section-body" style="margin-bottom:1rem;">Presupuesto anual del sindicato y resultados de la revisión de la Comisión Revisadora de Cuentas, ordenados por año. Cada archivo muestra su huella digital (SHA-256): para comprobar que tu copia es idéntica a la oficial, calcula su huella (en Windows, PowerShell: <code>Get-FileHash "archivo.pdf"</code>) y compara que sea igual.</p>
-      <div id="transpLista" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+      <p class="section-body" style="margin-bottom:0.6rem;">Presupuesto anual del sindicato y resultados de la revisión de la Comisión Revisadora de Cuentas, ordenados por año.</p>
+      <p class="transp-nota">Cada archivo muestra su huella digital (SHA-256). Para comprobar que tu copia es idéntica a la oficial, calcula su huella (en Windows, PowerShell: <code>Get-FileHash "archivo.pdf"</code>) y verifica que sea igual.</p>
+      <div id="transpLista"></div>
     </div>
 
   </div>
@@ -2743,20 +2770,27 @@ function convertirUrlVideo(url) {
       const anos = [...new Set(docs.map(x => x.ano))];
       const TIPOS = { presupuesto: ['📊', 'Presupuesto anual'], revision: ['✅', 'Revisión de la Comisión Revisadora de Cuentas'] };
       document.getElementById('transpLista').innerHTML = anos.map((a, i) => `
-        <details ${i === 0 ? 'open' : ''} style="background:var(--gris-claro); border:1px solid var(--borde); border-radius:2px; padding:0.6rem 1rem;">
-          <summary style="cursor:pointer; font-weight:700; font-size:0.95rem; color:var(--carbon);">${esc(a)}</summary>
-          <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.7rem;">
-            ${['presupuesto', 'revision'].flatMap(t => docs.filter(x => x.ano === a && x.tipo === t)).map(x => `
-              <div style="display:flex; justify-content:space-between; align-items:center; gap:0.8rem; padding:0.6rem 0.8rem; background:#fff; border:1px solid var(--borde); border-radius:2px;">
-                <div style="min-width:0;">
-                  <div style="font-weight:600; font-size:0.85rem; color:var(--carbon);">${(TIPOS[x.tipo] || ['📄'])[0]} ${esc((TIPOS[x.tipo] || ['', x.tipo])[1])}</div>
-                  <div style="font-size:0.72rem; color:#888;">${esc(x.titulo || '')}${x.titulo ? ' · ' : ''}${esc(String(x.ext || '').toUpperCase())}</div>
-                  ${/^[0-9a-f]{64}$/.test(x.sha256 || '') ? '<div style="font-size:0.65rem; color:#888; font-family:monospace; word-break:break-all; margin-top:0.2rem;">Huella SHA-256: ' + x.sha256 + '</div>' : ''}
+        <details class="transp-ano" ${i === 0 ? 'open' : ''}>
+          <summary>${esc(a)}</summary>
+          <div class="transp-lista">
+            ${['presupuesto', 'revision'].flatMap(t => docs.filter(x => x.ano === a && x.tipo === t)).map(x => {
+              const hash = /^[0-9a-f]{64}$/.test(x.sha256 || '') ? x.sha256 : '';
+              return `
+              <div class="transp-item">
+                <div class="transp-icono">${x.tipo === 'revision' ? '✅' : '📊'}</div>
+                <div class="transp-info">
+                  <div class="transp-titulo">${esc((TIPOS[x.tipo] || ['', x.tipo])[1])}</div>
+                  <div class="transp-meta">${esc(x.titulo || '')}${x.titulo ? ' · ' : ''}${esc(String(x.ext || '').toUpperCase())}</div>
+                  ${hash ? '<div class="transp-hash">Huella SHA-256 · <button type="button" class="transp-copiar" data-hash="' + hash + '">Copiar</button><code>' + hash + '</code></div>' : ''}
                 </div>
-                <button class="btn-descarga" style="font-size:0.72rem; padding:0.4rem 0.8rem; flex-shrink:0;" data-url="${urlSegura(x.url)}" data-nombre="${esc(x.nombreArchivo || 'documento')}" onclick="descargarArchivo(this)">⬇ Descargar</button>
-              </div>`).join('')}
+                <button class="btn-descarga" data-url="${urlSegura(x.url)}" data-nombre="${esc(x.nombreArchivo || 'documento')}" onclick="descargarArchivo(this)">⬇ Descargar</button>
+              </div>`;
+            }).join('')}
           </div>
         </details>`).join('');
+      document.querySelectorAll('.transp-copiar').forEach(b => b.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(b.dataset.hash); const t = b.textContent; b.textContent = '¡Copiada!'; setTimeout(() => b.textContent = t, 1500); } catch (e) {}
+      }));
       document.getElementById('transpWrap').style.display = 'block';
     } catch (e) { console.error('Transparencia:', e); }
   }
