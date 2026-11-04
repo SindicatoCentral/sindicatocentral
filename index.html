@@ -2061,6 +2061,14 @@ setTimeout(function () {
       <div id="contratosAnterioresList" style="display:none; margin-top:1rem; flex-direction:column; gap:0.6rem;"></div>
     </div>
 
+    <!-- Transparencia financiera -->
+    <div id="transpWrap" style="display:none; margin-top:2rem; border-top:1px solid var(--borde); padding-top:1.4rem;">
+      <p class="section-eyebrow">Transparencia</p>
+      <h3 style="font-size:1.3rem; margin:0 0 0.4rem;">Presupuesto y revisión de cuentas</h3>
+      <p class="section-body" style="margin-bottom:1rem;">Presupuesto anual del sindicato y resultados de la revisión de la Comisión Revisadora de Cuentas, ordenados por año. Cada archivo muestra su huella digital (SHA-256): para comprobar que tu copia es idéntica a la oficial, calcula su huella (en Windows, PowerShell: <code>Get-FileHash "archivo.pdf"</code>) y compara que sea igual.</p>
+      <div id="transpLista" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+    </div>
+
   </div>
 </section>
 
@@ -2295,7 +2303,7 @@ const busquedaIndiceEstatico = [
   { titulo: 'Oscar González Morales', texto: 'Director de la directiva sindical', anchor: 'directiva', tipo: 'Directiva' },
   { titulo: 'Noticias y comunicados', texto: 'Últimas novedades del sindicato', anchor: 'noticias', tipo: 'Sección' },
   { titulo: 'Galería', texto: 'Fotos de eventos del sindicato', anchor: 'galeria', tipo: 'Sección' },
-  { titulo: 'Documentos', texto: 'Estatuto, formulario de inscripción, contrato colectivo, descargas', anchor: 'documentos', tipo: 'Sección', esOculta: true },
+  { titulo: 'Documentos', texto: 'Estatuto, formulario de inscripción, contrato colectivo, presupuesto anual, revisión de cuentas, transparencia, descargas', anchor: 'documentos', tipo: 'Sección', esOculta: true },
   { titulo: 'Estatuto', texto: 'Descarga el estatuto del sindicato', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Formulario de inscripción', texto: 'Descarga el formulario de afiliación', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Contrato colectivo', texto: 'Descarga el contrato colectivo vigente', anchor: 'documentos', tipo: 'Documento', esOculta: true },
@@ -2725,6 +2733,34 @@ function convertirUrlVideo(url) {
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
+
+  // Transparencia financiera: presupuesto anual y revisiones de la Comisión Revisadora de Cuentas, por año
+  async function cargarTransparencia() {
+    try {
+      const snap = await getDocs(query(collection(db, 'documentos', 'transparencia', 'lista'), orderBy('ano', 'desc')));
+      if (snap.empty) return;
+      const docs = snap.docs.map(d => d.data());
+      const anos = [...new Set(docs.map(x => x.ano))];
+      const TIPOS = { presupuesto: ['📊', 'Presupuesto anual'], revision: ['✅', 'Revisión de la Comisión Revisadora de Cuentas'] };
+      document.getElementById('transpLista').innerHTML = anos.map((a, i) => `
+        <details ${i === 0 ? 'open' : ''} style="background:var(--gris-claro); border:1px solid var(--borde); border-radius:2px; padding:0.6rem 1rem;">
+          <summary style="cursor:pointer; font-weight:700; font-size:0.95rem; color:var(--carbon);">${esc(a)}</summary>
+          <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.7rem;">
+            ${['presupuesto', 'revision'].flatMap(t => docs.filter(x => x.ano === a && x.tipo === t)).map(x => `
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:0.8rem; padding:0.6rem 0.8rem; background:#fff; border:1px solid var(--borde); border-radius:2px;">
+                <div style="min-width:0;">
+                  <div style="font-weight:600; font-size:0.85rem; color:var(--carbon);">${(TIPOS[x.tipo] || ['📄'])[0]} ${esc((TIPOS[x.tipo] || ['', x.tipo])[1])}</div>
+                  <div style="font-size:0.72rem; color:#888;">${esc(x.titulo || '')}${x.titulo ? ' · ' : ''}${esc(String(x.ext || '').toUpperCase())}</div>
+                  ${/^[0-9a-f]{64}$/.test(x.sha256 || '') ? '<div style="font-size:0.65rem; color:#888; font-family:monospace; word-break:break-all; margin-top:0.2rem;">Huella SHA-256: ' + x.sha256 + '</div>' : ''}
+                </div>
+                <button class="btn-descarga" style="font-size:0.72rem; padding:0.4rem 0.8rem; flex-shrink:0;" data-url="${urlSegura(x.url)}" data-nombre="${esc(x.nombreArchivo || 'documento')}" onclick="descargarArchivo(this)">⬇ Descargar</button>
+              </div>`).join('')}
+          </div>
+        </details>`).join('');
+      document.getElementById('transpWrap').style.display = 'block';
+    } catch (e) { console.error('Transparencia:', e); }
+  }
+  cargarTransparencia();
 
   async function cargarNoticias() {
     const grid = document.getElementById('noticiasGrid');

@@ -616,6 +616,49 @@
         <div id="contratosList"><div class="loading">Cargando contratos...</div></div>
       </div>
 
+      <!-- Transparencia financiera -->
+      <div class="form-card visible">
+        <h3>Transparencia financiera</h3>
+        <p style="font-size:0.82rem; color:#666; margin:0 0 1rem;">Presupuesto anual y resultados de la revisión de la Comisión Revisadora de Cuentas. Se publican en la sección Documentos del sitio, agrupados por año. Por cada año puedes subir los archivos que necesites (por ejemplo, varias revisiones).</p>
+        <div class="form-card" id="formNuevoTransp" style="margin-bottom:1.5rem;">
+          <h3>Agregar documento</h3>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label>Tipo</label>
+              <select id="transpTipo">
+                <option value="presupuesto">Presupuesto anual</option>
+                <option value="revision">Revisión de la Comisión Revisadora de Cuentas</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Año</label>
+              <input type="number" id="transpAno" placeholder="2026" min="1990" max="2100">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Descripción (opcional)</label>
+            <input type="text" id="transpTitulo" maxlength="120" placeholder="Ej: Revisión primer semestre / Versión en PDF">
+          </div>
+          <div class="form-group">
+            <label>Archivo</label>
+            <div class="upload-area" onclick="document.getElementById('inputTransp').click()">
+              <input type="file" id="inputTransp" accept=".pdf,.xlsx,.xls,.doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="previsualizarTransp(this)">
+              <div class="upload-icon">📊</div>
+              <div class="upload-text" id="transpArchivoNombre">Toca aquí para seleccionar el archivo</div>
+              <div class="upload-hint">PDF, Excel o Word (máx. 20 MB)</div>
+            </div>
+            <div class="progress-bar" id="progressTransp"><div class="progress-fill" id="fillTransp"></div></div>
+          </div>
+          <p style="font-size:0.78rem; color:#888; margin:0 0 0.8rem;">Importante: la protección de un Excel evita ediciones accidentales, pero no impide que un tercero la quite. Para que el documento publicado sea inalterable, sube también (o solo) la versión en PDF.</p>
+          <div class="form-acciones">
+            <button class="btn-guardar" onclick="subirTransp()">Subir documento</button>
+            <button class="btn-cancelar" onclick="document.getElementById('formNuevoTransp').classList.remove('visible')">Cancelar</button>
+          </div>
+        </div>
+        <button class="btn-nuevo" style="margin-bottom:1.5rem;" onclick="document.getElementById('formNuevoTransp').classList.add('visible')">+ Nuevo documento</button>
+        <div id="transpList"><div class="loading">Cargando documentos...</div></div>
+      </div>
+
     </div>
 
     <!-- INSCRIPCIONES A EVENTOS -->
@@ -1589,6 +1632,7 @@
       }
       // Cargar contratos
       cargarContratos();
+      cargarTransp();
     } catch(e) { console.error('Error cargando documentos:', e); }
   }
 
@@ -1711,6 +1755,103 @@
       lista.innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
     }
   }
+
+
+  // ── TRANSPARENCIA FINANCIERA: presupuesto anual y revisiones de la Comisión Revisadora de Cuentas ──
+  let archivoTransp = null;
+  const TRANSP_TIPOS = { presupuesto: 'Presupuesto anual', revision: 'Revisión Comisión Revisadora de Cuentas' };
+  const TRANSP_EXT = ['pdf', 'xlsx', 'xls', 'doc', 'docx'];
+  window.previsualizarTransp = (input) => {
+    const f = input.files[0]; if (!f) return;
+    archivoTransp = f;
+    document.getElementById('transpArchivoNombre').textContent = '📎 ' + f.name;
+  };
+  window.subirTransp = async () => {
+    const tipo = document.getElementById('transpTipo').value;
+    const ano = parseInt(document.getElementById('transpAno').value, 10);
+    const titulo = document.getElementById('transpTitulo').value.trim().slice(0, 120);
+    if (!TRANSP_TIPOS[tipo]) return;
+    if (!ano || ano < 1990 || ano > 2100) { mostrarToast('Ingresa un año válido.', 'error'); return; }
+    if (!archivoTransp) { mostrarToast('Selecciona el archivo.', 'error'); return; }
+    const ext = (archivoTransp.name.split('.').pop() || '').toLowerCase();
+    if (!TRANSP_EXT.includes(ext)) { mostrarToast('Formato no permitido. Usa PDF, Excel o Word.', 'error'); return; }
+    if (archivoTransp.size > 20 * 1024 * 1024) { mostrarToast('El archivo supera los 20 MB.', 'error'); return; }
+    const btn = document.querySelector('#formNuevoTransp .btn-guardar');
+    btn.textContent = 'Subiendo...'; btn.disabled = true;
+    document.getElementById('progressTransp').style.display = 'block';
+    const path = 'documentos/transparencia/' + ano + '_' + tipo + '_' + Date.now() + '.' + ext;
+    let sha256 = '';
+    try { sha256 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await archivoTransp.arrayBuffer()))).map(b => b.toString(16).padStart(2, '0')).join(''); } catch (e) { sha256 = ''; }
+    const nombreDescarga = (TRANSP_TIPOS[tipo] + ' ' + ano + (titulo ? ' - ' + titulo : '')).replace(/[^\p{L}\p{N} \-]+/gu, '').trim() + '.' + ext;
+    try {
+      await new Promise((resolve, reject) => {
+        const tarea = uploadBytesResumable(ref(storage, path), archivoTransp, { contentDisposition: 'attachment; filename*=UTF-8\'\'' + encodeURIComponent(nombreDescarga) });
+        tarea.on('state_changed',
+          s => document.getElementById('fillTransp').style.width = (s.bytesTransferred / s.totalBytes * 100) + '%',
+          reject,
+          async () => {
+            try {
+              const url = await getDownloadURL(tarea.snapshot.ref);
+              await addDoc(collection(db, 'documentos', 'transparencia', 'lista'), { tipo, ano, titulo, url, path, nombreArchivo: nombreDescarga, ext, sha256, tamano: archivoTransp.size, createdAt: serverTimestamp() });
+              resolve();
+            } catch (e) { reject(e); }
+          }
+        );
+      });
+      document.getElementById('progressTransp').style.display = 'none';
+      document.getElementById('fillTransp').style.width = '0%';
+      document.getElementById('formNuevoTransp').classList.remove('visible');
+      document.getElementById('transpTitulo').value = '';
+      document.getElementById('transpArchivoNombre').textContent = 'Toca aquí para seleccionar el archivo';
+      document.getElementById('inputTransp').value = '';
+      archivoTransp = null;
+      mostrarToast('Documento subido correctamente.', 'exito');
+      cargarTransp();
+    } catch (e) {
+      document.getElementById('progressTransp').style.display = 'none';
+      mostrarToast('Error al subir: ' + e.message, 'error');
+    }
+    btn.textContent = 'Subir documento'; btn.disabled = false;
+  };
+  async function cargarTransp() {
+    const lista = document.getElementById('transpList');
+    lista.innerHTML = '<div class="loading">Cargando documentos...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, 'documentos', 'transparencia', 'lista'), orderBy('ano', 'desc')));
+      if (snap.empty) { lista.innerHTML = '<div class="vacio"><div class="vacio-icon">📊</div><p>Aún no hay documentos de transparencia.</p></div>'; return; }
+      lista.innerHTML = '';
+      let anoActual = null;
+      [...snap.docs].sort((a, b) => (b.data().ano - a.data().ano) || ((a.data().tipo === 'presupuesto' ? 0 : 1) - (b.data().tipo === 'presupuesto' ? 0 : 1))).forEach(d => {
+        const c = d.data();
+        if (c.ano !== anoActual) {
+          anoActual = c.ano;
+          const h = document.createElement('div'); h.style.cssText = 'font-weight:700; margin:1rem 0 0.4rem; color:var(--azul);'; h.textContent = String(c.ano); lista.appendChild(h);
+        }
+        const item = document.createElement('div'); item.className = 'noticia-item';
+        item.innerHTML = `
+          <div class="noticia-info">
+            <div class="noticia-titulo-item">${esc(TRANSP_TIPOS[c.tipo] || c.tipo)}</div>
+            <div class="noticia-resumen-item">${esc(c.titulo || '')}${c.titulo ? ' · ' : ''}${esc(String(c.ext || '').toUpperCase())}</div>
+            ${c.sha256 ? '<div class="noticia-resumen-item" style="font-family:monospace; font-size:0.68rem; word-break:break-all;">SHA-256: ' + esc(c.sha256) + '</div>' : ''}
+          </div>
+          <div class="noticia-acciones">
+            <a href="${urlSegura(c.url)}" target="_blank" rel="noopener noreferrer" class="btn-accion editar">Ver</a>
+            <button class="btn-accion eliminar" data-act="del">Eliminar</button>
+          </div>`;
+        item.querySelector('[data-act="del"]').addEventListener('click', () => eliminarTransp(d.id, c.path));
+        lista.appendChild(item);
+      });
+    } catch (e) { lista.innerHTML = '<div class="loading">Error: ' + esc(e.message) + '</div>'; }
+  }
+  window.eliminarTransp = async (id, path) => {
+    if (!confirm('¿Eliminar este documento? Dejará de verse en el sitio.')) return;
+    try {
+      await deleteDoc(doc(db, 'documentos', 'transparencia', 'lista', id));
+      if (path) { try { await deleteObject(ref(storage, path)); } catch (e) {} }
+      mostrarToast('Documento eliminado.', 'exito');
+      cargarTransp();
+    } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
+  };
 
   window.eliminarContrato = async (id, path) => {
     if (!confirm('¿Eliminar este contrato?')) return;
