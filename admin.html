@@ -444,12 +444,14 @@
           <button type="button" class="tab-media activo" id="ingF_todos" onclick="ingFiltro('todos')">Todos</button>
           <button type="button" class="tab-media" id="ingF_pend" onclick="ingFiltro('pend')">Pendientes</button>
           <button type="button" class="tab-media" id="ingF_ok" onclick="ingFiltro('ok')">Ingresados</button>
+          <button type="button" class="tab-media" id="ingF_aus" onclick="ingFiltro('aus')">No asistieron</button>
           <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; cursor:pointer; margin:0;"><input type="checkbox" id="ingSoloVeg" onchange="ingRender()" style="width:auto; margin:0;"> <span id="ingSoloVegTxt">🥗 Solo menú vegetariano</span></label>
           <select id="ingFotos" onchange="ingRender()" style="width:auto; margin:0; font-size:0.85rem; padding:0.3rem 0.5rem;"><option value="">📷 Fotos: todos</option><option value="si" id="ingFotosSi">📷 Autorizan fotos</option><option value="no" id="ingFotosNo">🚫 No autorizan fotos</option></select>
-          <button type="button" class="btn-accion editar" style="margin-left:auto;" onclick="ingExportar()">📊 Exportar asistencia</button>
+          <button type="button" class="btn-accion eliminar" style="margin-left:auto;" onclick="ingPendientesSinJustificar()" title="Al terminar el evento: marca como 'sin justificar' a todos los que no ingresaron ni tienen justificación">⚠ Pendientes → sin justificar</button>
+          <button type="button" class="btn-accion editar" onclick="ingExportar()">📊 Exportar asistencia</button>
         </div>
         <div id="ingLista" style="border:1px solid #ddd; border-radius:3px;"></div>
-        <p style="font-size:0.78rem; color:#888; margin:0.8rem 0 0;">La lista se actualiza en tiempo real entre todos los dispositivos conectados. Solo ingresan las personas inscritas. Al terminar el evento, exporta la asistencia y luego elimina las inscripciones desde la pestaña "Inscripciones": se borran también los registros de ingreso.</p>
+        <p style="font-size:0.78rem; color:#888; margin:0.8rem 0 0;">La lista se actualiza en tiempo real entre todos los dispositivos conectados. Solo ingresan las personas inscritas. Para quien no se presentó, pulsa "No asistió": con justificación (anota el motivo) o sin justificar (queda como "debe cancelar el costo"); la planilla de asistencia incluye una hoja "A cobrar". Al terminar el evento, exporta la asistencia y luego elimina las inscripciones desde la pestaña "Inscripciones": se borran también los registros de ingreso.</p>
       </div>
 
       <!-- APP PARA EL CELULAR -->
@@ -2246,7 +2248,7 @@
   };
 
   // ── CONTROL DE INGRESO (tiempo real) ──
-  let ingUnsub = null, ingDatos = [], ingFiltroActual = 'todos';
+  let ingUnsub = null, ingDatos = [], ingFiltroActual = 'todos', ingAbierto = null, ingBorrador = { tipo: 'justificada', detalle: '' };
   function ingHora(r) { return r.ingresoEn ? r.ingresoEn.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : ''; }
   function ingDetener() { if (ingUnsub) { ingUnsub(); ingUnsub = null; } }
   function ingIniciar() {
@@ -2262,7 +2264,7 @@
   }
   window.ingFiltro = (f) => {
     ingFiltroActual = f;
-    ['todos','pend','ok'].forEach(k => document.getElementById('ingF_' + k).classList.toggle('activo', k === f));
+    ['todos','pend','ok','aus'].forEach(k => document.getElementById('ingF_' + k).classList.toggle('activo', k === f));
     ingRender();
   };
   function ingNorm(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
@@ -2279,7 +2281,7 @@
     const nFotoSi = ingDatos.filter(r => r.autorizaFotos).length;
     document.getElementById('ingFotosSi').textContent = '📷 Autorizan fotos (' + nFotoSi + ')';
     document.getElementById('ingFotosNo').textContent = '🚫 No autorizan fotos (' + (ingDatos.length - nFotoSi) + ')';
-    const filas = ingDatos.filter(r => (ingFiltroActual === 'todos' || (ingFiltroActual === 'ok') === !!r.ingreso)
+    const filas = ingDatos.filter(r => (ingFiltroActual === 'todos' || (ingFiltroActual === 'ok' && !!r.ingreso) || (ingFiltroActual === 'pend' && !r.ingreso && !r.ausencia) || (ingFiltroActual === 'aus' && !!r.ausencia))
       && (!soloVeg || r.menuVegetariano)
       && (!fFoto || !!r.autorizaFotos === (fFoto === 'si'))
       && (!q || ingNorm('n° ' + invNum(r) + ' ' + (r.nombre || '') + (r.menuVegetariano ? ' vegetariano' : '')).includes(q)));
@@ -2298,17 +2300,69 @@
       foto.textContent = r.autorizaFotos ? '📷 Autoriza fotos' : '🚫 NO autoriza fotos';
       const fw = document.createElement('div'); fw.appendChild(foto); t.appendChild(fw);
       if (r.ingreso) { const h = document.createElement('div'); h.style.cssText = 'font-size:0.75rem; color:var(--verde);'; h.textContent = '✓ Ingresó' + (ingHora(r) ? ' a las ' + ingHora(r) : ''); t.appendChild(h); }
+      if (r.ausencia && !r.ingreso) {
+        const sj = r.ausencia.tipo === 'sin_justificar';
+        const a = document.createElement('div');
+        a.style.cssText = 'margin-top:0.25rem; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.78rem; font-weight:600; ' + (sj ? 'background:#FDE7E7; color:#C62828;' : 'background:#E3F0FD; color:#1565C0;');
+        a.textContent = sj ? '💲 No asistió sin justificar — debe cancelar el costo' : '✔ No asistió, justificada';
+        if (r.ausencia.detalle) { const dd = document.createElement('div'); dd.style.cssText = 'font-weight:400; margin-top:0.1rem;'; dd.textContent = r.ausencia.detalle; a.appendChild(dd); }
+        t.appendChild(a);
+      }
+      if (ingAbierto === r.id && !r.ingreso) {
+        const fm = document.createElement('div'); fm.style.cssText = 'margin-top:0.5rem; padding:0.6rem; background:#f7f7f7; border:1px solid #ddd; border-radius:4px; font-size:0.85rem;';
+        [['justificada', 'Con justificación'], ['sin_justificar', 'Sin justificar (debe cancelar el costo)']].forEach(([v, tx]) => {
+          const lb = document.createElement('label'); lb.style.cssText = 'display:flex; align-items:center; gap:0.4rem; margin:0 0 0.3rem; cursor:pointer;';
+          const rd = document.createElement('input'); rd.type = 'radio'; rd.name = 'ingTipo_' + r.id; rd.value = v; rd.style.cssText = 'width:auto; margin:0;'; rd.checked = ingBorrador.tipo === v;
+          rd.onchange = () => { ingBorrador.tipo = v; };
+          lb.appendChild(rd); lb.appendChild(document.createTextNode(tx)); fm.appendChild(lb);
+        });
+        const det = document.createElement('input'); det.type = 'text'; det.maxLength = 200; det.placeholder = 'Detalle (ej: licencia médica, viaje) — opcional'; det.style.cssText = 'width:100%; margin:0.2rem 0 0.5rem; font-size:0.9rem;'; det.value = ingBorrador.detalle;
+        det.oninput = () => { ingBorrador.detalle = det.value; };
+        fm.appendChild(det);
+        const bs = document.createElement('button'); bs.type = 'button'; bs.className = 'btn-guardar'; bs.style.cssText = 'padding:0.45rem 0.9rem; margin-right:0.4rem;'; bs.textContent = 'Guardar';
+        bs.onclick = async () => {
+          bs.disabled = true;
+          try {
+            await updateDoc(doc(db, 'inscripciones', r.id), { ausencia: { tipo: ingBorrador.tipo, detalle: (ingBorrador.detalle || '').trim().slice(0, 200), registradoEn: serverTimestamp() } });
+            ingAbierto = null; mostrarToast('Inasistencia registrada.');
+          } catch(e) { bs.disabled = false; mostrarToast('Error: ' + e.message, 'error'); }
+        };
+        const bc = document.createElement('button'); bc.type = 'button'; bc.className = 'btn-accion'; bc.textContent = 'Cancelar'; bc.onclick = () => { ingAbierto = null; ingRender(); };
+        fm.appendChild(bs); fm.appendChild(bc); t.appendChild(fm);
+      }
       f.appendChild(t);
+      const bw = document.createElement('div'); bw.style.cssText = 'display:flex; flex-direction:column; gap:0.35rem; flex-shrink:0;';
       const b = document.createElement('button');
       if (!r.ingreso) {
         b.className = 'btn-guardar'; b.style.cssText = 'padding:0.7rem 1rem; flex-shrink:0;'; b.textContent = '✓ Ingresó';
-        b.onclick = async () => { b.disabled = true; try { await updateDoc(doc(db, 'inscripciones', r.id), { ingreso: true, ingresoEn: serverTimestamp() }); } catch(e) { b.disabled = false; mostrarToast('Error: ' + e.message, 'error'); } };
+        b.onclick = async () => { b.disabled = true; try { await updateDoc(doc(db, 'inscripciones', r.id), { ingreso: true, ingresoEn: serverTimestamp(), ausencia: null }); } catch(e) { b.disabled = false; mostrarToast('Error: ' + e.message, 'error'); } };
+        const ba = document.createElement('button'); ba.type = 'button'; ba.className = 'btn-accion editar'; ba.textContent = r.ausencia ? 'Editar inasistencia' : 'No asistió';
+        ba.onclick = () => { ingAbierto = r.id; ingBorrador = { tipo: r.ausencia ? r.ausencia.tipo : 'justificada', detalle: r.ausencia ? (r.ausencia.detalle || '') : '' }; ingRender(); };
+        bw.appendChild(ba);
+        if (r.ausencia) {
+          const bq = document.createElement('button'); bq.type = 'button'; bq.className = 'btn-accion'; bq.textContent = 'Quitar';
+          bq.onclick = async () => { try { await updateDoc(doc(db, 'inscripciones', r.id), { ausencia: null }); } catch(e) { mostrarToast('Error: ' + e.message, 'error'); } };
+          bw.appendChild(bq);
+        }
       } else {
         b.className = 'btn-accion eliminar'; b.style.flexShrink = '0'; b.textContent = 'Deshacer';
         b.onclick = async () => { if (!confirm('¿Quitar el ingreso de N° ' + invNum(r) + ' (' + (r.nombre || '') + ')?')) return; try { await updateDoc(doc(db, 'inscripciones', r.id), { ingreso: false, ingresoEn: null }); } catch(e) { mostrarToast('Error: ' + e.message, 'error'); } };
       }
-      f.appendChild(b); lista.appendChild(f);
+      bw.insertBefore(b, bw.firstChild); f.appendChild(bw); lista.appendChild(f);
     });
+  };
+  window.ingPendientesSinJustificar = async () => {
+    const pend = ingDatos.filter(r => !r.ingreso && !r.ausencia);
+    if (!pend.length) { mostrarToast('No hay pendientes sin registrar.', 'error'); return; }
+    if (!confirm('Se marcarán ' + pend.length + ' personas que no ingresaron como "No asistió sin justificar" (deben cancelar el costo). Podrás editar cada caso después. ¿Continuar?')) return;
+    try {
+      for (let i = 0; i < pend.length; i += 400) {
+        const lote = writeBatch(db);
+        pend.slice(i, i + 400).forEach(r => lote.update(doc(db, 'inscripciones', r.id), { ausencia: { tipo: 'sin_justificar', detalle: '', registradoEn: serverTimestamp() } }));
+        await lote.commit();
+      }
+      mostrarToast(pend.length + ' marcados sin justificar.');
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
   };
   window.ingExportar = () => ingExportarDatos(ingDatos);
   // Descarga la asistencia leyendo los datos actuales de la base (sin depender de la pestaña Control de ingreso)
@@ -2322,11 +2376,20 @@
   };
   function ingExportarDatos(datos) {
     if (!datos.length) { mostrarToast('No hay inscritos para exportar.', 'error'); return; }
-    const filas = [['Correlativo', 'N° inscripción', 'Nombre', 'Menú vegetariano', 'Ingresó', 'Hora de ingreso']];
-    datos.forEach((r, i) => filas.push([i + 1, r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.menuVegetariano ? 'Sí' : 'No', r.ingreso ? 'Sí' : 'No', ingHora(r)]));
+    const estado = r => r.ingreso ? 'Asistió' : (r.ausencia ? (r.ausencia.tipo === 'sin_justificar' ? 'No asistió – sin justificar' : 'No asistió – justificada') : 'Pendiente (sin registrar)');
+    const sinJust = r => !r.ingreso && r.ausencia && r.ausencia.tipo === 'sin_justificar';
+    const filas = [['Correlativo', 'N° inscripción', 'Nombre', 'Menú vegetariano', 'Ingresó', 'Hora de ingreso', 'Estado', 'Detalle de la inasistencia', 'Debe cancelar el costo']];
+    datos.forEach((r, i) => filas.push([i + 1, r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', r.menuVegetariano ? 'Sí' : 'No', r.ingreso ? 'Sí' : 'No', ingHora(r), estado(r), (!r.ingreso && r.ausencia && r.ausencia.detalle) || '', sinJust(r) ? 'Sí' : 'No']));
     const ws = XLSX.utils.aoa_to_sheet(filas);
-    ws['!cols'] = [{ wch: 12 }, { wch: 16 }, { wch: 36 }, { wch: 17 }, { wch: 10 }, { wch: 16 }];
+    ws['!cols'] = [{ wch: 12 }, { wch: 16 }, { wch: 36 }, { wch: 17 }, { wch: 10 }, { wch: 16 }, { wch: 28 }, { wch: 40 }, { wch: 22 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Asistencia');
+    const cobrar = datos.map((r, i) => ({ r, i })).filter(x => sinJust(x.r));
+    if (cobrar.length) {
+      const fc = [['Correlativo', 'N° inscripción', 'Nombre', 'Detalle', 'Monto a cobrar ($)', 'Pagado (Sí/No)']];
+      cobrar.forEach(({ r, i }) => fc.push([i + 1, r.numero ? String(r.numero).padStart(3, '0') : '', r.nombre || '', (r.ausencia && r.ausencia.detalle) || '', '', '']));
+      const wc = XLSX.utils.aoa_to_sheet(fc); wc['!cols'] = [{ wch: 12 }, { wch: 16 }, { wch: 36 }, { wch: 40 }, { wch: 20 }, { wch: 16 }];
+      XLSX.utils.book_append_sheet(wb, wc, 'A cobrar');
+    }
     const nombreEvento = (document.getElementById('inscNombreEvento').value || '').trim() || 'evento';
     XLSX.writeFile(wb, 'asistencia_' + nombreEvento.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.xlsx');
   }
