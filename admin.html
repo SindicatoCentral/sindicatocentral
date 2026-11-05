@@ -582,6 +582,62 @@
         </div>
       </div>
 
+      <!-- Protocolo de retiro voluntario -->
+      <div class="form-card visible" style="margin-bottom:1.5rem;">
+        <h3>Protocolo de retiro voluntario</h3>
+        <div id="docRetiroProtocoloVista" style="display:none;">
+          <div class="noticia-item" style="margin-bottom:1rem;">
+            <div class="noticia-info">
+              <div class="noticia-titulo-item" id="docRetiroProtocoloNombre"></div>
+              <div class="noticia-resumen-item" id="docRetiroProtocoloFecha"></div>
+            </div>
+            <div class="noticia-acciones">
+              <button class="btn-accion editar" onclick="mostrarUploadDoc('RetiroProtocolo')">Reemplazar</button>
+            </div>
+          </div>
+        </div>
+        <div id="docRetiroProtocoloUpload">
+          <div class="form-group">
+            <label>Subir protocolo aprobado</label>
+            <div class="upload-area" onclick="document.getElementById('inputRetiroProtocolo').click()">
+              <input type="file" id="inputRetiroProtocolo" accept=".pdf" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="subirDocSimple('retiroProtocolo', this)">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">Toca aquí para seleccionar el archivo</div>
+              <div class="upload-hint">Solo PDF (versión aprobada)</div>
+            </div>
+            <div class="progress-bar" id="progressRetiroProtocolo"><div class="progress-fill" id="fillRetiroProtocolo"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de retiro voluntario -->
+      <div class="form-card visible" style="margin-bottom:1.5rem;">
+        <h3>Formulario de retiro voluntario</h3>
+        <div id="docRetiroFormularioVista" style="display:none;">
+          <div class="noticia-item" style="margin-bottom:1rem;">
+            <div class="noticia-info">
+              <div class="noticia-titulo-item" id="docRetiroFormularioNombre"></div>
+              <div class="noticia-resumen-item" id="docRetiroFormularioFecha"></div>
+            </div>
+            <div class="noticia-acciones">
+              <button class="btn-accion editar" onclick="mostrarUploadDoc('RetiroFormulario')">Reemplazar</button>
+            </div>
+          </div>
+        </div>
+        <div id="docRetiroFormularioUpload">
+          <div class="form-group">
+            <label>Subir formulario</label>
+            <div class="upload-area" onclick="document.getElementById('inputRetiroFormulario').click()">
+              <input type="file" id="inputRetiroFormulario" accept=".doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="subirDocSimple('retiroFormulario', this)">
+              <div class="upload-icon">📝</div>
+              <div class="upload-text">Toca aquí para seleccionar el archivo</div>
+              <div class="upload-hint">Word (.doc o .docx)</div>
+            </div>
+            <div class="progress-bar" id="progressRetiroFormulario"><div class="progress-fill" id="fillRetiroFormulario"></div></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Contratos colectivos -->
       <div class="form-card visible">
         <h3>Contratos colectivos</h3>
@@ -1627,6 +1683,17 @@
         document.getElementById('docEstatutoVista').style.display = 'block';
         document.getElementById('docEstatutoUpload').style.display = 'none';
       }
+      // Cargar protocolo y formulario de retiro voluntario
+      for (const [id, cap, def] of [['retiroProtocolo', 'RetiroProtocolo', 'Protocolo de retiro voluntario'], ['retiroFormulario', 'RetiroFormulario', 'Formulario de retiro voluntario']]) {
+        const sn = await getDoc(doc(db, 'documentos', id));
+        if (sn.exists()) {
+          const d = sn.data();
+          document.getElementById('doc' + cap + 'Nombre').textContent = d.nombre || def;
+          document.getElementById('doc' + cap + 'Fecha').textContent = d.updatedAt ? 'Actualizado: ' + new Date(d.updatedAt.seconds * 1000).toLocaleDateString('es-CL') : '';
+          document.getElementById('doc' + cap + 'Vista').style.display = 'block';
+          document.getElementById('doc' + cap + 'Upload').style.display = 'none';
+        }
+      }
       // Cargar contratos
       cargarContratos();
       cargarTransp();
@@ -1636,12 +1703,18 @@
   window.subirDocSimple = async (tipo, input) => {
     const file = input.files[0];
     if (!file) return;
+    const EXT_PERMITIDAS = { retiroProtocolo: ['pdf'], retiroFormulario: ['doc', 'docx'] };
+    if (EXT_PERMITIDAS[tipo] && !EXT_PERMITIDAS[tipo].includes((file.name.split('.').pop() || '').toLowerCase())) {
+      mostrarToast('Formato no permitido. Usa: ' + EXT_PERMITIDAS[tipo].join(', ').toUpperCase() + '.', 'error');
+      input.value = '';
+      return;
+    }
     const barraId = 'progress' + tipo.charAt(0).toUpperCase() + tipo.slice(1);
     const fillId  = 'fill' + tipo.charAt(0).toUpperCase() + tipo.slice(1);
     document.getElementById(barraId).style.display = 'block';
     try {
       const storRef = ref(storage, 'documentos/' + tipo + '/' + file.name);
-      const metaDoc = { contentDisposition: 'attachment; filename="' + file.name + '"' };
+      const metaDoc = { contentDisposition: "attachment; filename*=UTF-8''" + encodeURIComponent(file.name) };
       await new Promise((resolve, reject) => {
         const tarea = uploadBytesResumable(storRef, file, metaDoc);
         tarea.on('state_changed',

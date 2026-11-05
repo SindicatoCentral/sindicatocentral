@@ -2070,6 +2070,22 @@ setTimeout(function () {
         <button class="btn-descarga" id="btnEstatuto" onclick="descargarArchivo(this)">⬇ Descargar estatuto</button>
       </div>
 
+      <!-- Protocolo de retiro voluntario -->
+      <div class="doc-card" id="cardRetiroProtocolo" style="display:none;">
+        <div class="doc-icon">📋</div>
+        <h3>Protocolo de Retiro Voluntario</h3>
+        <p>Procedimiento, requisitos y reglas para solicitar y evaluar el retiro voluntario de los trabajadores y trabajadoras.</p>
+        <button class="btn-descarga" id="btnRetiroProtocolo" onclick="descargarArchivo(this)">⬇ Descargar protocolo</button>
+      </div>
+
+      <!-- Formulario de retiro voluntario -->
+      <div class="doc-card" id="cardRetiroFormulario" style="display:none;">
+        <div class="doc-icon">📝</div>
+        <h3>Formulario de Retiro Voluntario</h3>
+        <p>Formulario en Word para completar y entregar a la unidad correspondiente, según lo indicado en el protocolo. Este sitio no recibe ni guarda las solicitudes.</p>
+        <button class="btn-descarga" id="btnRetiroFormulario" onclick="descargarArchivo(this)">⬇ Descargar formulario</button>
+      </div>
+
       <!-- Contrato vigente -->
       <div class="doc-card" id="cardContrato" style="display:none;">
         <div class="doc-icon">📋</div>
@@ -2329,7 +2345,7 @@ const busquedaIndiceEstatico = [
   { titulo: 'Oscar González Morales', texto: 'Director de la directiva sindical', anchor: 'directiva', tipo: 'Directiva' },
   { titulo: 'Noticias y comunicados', texto: 'Últimas novedades del sindicato', anchor: 'noticias', tipo: 'Sección' },
   { titulo: 'Galería', texto: 'Fotos de eventos del sindicato', anchor: 'galeria', tipo: 'Sección' },
-  { titulo: 'Documentos', texto: 'Estatuto, formulario de inscripción, contrato colectivo, presupuesto anual, revisión de cuentas, transparencia, descargas', anchor: 'documentos', tipo: 'Sección', esOculta: true },
+  { titulo: 'Documentos', texto: 'Estatuto, formulario de inscripción, protocolo y formulario de retiro voluntario, contrato colectivo, presupuesto anual, revisión de cuentas, transparencia, descargas', anchor: 'documentos', tipo: 'Sección', esOculta: true },
   { titulo: 'Estatuto', texto: 'Descarga el estatuto del sindicato', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Formulario de inscripción', texto: 'Descarga el formulario de afiliación', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Contrato colectivo', texto: 'Descarga el contrato colectivo vigente', anchor: 'documentos', tipo: 'Documento', esOculta: true },
@@ -3188,6 +3204,16 @@ function convertirUrlVideo(url) {
         document.getElementById('btnEstatuto').dataset.url = 'documentos/estatuto_sindicato.pdf';
         document.getElementById('btnEstatuto').dataset.nombre = 'estatuto_sindicato.pdf';
         document.getElementById('cardEstatuto').style.display = 'block';
+      }
+
+      // Retiro voluntario: protocolo (PDF) y formulario (Word); solo se muestran si ya fueron subidos
+      for (const [id, cap, nombre] of [['retiroProtocolo', 'RetiroProtocolo', 'protocolo_retiro_voluntario'], ['retiroFormulario', 'RetiroFormulario', 'formulario_retiro_voluntario']]) {
+        const sn = await getDoc(doc(db, 'documentos', id));
+        if (sn.exists() && sn.data().url) {
+          document.getElementById('btn' + cap).dataset.url = sn.data().url;
+          document.getElementById('btn' + cap).dataset.nombre = sn.data().nombre || nombre;
+          document.getElementById('card' + cap).style.display = 'block';
+        }
       }
 
       // Contratos
