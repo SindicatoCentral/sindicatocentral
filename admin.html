@@ -593,6 +593,7 @@
             </div>
             <div class="noticia-acciones">
               <button class="btn-accion editar" onclick="mostrarUploadDoc('RetiroProtocolo')">Reemplazar</button>
+              <button class="btn-accion eliminar" onclick="eliminarDocRetiro('retiroProtocolo', 'RetiroProtocolo')">Eliminar</button>
             </div>
           </div>
         </div>
@@ -621,6 +622,7 @@
             </div>
             <div class="noticia-acciones">
               <button class="btn-accion editar" onclick="mostrarUploadDoc('RetiroFormulario')">Reemplazar</button>
+              <button class="btn-accion eliminar" onclick="eliminarDocRetiro('retiroFormulario', 'RetiroFormulario')">Eliminar</button>
             </div>
           </div>
         </div>
@@ -1699,6 +1701,24 @@
       cargarTransp();
     } catch(e) { console.error('Error cargando documentos:', e); }
   }
+
+  // Elimina el protocolo o el formulario de retiro voluntario (archivo y registro); el sitio deja de mostrarlo
+  window.eliminarDocRetiro = async (id, cap) => {
+    const nombre = id === 'retiroProtocolo' ? 'el protocolo' : 'el formulario';
+    if (!confirm('¿Eliminar ' + nombre + ' de retiro voluntario? Dejará de poder descargarse desde el sitio.')) return;
+    try {
+      const refDoc = doc(db, 'documentos', id);
+      const sn = await getDoc(refDoc);
+      const path = sn.exists() ? sn.data().path : null;
+      await deleteDoc(refDoc);
+      if (path) { try { await deleteObject(ref(storage, path)); } catch (e) {} }
+      document.getElementById('doc' + cap + 'Vista').style.display = 'none';
+      document.getElementById('doc' + cap + 'Upload').style.display = 'block';
+      document.getElementById('input' + cap).value = '';
+      document.getElementById('progress' + cap).style.display = 'none';
+      mostrarToast('Documento eliminado.', 'exito');
+    } catch (e) { mostrarToast('Error al eliminar: ' + e.message, 'error'); }
+  };
 
   window.subirDocSimple = async (tipo, input) => {
     const file = input.files[0];
