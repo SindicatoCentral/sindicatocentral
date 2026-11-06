@@ -2070,22 +2070,6 @@ setTimeout(function () {
         <button class="btn-descarga" id="btnEstatuto" onclick="descargarArchivo(this)">⬇ Descargar estatuto</button>
       </div>
 
-      <!-- Protocolo de retiro voluntario -->
-      <div class="doc-card" id="cardRetiroProtocolo" style="display:none;">
-        <div class="doc-icon">📋</div>
-        <h3>Protocolo de Retiro Voluntario</h3>
-        <p>Procedimiento, requisitos y reglas para solicitar y evaluar el retiro voluntario de los trabajadores y trabajadoras.</p>
-        <button class="btn-descarga" id="btnRetiroProtocolo" onclick="descargarArchivo(this)">⬇ Descargar protocolo</button>
-      </div>
-
-      <!-- Formulario de retiro voluntario -->
-      <div class="doc-card" id="cardRetiroFormulario" style="display:none;">
-        <div class="doc-icon">📝</div>
-        <h3>Formulario de Retiro Voluntario</h3>
-        <p>Formulario en Word para completar y entregar a la unidad correspondiente, según lo indicado en el protocolo. Este sitio no recibe ni guarda las solicitudes.</p>
-        <button class="btn-descarga" id="btnRetiroFormulario" onclick="descargarArchivo(this)">⬇ Descargar formulario</button>
-      </div>
-
       <!-- Contrato vigente -->
       <div class="doc-card" id="cardContrato" style="display:none;">
         <div class="doc-icon">📋</div>
@@ -2101,6 +2085,27 @@ setTimeout(function () {
         ▶ Contratos colectivos anteriores
       </button>
       <div id="contratosAnterioresList" style="display:none; margin-top:1rem; flex-direction:column; gap:0.6rem;"></div>
+    </div>
+
+    <!-- Retiro voluntario -->
+    <div id="retiroWrap" style="display:none; margin-top:2rem; border-top:1px solid var(--borde); padding-top:1.4rem;">
+      <p class="section-eyebrow">Trámite</p>
+      <h3 style="font-size:1.3rem; margin:0 0 0.4rem;">Retiro voluntario</h3>
+      <p class="section-body" style="margin-bottom:1.2rem;">Documentos para solicitar el retiro voluntario: revisa primero el protocolo y luego completa el formulario. El formulario se entrega a la unidad correspondiente; este sitio no recibe ni guarda las solicitudes.</p>
+      <div class="docs-grid">
+        <div class="doc-card" id="cardRetiroProtocolo" style="display:none;">
+          <div class="doc-icon">📋</div>
+          <h3>Protocolo de Retiro Voluntario</h3>
+          <p>Requisitos, procedimiento y reglas para solicitar y evaluar el retiro voluntario.</p>
+          <button class="btn-descarga" id="btnRetiroProtocolo" onclick="descargarArchivo(this)">⬇ Descargar protocolo</button>
+        </div>
+        <div class="doc-card" id="cardRetiroFormulario" style="display:none;">
+          <div class="doc-icon">📝</div>
+          <h3>Formulario de Retiro Voluntario</h3>
+          <p>Formulario en Word para completar y entregar según lo indicado en el protocolo.</p>
+          <button class="btn-descarga" id="btnRetiroFormulario" onclick="descargarArchivo(this)">⬇ Descargar formulario</button>
+        </div>
+      </div>
     </div>
 
     <!-- Transparencia financiera -->
@@ -3213,6 +3218,7 @@ function convertirUrlVideo(url) {
           document.getElementById('btn' + cap).dataset.url = sn.data().url;
           document.getElementById('btn' + cap).dataset.nombre = sn.data().nombre || nombre;
           document.getElementById('card' + cap).style.display = 'block';
+          document.getElementById('retiroWrap').style.display = 'block';
         }
       }
 
