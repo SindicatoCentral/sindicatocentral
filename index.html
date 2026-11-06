@@ -1567,7 +1567,7 @@
     <li><a href="#negociaciones" onclick="mostrarSeccion('negociaciones'); cerrarMenu()">Negociaciones</a></li>
     <li><a href="#acoso-laboral" onclick="ocultarSecciones(); cerrarMenu()">Acoso Laboral</a></li>
     <li><a href="#directiva" onclick="ocultarSecciones(); cerrarMenu()">Directiva</a></li>
-    <li><a href="#documentos" onclick="mostrarSeccion('documentos'); cerrarMenu()">Documentos</a></li>
+    <li><a href="#documentos" onclick="ocultarSecciones(); cerrarMenu()">Documentos</a></li>
     <li><a href="#noticias" onclick="ocultarSecciones(); cerrarMenu()" class="nav-notif" id="navNoticias">Noticias</a></li>
     <li><a href="#galeria" onclick="ocultarSecciones(); cerrarMenu()">Galería</a></li>
     <li><a href="#contacto" onclick="ocultarSecciones(); cerrarMenu()">Contacto</a></li>
@@ -2047,7 +2047,7 @@ setTimeout(function () {
 </section>
 
 <!-- DOCUMENTOS -->
-<section class="documentos" id="documentos" style="display:none;">
+<section class="documentos" id="documentos">
   <div class="container">
     <p class="section-eyebrow">Descarga y gestión</p>
     <h2 class="section-title">Documentos</h2>
@@ -2280,7 +2280,7 @@ setTimeout(function () {
 
 
 <script>
-const seccionesOcultas = ['documentos', 'afiliacion', 'privacidad', 'negociaciones'];
+const seccionesOcultas = ['afiliacion', 'privacidad', 'negociaciones'];
 
 function mostrarSeccion(id) {
   // Ocultar todas las secciones ocultas primero
