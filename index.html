@@ -2239,6 +2239,7 @@ setTimeout(function () {
         <li><strong>Formulario de contacto:</strong> nombre, correo y mensaje. Se envía directo a nuestro correo institucional y no queda guardado en el sitio.</li>
         <li><strong>Galería de fotos:</strong> imágenes tomadas en eventos del sindicato, que pueden incluir a personas identificables. Antes de fotografiar en cada evento, se informa a los asistentes.</li>
         <li><strong>Inscripción a eventos</strong> (solo cuando hay un evento activo): tu nombre, si autorizas o no la toma y publicación de fotografías y, si lo deseas, tu preferencia de menú vegetariano (opcional; se usa solo para coordinar la alimentación del evento). Se te asigna un número de inscripción y, durante el evento, se registra si ingresaste y a qué hora para controlar la asistencia. La invitación con tu nombre y número se genera en tu propio navegador; el sitio no guarda una copia. Estos datos se eliminan una vez pasado el evento.</li>
+        <li><strong>Registro de inasistencia</strong> (solo si te inscribiste y no asististe): la directiva puede anotar si tu inasistencia fue justificada o sin justificar, con una breve nota del motivo general (sin datos de salud), con el único fin de gestionar el eventual cobro del costo asumido por el sindicato. Solo tienen acceso las personas autorizadas y se elimina junto con el resto de los datos del evento.</li>
         <li><strong>Anulación de inscripción</strong> (solo cuando se habilita para un evento): tu nombre y tu número de registro, para identificar tu inscripción y anularla. La solicitud se elimina una vez resuelta. Si se confirma la anulación, solo se anotan tu nombre, tu número de registro, la fecha de anulación y las preferencias que habías marcado (fotografía y menú), para el registro interno del evento y para poder restaurar tu inscripción si la anulación se hizo por error, y esos datos se eliminan junto con las demás inscripciones una vez pasado el evento.</li>
       </ul>
     </div>
@@ -2249,13 +2250,24 @@ setTimeout(function () {
     </div>
 
     <div class="doc-card" style="margin-bottom:1.2rem;">
+      <h3>Documentos de descarga</h3>
+      <p>Los documentos publicados en la sección Documentos (estatuto, contratos colectivos, formularios, protocolo de retiro voluntario y documentos de transparencia financiera) son de descarga pública. Descargarlos no registra ningún dato tuyo, y los formularios que completes <strong>no se envían ni se guardan en este sitio</strong>: se entregan por otro medio a la unidad correspondiente.</p>
+    </div>
+
+    <div class="doc-card" style="margin-bottom:1.2rem;">
       <h3>¿Por qué tratamos estos datos?</h3>
       <p>Los datos de los socios se tratan en el marco de la relación de afiliación sindical, regulada por nuestro Estatuto. Los datos que entregas voluntariamente en el sitio (contacto, inscripción a eventos y su anulación) se usan únicamente para el fin con que los entregaste.</p>
     </div>
 
     <div class="doc-card" style="margin-bottom:1.2rem;">
+      <h3>¿Cuánto tiempo conservamos los datos y quién los procesa?</h3>
+      <p>Los datos de inscripción, anulación, ingreso e inasistencia se eliminan una vez finalizado el evento. Los mensajes del formulario de contacto se conservan solo en el correo institucional mientras se gestiona tu consulta. Las fotografías de la galería permanecen publicadas hasta que solicites retirarlas.</p>
+      <p style="margin-top:0.8rem;">Para operar el sitio usamos proveedores de infraestructura que procesan datos por cuenta del sindicato: <strong>Google Firebase</strong> (base de datos y almacenamiento de documentos), <strong>EmailJS</strong> (envío del formulario de contacto), <strong>GitHub</strong> y <strong>Cloudflare</strong> (alojamiento y protección del sitio). Estos servicios pueden tratar datos fuera de Chile. El acceso a los datos de eventos está restringido a un número reducido de cuentas autorizadas, con verificación en dos pasos.</p>
+    </div>
+
+    <div class="doc-card" style="margin-bottom:1.2rem;">
       <h3>¿Cuáles son tus derechos?</h3>
-      <p>Puedes pedirnos en cualquier momento que retiremos una fotografía tuya de la galería, que corrijamos o anulemos tu inscripción a un evento, o consultarnos qué información tenemos sobre ti. Para ejercer estos derechos, escríbenos a través del <a href="#contacto" onclick="mostrarSeccion('contacto')">formulario de contacto</a>.</p>
+      <p>De acuerdo con la Ley N° 21.719 sobre protección de datos personales, puedes ejercer tus derechos de acceso, rectificación, supresión, oposición y portabilidad. En la práctica, puedes pedirnos en cualquier momento que retiremos una fotografía tuya de la galería, que corrijamos o anulemos tu inscripción a un evento, o consultarnos qué información tenemos sobre ti. Para ejercer estos derechos, escríbenos a través del <a href="#contacto" onclick="mostrarSeccion('contacto')">formulario de contacto</a>.</p>
     </div>
 
     <div class="doc-card">
@@ -2815,7 +2827,10 @@ function convertirUrlVideo(url) {
     const grid = document.getElementById('noticiasGrid');
     try {
       const q = query(collection(db, 'noticias'), where('estado', '==', 'publicada'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      const snap = await Promise.race([
+        getDocs(q),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000))
+      ]);
 
       if (snap.empty) {
         grid.innerHTML = `<p class="section-body" style="grid-column:1/-1; color:#666;">
@@ -2889,8 +2904,14 @@ function convertirUrlVideo(url) {
       console.error('Error cargando noticias:', e);
       const grid = document.getElementById('noticiasGrid');
       grid.innerHTML = `<p class="section-body" style="grid-column:1/-1;">
-        Próximamente publicaremos aquí los comunicados y noticias del sindicato.
+        No pudimos cargar las noticias en este momento. Revisa tu conexión e inténtalo nuevamente.<br>
+        <button type="button" id="btnReintentarNoticias" style="margin-top:0.8rem; padding:0.5rem 1.2rem; cursor:pointer; border:1px solid currentColor; background:transparent; color:inherit; border-radius:2px; font:inherit;">Reintentar</button>
       </p>`;
+      const b = document.getElementById('btnReintentarNoticias');
+      if (b) b.addEventListener('click', () => {
+        grid.innerHTML = '<p class="section-body" style="grid-column:1/-1;">Cargando noticias...</p>';
+        cargarNoticias();
+      });
     }
   }
 
