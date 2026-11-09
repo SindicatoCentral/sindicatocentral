@@ -2108,6 +2108,27 @@ setTimeout(function () {
       </div>
     </div>
 
+    <!-- Becas de postgrado -->
+    <div id="becasWrap" style="display:none; margin-top:2rem; border-top:1px solid var(--borde); padding-top:1.4rem;">
+      <p class="section-eyebrow">Beneficio</p>
+      <h3 style="font-size:1.3rem; margin:0 0 0.4rem;">Becas de postgrado</h3>
+      <p class="section-body" style="margin-bottom:1.2rem;">Documentos para postular a las becas de postgrado (Magíster y Advance) para socios y socias: revisa primero el protocolo y luego completa el formulario. La postulación se presenta según lo indicado en el protocolo; este sitio no recibe ni guarda las postulaciones.</p>
+      <div class="docs-grid">
+        <div class="doc-card" id="cardBecasProtocolo" style="display:none;">
+          <div class="doc-icon">📋</div>
+          <h3>Protocolo de Becas de Postgrado</h3>
+          <p>Requisitos, procedimiento y criterios para postular a las becas de postgrado.</p>
+          <button class="btn-descarga" id="btnBecasProtocolo" onclick="descargarArchivo(this)">⬇ Descargar protocolo</button>
+        </div>
+        <div class="doc-card" id="cardBecasFormulario" style="display:none;">
+          <div class="doc-icon">📝</div>
+          <h3>Formulario de Becas de Postgrado</h3>
+          <p>Formulario en Word para completar, firmar y enviar según lo indicado en el protocolo.</p>
+          <button class="btn-descarga" id="btnBecasFormulario" onclick="descargarArchivo(this)">⬇ Descargar formulario</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Transparencia financiera -->
     <div id="transpWrap" style="display:none; margin-top:2rem; border-top:1px solid var(--borde); padding-top:1.4rem;">
       <p class="section-eyebrow">Transparencia</p>
@@ -2252,7 +2273,7 @@ setTimeout(function () {
 
     <div class="doc-card" style="margin-bottom:1.2rem;">
       <h3>Documentos de descarga</h3>
-      <p>Los documentos publicados en la sección Documentos (estatuto, contratos colectivos, formularios, protocolo de retiro voluntario y documentos de transparencia financiera) son de descarga pública. Descargarlos no registra ningún dato tuyo, y los formularios que completes <strong>no se envían ni se guardan en este sitio</strong>: se entregan por otro medio a la unidad correspondiente.</p>
+      <p>Los documentos publicados en la sección Documentos (estatuto, contratos colectivos, formularios, protocolo de retiro voluntario, protocolo y formulario de becas de postgrado y documentos de transparencia financiera) son de descarga pública. Descargarlos no registra ningún dato tuyo, y los formularios que completes <strong>no se envían ni se guardan en este sitio</strong>: se entregan por otro medio a la unidad correspondiente.</p>
     </div>
 
     <div class="doc-card" style="margin-bottom:1.2rem;">
@@ -2363,7 +2384,7 @@ const busquedaIndiceEstatico = [
   { titulo: 'Oscar González Morales', texto: 'Director de la directiva sindical', anchor: 'directiva', tipo: 'Directiva' },
   { titulo: 'Noticias y comunicados', texto: 'Últimas novedades del sindicato', anchor: 'noticias', tipo: 'Sección' },
   { titulo: 'Galería', texto: 'Fotos de eventos del sindicato', anchor: 'galeria', tipo: 'Sección' },
-  { titulo: 'Documentos', texto: 'Estatuto, formulario de inscripción, protocolo y formulario de retiro voluntario, contrato colectivo, presupuesto anual, revisión de cuentas, transparencia, descargas', anchor: 'documentos', tipo: 'Sección', esOculta: true },
+  { titulo: 'Documentos', texto: 'Estatuto, formulario de inscripción, protocolo y formulario de retiro voluntario, becas de postgrado (Magíster y Advance), contrato colectivo, presupuesto anual, revisión de cuentas, transparencia, descargas', anchor: 'documentos', tipo: 'Sección', esOculta: true },
   { titulo: 'Estatuto', texto: 'Descarga el estatuto del sindicato', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Formulario de inscripción', texto: 'Descarga el formulario de afiliación', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Contrato colectivo', texto: 'Descarga el contrato colectivo vigente', anchor: 'documentos', tipo: 'Documento', esOculta: true },
@@ -3234,13 +3255,13 @@ function convertirUrlVideo(url) {
       }
 
       // Retiro voluntario: protocolo (PDF) y formulario (Word); solo se muestran si ya fueron subidos
-      for (const [id, cap, nombre] of [['retiroProtocolo', 'RetiroProtocolo', 'protocolo_retiro_voluntario'], ['retiroFormulario', 'RetiroFormulario', 'formulario_retiro_voluntario']]) {
+      for (const [id, cap, nombre, wrap] of [['retiroProtocolo', 'RetiroProtocolo', 'protocolo_retiro_voluntario', 'retiroWrap'], ['retiroFormulario', 'RetiroFormulario', 'formulario_retiro_voluntario', 'retiroWrap'], ['becasProtocolo', 'BecasProtocolo', 'protocolo_becas_postgrado', 'becasWrap'], ['becasFormulario', 'BecasFormulario', 'formulario_becas_postgrado', 'becasWrap']]) {
         const sn = await getDoc(doc(db, 'documentos', id));
         if (sn.exists() && sn.data().url) {
           document.getElementById('btn' + cap).dataset.url = sn.data().url;
           document.getElementById('btn' + cap).dataset.nombre = sn.data().nombre || nombre;
           document.getElementById('card' + cap).style.display = 'block';
-          document.getElementById('retiroWrap').style.display = 'block';
+          document.getElementById(wrap).style.display = 'block';
         }
       }
 

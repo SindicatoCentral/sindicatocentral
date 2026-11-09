@@ -641,6 +641,65 @@
         </div>
       </div>
 
+      <div style="font-weight:700; font-size:1.05rem; margin:2rem 0 0.8rem; padding-top:1rem; border-top:1px solid #ddd;">Becas de postgrado</div>
+      <!-- Protocolo de becas de postgrado (Advance y Magíster) -->
+      <div class="form-card visible" style="margin-bottom:1.5rem;">
+        <h3>Protocolo de becas de postgrado (Advance y Magíster)</h3>
+        <div id="docBecasProtocoloVista" style="display:none;">
+          <div class="noticia-item" style="margin-bottom:1rem;">
+            <div class="noticia-info">
+              <div class="noticia-titulo-item" id="docBecasProtocoloNombre"></div>
+              <div class="noticia-resumen-item" id="docBecasProtocoloFecha"></div>
+            </div>
+            <div class="noticia-acciones">
+              <button class="btn-accion editar" onclick="mostrarUploadDoc('BecasProtocolo')">Reemplazar</button>
+              <button class="btn-accion eliminar" onclick="eliminarDocRetiro('becasProtocolo', 'BecasProtocolo')">Eliminar</button>
+            </div>
+          </div>
+        </div>
+        <div id="docBecasProtocoloUpload">
+          <div class="form-group">
+            <label>Subir protocolo aprobado</label>
+            <div class="upload-area" onclick="document.getElementById('inputBecasProtocolo').click()">
+              <input type="file" id="inputBecasProtocolo" accept=".pdf" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="subirDocSimple('becasProtocolo', this)">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">Toca aquí para seleccionar el archivo</div>
+              <div class="upload-hint">Solo PDF (versión aprobada)</div>
+            </div>
+            <div class="progress-bar" id="progressBecasProtocolo"><div class="progress-fill" id="fillBecasProtocolo"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de becas de postgrado (Advance y Magíster) -->
+      <div class="form-card visible" style="margin-bottom:1.5rem;">
+        <h3>Formulario de becas de postgrado (Advance y Magíster)</h3>
+        <div id="docBecasFormularioVista" style="display:none;">
+          <div class="noticia-item" style="margin-bottom:1rem;">
+            <div class="noticia-info">
+              <div class="noticia-titulo-item" id="docBecasFormularioNombre"></div>
+              <div class="noticia-resumen-item" id="docBecasFormularioFecha"></div>
+            </div>
+            <div class="noticia-acciones">
+              <button class="btn-accion editar" onclick="mostrarUploadDoc('BecasFormulario')">Reemplazar</button>
+              <button class="btn-accion eliminar" onclick="eliminarDocRetiro('becasFormulario', 'BecasFormulario')">Eliminar</button>
+            </div>
+          </div>
+        </div>
+        <div id="docBecasFormularioUpload">
+          <div class="form-group">
+            <label>Subir formulario</label>
+            <div class="upload-area" onclick="document.getElementById('inputBecasFormulario').click()">
+              <input type="file" id="inputBecasFormulario" accept=".doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="subirDocSimple('becasFormulario', this)">
+              <div class="upload-icon">📝</div>
+              <div class="upload-text">Toca aquí para seleccionar el archivo</div>
+              <div class="upload-hint">Word (.doc o .docx)</div>
+            </div>
+            <div class="progress-bar" id="progressBecasFormulario"><div class="progress-fill" id="fillBecasFormulario"></div></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Contratos colectivos -->
       <div class="form-card visible">
         <h3>Contratos colectivos</h3>
@@ -1686,8 +1745,8 @@
         document.getElementById('docEstatutoVista').style.display = 'block';
         document.getElementById('docEstatutoUpload').style.display = 'none';
       }
-      // Cargar protocolo y formulario de retiro voluntario
-      for (const [id, cap, def] of [['retiroProtocolo', 'RetiroProtocolo', 'Protocolo de retiro voluntario'], ['retiroFormulario', 'RetiroFormulario', 'Formulario de retiro voluntario']]) {
+      // Cargar protocolo y formulario de retiro voluntario y de becas de postgrado
+      for (const [id, cap, def] of [['retiroProtocolo', 'RetiroProtocolo', 'Protocolo de retiro voluntario'], ['retiroFormulario', 'RetiroFormulario', 'Formulario de retiro voluntario'], ['becasProtocolo', 'BecasProtocolo', 'Protocolo de becas de postgrado'], ['becasFormulario', 'BecasFormulario', 'Formulario de becas de postgrado']]) {
         const sn = await getDoc(doc(db, 'documentos', id));
         if (sn.exists()) {
           const d = sn.data();
@@ -1705,8 +1764,9 @@
 
   // Elimina el protocolo o el formulario de retiro voluntario (archivo y registro); el sitio deja de mostrarlo
   window.eliminarDocRetiro = async (id, cap) => {
-    const nombre = id === 'retiroProtocolo' ? 'el protocolo' : 'el formulario';
-    if (!confirm('¿Eliminar ' + nombre + ' de retiro voluntario? Dejará de poder descargarse desde el sitio.')) return;
+    const nombre = id.endsWith('Protocolo') ? 'el protocolo' : 'el formulario';
+    const tema = id.startsWith('becas') ? 'de becas de postgrado' : 'de retiro voluntario';
+    if (!confirm('¿Eliminar ' + nombre + ' ' + tema + '? Dejará de poder descargarse desde el sitio.')) return;
     try {
       const refDoc = doc(db, 'documentos', id);
       const sn = await getDoc(refDoc);
@@ -1724,7 +1784,7 @@
   window.subirDocSimple = async (tipo, input) => {
     const file = input.files[0];
     if (!file) return;
-    const EXT_PERMITIDAS = { retiroProtocolo: ['pdf'], retiroFormulario: ['doc', 'docx'] };
+    const EXT_PERMITIDAS = { retiroProtocolo: ['pdf'], retiroFormulario: ['doc', 'docx'], becasProtocolo: ['pdf'], becasFormulario: ['doc', 'docx'] };
     if (EXT_PERMITIDAS[tipo] && !EXT_PERMITIDAS[tipo].includes((file.name.split('.').pop() || '').toLowerCase())) {
       mostrarToast('Formato no permitido. Usa: ' + EXT_PERMITIDAS[tipo].join(', ').toUpperCase() + '.', 'error');
       input.value = '';
