@@ -1241,6 +1241,19 @@
     overflow-y: auto;
     max-height: calc(92vh - 48px);
   }
+  /* Imagen + botón sin mensaje: la imagen arriba y el botón centrado debajo */
+  .popup-box.solo-img-box .popup-img { order: 1; }
+  .popup-box.solo-img-box .popup-body {
+    order: 2; flex: none; align-self: stretch; justify-content: center; text-align: center;
+    background: rgba(28,43,58,0.92); padding: 0.9rem 1rem;
+  }
+  .popup-box.solo-img-box .popup-boton { margin-top: 0; font-size: 0.95rem; padding: 0.85rem 2.2rem; }
+  /* Imagen vertical: se ajusta a la altura de la pantalla, sin barra de desplazamiento */
+  .popup-box.solo-img-box.img-alta { width: auto !important; }
+  .popup-box.solo-img-box.img-alta .popup-img {
+    width: auto; max-width: 100%; max-height: calc(92vh - 150px); margin: 0 auto;
+  }
+  .popup-box.solo-img-box.img-alta .popup-contenido { align-items: center; }
   .popup-contenido {
     display: flex; flex-direction: row;
     align-items: stretch;
@@ -1931,7 +1944,7 @@
   <div class="acoso-canales">
     <h3>¿Eres víctima de acoso laboral? Contáctanos</h3>
     <p class="acoso-canales-texto">Si estás viviendo esta situación, escríbenos a través del <a href="#contacto" onclick="ocultarSecciones(); mostrarSeccion('contacto')">formulario de contacto</a>. Como socio, cuentas con asesoría jurídica del sindicato para que sepas exactamente qué pasos seguir, con acompañamiento en todo el proceso.</p>
-    <p class="acoso-canales-nota">También puedes denunciar directamente ante tu empleador (protocolo interno) o ante la <a href="https://www.dt.gob.cl" target="_blank" rel="noopener">Dirección del Trabajo</a>. Puedes revisar el texto completo de la <a href="https://www.bcn.cl/leychile/navegar?idNorma=1200096" target="_blank" rel="noopener">Ley Karin</a>, que regula esta materia.</p>
+    <p class="acoso-canales-nota">También puedes hacer la denuncia directamente ante tu empleador, a través del <a href="https://canaldenuncias.ucentral.cl/universidad-central/edaf4dbd-ea37-4933-b0d7-6afe1913c313/f/catalogo-de-delitos-ley-karin-o-21-643" target="_blank" rel="noopener">formulario interno de la Universidad Central</a>, o ante la <a href="https://www.dt.gob.cl" target="_blank" rel="noopener">Dirección del Trabajo</a>. Puedes revisar el texto completo de la <a href="https://www.bcn.cl/leychile/navegar?idNorma=1200096" target="_blank" rel="noopener">Ley Karin</a>, que regula esta materia.</p>
   </div>
 </section>
 
@@ -3351,7 +3364,7 @@ function convertirUrlVideo(url) {
     const contenido = document.getElementById('popupContenido');
     contenido.querySelectorAll('iframe').forEach(f => f.remove());
     const img = document.getElementById('popupImg'); img.style.display = 'none'; img.removeAttribute('src');
-    const box = document.querySelector('.popup-box'); if (box) box.classList.remove('solo-img-box', 'img-ancha');
+    const box = document.querySelector('.popup-box'); if (box) box.classList.remove('solo-img-box', 'img-ancha', 'img-alta');
     document.getElementById('popupBoton').style.display = 'none';
     document.getElementById('popupBody').style.display = 'none';
     contenido.classList.remove('solo-imagen');
@@ -3379,10 +3392,14 @@ function convertirUrlVideo(url) {
       const img = document.getElementById('popupImg');
       img.src = d.imgUrl;
       img.style.display = 'block';
-      // Si solo hay imagen (sin mensaje), ajustar popup al ancho de la imagen
-      if (!d.mensaje && !tieneBoton) {
+      // Si no hay mensaje (solo imagen, con o sin botón), ajustar popup al ancho de la imagen
+      if (!d.mensaje) {
         document.querySelector('.popup-box').classList.add('solo-img-box');
-        const marcarAncha = () => { if (img.naturalWidth > img.naturalHeight * 1.15) document.querySelector('.popup-box').classList.add('img-ancha'); };
+        const marcarAncha = () => {
+          const bx = document.querySelector('.popup-box');
+          if (img.naturalWidth > img.naturalHeight * 1.15) bx.classList.add('img-ancha');
+          else if (img.naturalHeight > img.naturalWidth * 1.15) bx.classList.add('img-alta');
+        };
         if (img.complete && img.naturalWidth) marcarAncha(); else img.addEventListener('load', marcarAncha, { once: true });
       }
     }
@@ -3393,12 +3410,30 @@ function convertirUrlVideo(url) {
     if (tieneBoton) {
       const bt = document.getElementById('popupBoton');
       bt.href = d.botonUrl; bt.textContent = d.botonTexto || 'Abrir enlace'; bt.style.display = 'inline-block';
+      // Enlace a una sección de este mismo sitio: se cierra el pop up y se baja a la sección, sin abrir otra pestaña
+      let interno = false, destino = null;
+      try {
+        const u = new URL(d.botonUrl, location.href);
+        const mismoSitio = u.origin === location.origin || /^(www\.)?sindicatocentral\.cl$/i.test(u.hostname) && /^(www\.)?sindicatocentral\.cl$/i.test(location.hostname);
+        if (mismoSitio && u.hash.length > 1) { interno = true; destino = u.hash; }
+      } catch (e) {}
+      bt.target = interno ? '_self' : '_blank';
+      bt.onclick = interno ? (ev) => {
+        const el = (() => { try { return document.querySelector(destino); } catch (e) { return null; } })();
+        if (!el) return; // si no existe la sección, el navegador sigue el enlace normal
+        ev.preventDefault();
+        cerrarPopup();
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        try { history.replaceState(null, '', destino); } catch (e) {}
+      } : null;
     }
     if (d.mensaje || tieneBoton) {
       document.getElementById('popupMensaje').textContent = d.mensaje || '';
       document.getElementById('popupMensaje').style.display = d.mensaje ? 'block' : 'none';
       body.style.display = 'block';
-      contenido.classList.remove('solo-imagen');
+      // Sin mensaje pero con imagen/video y botón: el botón va debajo, no al lado
+      if (!d.mensaje && (d.imgUrl || embedUrlPopup)) contenido.classList.add('solo-imagen');
+      else contenido.classList.remove('solo-imagen');
     } else {
       body.style.display = 'none';
       contenido.classList.add('solo-imagen');
