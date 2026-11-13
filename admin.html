@@ -294,6 +294,7 @@
       <button class="tab-p" onclick="cambiarTab('documentos', this)">Documentos</button>
       <button class="tab-p" onclick="cambiarTab('inscripciones', this)">Inscripciones</button>
       <button class="tab-p" onclick="cambiarTab('ingreso', this)">Control de ingreso</button>
+      <button class="tab-p" onclick="cambiarTab('respaldo', this)">Respaldo</button>
 
     </div>
 
@@ -477,6 +478,25 @@
     </div>
 
     <!-- GALERÍA -->
+    <div class="seccion" id="sec-respaldo">
+      <div class="form-card" style="display:block;">
+        <p style="font-size:0.9rem; color:#444; line-height:1.6; margin-bottom:1rem;">
+          Descarga una copia de lo que está publicado en el sitio. Guárdala en un lugar seguro (por ejemplo, un pendrive o tu carpeta de respaldos).
+        </p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.7rem; margin-bottom:1rem;">
+          <button type="button" class="btn-guardar" id="btnRespDatos" onclick="respaldoDatos()">⬇ Datos (Firestore)</button>
+          <button type="button" class="btn-guardar" id="btnRespArchivos" onclick="respaldoArchivos()">⬇ Archivos (Storage)</button>
+          <button type="button" class="btn-cancelar" id="btnRespTodo" onclick="respaldoTodo()">⬇ Descargar ambos</button>
+        </div>
+        <div id="respEstado" style="font-size:0.85rem; color:#444; line-height:1.6; min-height:1.4em;"></div>
+        <p style="font-size:0.75rem; color:#888; line-height:1.6; margin-top:1rem;">
+          <strong>Datos:</strong> noticias, popup, galería (títulos y fotos), documentos y configuración, en un archivo JSON. No incluye inscripciones, asistencia ni anulaciones de eventos (datos personales temporales).<br>
+          <strong>Archivos:</strong> imágenes de noticias y popup, galería de fotos y documentos publicados, en un archivo ZIP. No incluye la aplicación Android. Si la galería es grande, la descarga puede tardar.<br>
+          Esta copia puede contener fotos de personas: guárdala solo en equipos de confianza.
+        </p>
+      </div>
+    </div>
+
     <div class="seccion" id="sec-galeria">
 
       <!-- Formulario nuevo evento -->
@@ -1031,7 +1051,8 @@
       tab === 'publicadas' ? 'Noticias y comunicados' :
       tab === 'historial'  ? 'Historial de noticias' :
       tab === 'inscripciones' ? 'Inscripción a eventos' :
-      tab === 'ingreso' ? 'Control de ingreso' : 'Configuración del Popup';
+      tab === 'ingreso' ? 'Control de ingreso' :
+      tab === 'respaldo' ? 'Respaldo' : 'Configuración del Popup';
     ocultarFormulario();
     if (tab === 'publicadas') cargarNoticias('publicada', 'noticiasList');
     if (tab === 'historial')  cargarNoticias('archivada', 'historialList');
@@ -2500,6 +2521,137 @@
       }
     } catch(e) { est.textContent = 'No se pudo leer el estado de la app.'; }
   }
+
+  // ── Respaldo (descarga de Firestore y Storage desde el panel) ──
+  const RESP_CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; } return t; })();
+  function respCrc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = RESP_CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function respZip(archivos) {
+    const enc = new TextEncoder(), partes = [], central = []; let offset = 0;
+    const n = new Date();
+    const hora = (n.getHours() << 11) | (n.getMinutes() << 5) | (n.getSeconds() >> 1);
+    const fecha = ((n.getFullYear() - 1980) << 9) | ((n.getMonth() + 1) << 5) | n.getDate();
+    for (const f of archivos) {
+      const nom = enc.encode(f.nombre), crc = respCrc32(f.datos), tam = f.datos.length;
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+      lh.setUint16(10, hora, true); lh.setUint16(12, fecha, true); lh.setUint32(14, crc, true);
+      lh.setUint32(18, tam, true); lh.setUint32(22, tam, true); lh.setUint16(26, nom.length, true); lh.setUint16(28, 0, true);
+      partes.push(lh.buffer, nom, f.datos);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+      ch.setUint16(12, hora, true); ch.setUint16(14, fecha, true); ch.setUint32(16, crc, true);
+      ch.setUint32(20, tam, true); ch.setUint32(24, tam, true); ch.setUint16(28, nom.length, true);
+      ch.setUint32(42, offset, true);
+      central.push(ch.buffer, nom);
+      offset += 30 + nom.length + tam;
+    }
+    const cdTam = central.reduce((s, b) => s + b.byteLength, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, archivos.length, true); end.setUint16(10, archivos.length, true);
+    end.setUint32(12, cdTam, true); end.setUint32(16, offset, true);
+    return new Blob([...partes, ...central, end.buffer], { type: 'application/zip' });
+  }
+  function respBajar(blob, nombre) {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  }
+  function respEstado(html) { document.getElementById('respEstado').innerHTML = html; }
+  function respEsc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function respSerializar(v) {
+    if (v && typeof v.toDate === 'function') return v.toDate().toISOString();
+    if (Array.isArray(v)) return v.map(respSerializar);
+    if (v && typeof v === 'object') { const o = {}; for (const k in v) o[k] = respSerializar(v[k]); return o; }
+    return v;
+  }
+  async function respLeer(...ruta) {
+    const snap = await getDocs(collection(db, ...ruta));
+    return snap.docs.map(d => ({ id: d.id, datos: respSerializar(d.data()) }));
+  }
+  function respBloquear(si) { ['btnRespDatos', 'btnRespArchivos', 'btnRespTodo'].forEach(id => { document.getElementById(id).disabled = si; }); }
+  const respHoy = () => new Date().toISOString().slice(0, 10);
+
+  async function respHacerDatos() {
+    respEstado('Leyendo datos…');
+    const out = { generado: new Date().toISOString(), nota: 'Respaldo de datos del sitio. No incluye inscripciones, asistencia ni anulaciones.' };
+    out.noticias = await respLeer('noticias');
+    out.config = await respLeer('config');
+    out.documentos = await respLeer('documentos');
+    out.documentos_contratos = await respLeer('documentos', 'contratos', 'lista');
+    out.documentos_transparencia = await respLeer('documentos', 'transparencia', 'lista');
+    out.galeria = await respLeer('galeria');
+    for (const ev of out.galeria) ev.fotos = await respLeer('galeria', ev.id, 'fotos');
+    respBajar(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }), 'respaldo_datos_' + respHoy() + '.json');
+    return 'Datos: ' + out.noticias.length + ' noticias, ' + out.galeria.length + ' eventos de galería, ' + (out.documentos.length + out.documentos_contratos.length + out.documentos_transparencia.length) + ' documentos.';
+  }
+
+  async function respListarStorage(carpeta, acc, errores) {
+    try {
+      const r = await listAll(carpeta);
+      acc.push(...r.items);
+      for (const p of r.prefixes) await respListarStorage(p, acc, errores);
+    } catch (e) { errores.push(carpeta.fullPath + ' (' + (e.code || e.message) + ')'); }
+  }
+
+  async function respHacerArchivos() {
+    const items = [], errores = [];
+    respEstado('Buscando archivos…');
+    for (const c of ['documentos', 'noticias', 'popup', 'galeria']) await respListarStorage(ref(storage, c), items, errores);
+    if (!items.length) { return 'Archivos: no se encontraron archivos.' + (errores.length ? ' Errores: ' + errores.join(', ') : ''); }
+    const listos = [], fallidos = []; let hechos = 0, bytes = 0, cors = false;
+    const LIMITE = 1.5 * 1024 * 1024 * 1024;
+    let idx = 0;
+    async function trabajador() {
+      while (idx < items.length && !cors) {
+        const it = items[idx++];
+        try {
+          const url = await getDownloadURL(it);
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const datos = new Uint8Array(await resp.arrayBuffer());
+          bytes += datos.length;
+          if (bytes > LIMITE) throw new Error('límite de tamaño');
+          listos.push({ nombre: it.fullPath, datos });
+        } catch (e) {
+          if (e instanceof TypeError) { cors = true; }
+          else fallidos.push(it.fullPath + ' (' + e.message + ')');
+        }
+        hechos++;
+        respEstado('Descargando archivos… ' + hechos + ' de ' + items.length + ' (' + (bytes / 1048576).toFixed(0) + ' MB)');
+      }
+    }
+    await Promise.all([trabajador(), trabajador(), trabajador(), trabajador()]);
+    if (cors) {
+      const b = respEsc(app.options.storageBucket || '');
+      const o = respEsc(location.origin);
+      throw Object.assign(new Error('cors'), { html:
+        '<strong>El navegador no pudo copiar los archivos.</strong> Falta una autorización única en el almacenamiento (CORS). ' +
+        'Abre <em>console.cloud.google.com</em> con la cuenta del proyecto, pulsa el ícono <strong>&gt;_</strong> (Cloud Shell) arriba a la derecha y pega estas dos líneas:' +
+        '<pre style="background:#f4f4f4; padding:0.6rem; font-size:0.75rem; white-space:pre-wrap; user-select:all;">echo \'[{"origin":["' + o + '"],"method":["GET"],"maxAgeSeconds":3600}]\' &gt; cors.json\ngcloud storage buckets update gs://' + b + ' --cors-file=cors.json</pre>' +
+        'Después vuelve aquí y repite la descarga.' });
+    }
+    const leeme = 'Respaldo de archivos del sitio — ' + new Date().toLocaleString('es-CL') + '\nArchivos incluidos: ' + listos.length + ' de ' + items.length + '\n' +
+      (fallidos.length ? '\nNo se pudieron descargar:\n' + fallidos.join('\n') + '\n' : '') + (errores.length ? '\nCarpetas sin acceso:\n' + errores.join('\n') + '\n' : '');
+    listos.push({ nombre: 'LEEME.txt', datos: new TextEncoder().encode(leeme) });
+    respEstado('Armando el archivo ZIP…');
+    respBajar(respZip(listos), 'respaldo_archivos_' + respHoy() + '.zip');
+    return 'Archivos: ' + (listos.length - 1) + ' de ' + items.length + ' (' + (bytes / 1048576).toFixed(0) + ' MB).' + (fallidos.length ? ' No se pudieron descargar ' + fallidos.length + ' (ver LEEME.txt dentro del ZIP).' : '');
+  }
+
+  async function respEjecutar(pasos) {
+    respBloquear(true); const msgs = [];
+    try {
+      for (const p of pasos) msgs.push(await p());
+      respEstado('✅ Listo. ' + msgs.map(respEsc).join('<br>') + '<br>Revisa la carpeta de descargas de tu navegador.');
+    } catch (e) {
+      console.error('Respaldo:', e);
+      respEstado(e.html || ('❌ No se pudo completar el respaldo: ' + respEsc(e.code || e.message || e)) + (msgs.length ? '<br>' + msgs.map(respEsc).join('<br>') : ''));
+    }
+    respBloquear(false);
+  }
+  window.respaldoDatos    = () => respEjecutar([respHacerDatos]);
+  window.respaldoArchivos = () => respEjecutar([respHacerArchivos]);
+  window.respaldoTodo     = () => respEjecutar([respHacerDatos, respHacerArchivos]);
+
   window.descargarApp = async () => {
     const btn = document.getElementById('btnAppDescargar'); const txt = btn.textContent;
     btn.disabled = true; btn.textContent = 'Preparando...';
