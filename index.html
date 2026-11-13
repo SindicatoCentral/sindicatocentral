@@ -417,6 +417,16 @@
     transition: box-shadow 0.2s;
   }
   .noticia:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  /* Solo se muestran las 3 noticias más recientes; el resto queda tras el botón "Ver más noticias" */
+  .noticias-grid:not(.expandido) .noticia-extra { display: none; }
+  .noticias-mas { text-align: center; margin-top: 2rem; }
+  .btn-noticias-mas {
+    background: transparent; border: 1.5px solid var(--rojo); color: var(--rojo);
+    padding: 0.7rem 1.8rem; font: inherit; font-size: 0.88rem; font-weight: 600;
+    letter-spacing: 0.04em; cursor: pointer; border-radius: 2px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-noticias-mas:hover, .btn-noticias-mas:focus-visible { background: var(--rojo); color: #fff; }
   .noticia-head {
     background: var(--gris-claro);
     padding: 1.4rem 1.6rem;
@@ -2875,6 +2885,8 @@ function convertirUrlVideo(url) {
       }
 
       grid.innerHTML = '';
+      grid.classList.remove('expandido');
+      const masPrevio = document.getElementById('noticiasMasWrap'); if (masPrevio) masPrevio.remove();
       window.busquedaIndiceNoticias = [];
       snap.forEach(d => {
         const n = d.data();
@@ -2935,6 +2947,29 @@ function convertirUrlVideo(url) {
         div.appendChild(body);
         grid.appendChild(div);
       });
+
+      // Más de 3 noticias: se ven las 3 más recientes y el resto queda tras "Ver más noticias"
+      const MAX_VISIBLES = 3;
+      const tarjetas = Array.from(grid.querySelectorAll('.noticia'));
+      if (tarjetas.length > MAX_VISIBLES) {
+        tarjetas.slice(MAX_VISIBLES).forEach(t => t.classList.add('noticia-extra'));
+        const extras = tarjetas.length - MAX_VISIBLES;
+        const wrap = document.createElement('div');
+        wrap.className = 'noticias-mas'; wrap.id = 'noticiasMasWrap';
+        const bm = document.createElement('button');
+        bm.type = 'button'; bm.className = 'btn-noticias-mas';
+        bm.setAttribute('aria-expanded', 'false'); bm.setAttribute('aria-controls', 'noticiasGrid');
+        const txtMas = 'Ver más noticias (' + extras + ')';
+        bm.textContent = txtMas;
+        bm.addEventListener('click', () => {
+          const abierto = grid.classList.toggle('expandido');
+          bm.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+          bm.textContent = abierto ? 'Ver menos noticias' : txtMas;
+          if (!abierto) document.getElementById('noticias').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        wrap.appendChild(bm);
+        grid.insertAdjacentElement('afterend', wrap);
+      }
     } catch(e) {
       console.error('Error cargando noticias:', e);
       const grid = document.getElementById('noticiasGrid');
