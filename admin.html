@@ -540,6 +540,7 @@
           <button type="button" class="btn-guardar" onclick="certGenerar()">Generar certificado</button>
           <button type="button" class="btn-guardar" id="btnCertPdf" onclick="certDescargarPdf()" style="display:none;">⬇ Descargar PDF</button>
           <button type="button" class="btn-cancelar" id="btnCertImprimir" onclick="certImprimir()" style="display:none;">🖨 Imprimir</button>
+          <button type="button" class="btn-cancelar" id="btnCertNuevo" onclick="certNuevo()">✨ Limpiar / Nuevo certificado</button>
         </div>
         <div id="certMsg" style="font-size:0.85rem; color:#B71C1C; margin-top:0.8rem; min-height:1.2em;"></div>
         <div id="certPreviewWrap" style="display:none;"><div id="certPreviewBox"><div id="certPreview"></div></div></div>
@@ -2762,6 +2763,20 @@
     document.getElementById('btnCertImprimir').style.display = 'inline-block';
     document.getElementById('btnCertPdf').style.display = 'inline-block';
     window.certUltimo = d;
+  };
+  window.certNuevo = () => {
+    ['certNombre', 'certRut', 'certIncorp', 'certDestino'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('certTrato').value = 'Don';
+    const h = new Date();
+    document.getElementById('certEmision').value = h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0') + '-' + String(h.getDate()).padStart(2, '0');
+    document.getElementById('certPrint').innerHTML = '';
+    document.getElementById('certPreview').innerHTML = '';
+    document.getElementById('certPreviewWrap').style.display = 'none';
+    document.getElementById('btnCertPdf').style.display = 'none';
+    document.getElementById('btnCertImprimir').style.display = 'none';
+    const msg = document.getElementById('certMsg'); msg.textContent = ''; msg.style.color = '';
+    window.certUltimo = null;
+    document.getElementById('certNombre').focus();
   };
   window.certImprimir = () => { if (document.getElementById('certPrint').innerHTML) window.print(); };
   (function () { const h = new Date(); document.getElementById('certEmision').value = h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0') + '-' + String(h.getDate()).padStart(2, '0'); })();
