@@ -1091,6 +1091,7 @@
 
   // ── TABS ──
   window.cambiarTab = (tab, el) => {
+    if (tab !== 'certificados' && window.certNuevo) window.certNuevo(true);   // al salir de Certificados se limpian los datos
     document.querySelectorAll('.tab-p').forEach(t => t.classList.remove('activo'));
     el.classList.add('activo');
     document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
@@ -2764,7 +2765,7 @@
     document.getElementById('btnCertPdf').style.display = 'inline-block';
     window.certUltimo = d;
   };
-  window.certNuevo = () => {
+  window.certNuevo = (sinFoco) => {
     ['certNombre', 'certRut', 'certIncorp', 'certDestino'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('certTrato').value = 'Don';
     const h = new Date();
@@ -2776,7 +2777,7 @@
     document.getElementById('btnCertImprimir').style.display = 'none';
     const msg = document.getElementById('certMsg'); msg.textContent = ''; msg.style.color = '';
     window.certUltimo = null;
-    document.getElementById('certNombre').focus();
+    if (sinFoco !== true) document.getElementById('certNombre').focus();
   };
   window.certImprimir = () => { if (document.getElementById('certPrint').innerHTML) window.print(); };
   (function () { const h = new Date(); document.getElementById('certEmision').value = h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0') + '-' + String(h.getDate()).padStart(2, '0'); })();
