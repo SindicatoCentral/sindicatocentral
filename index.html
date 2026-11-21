@@ -1572,6 +1572,7 @@
     nav .nav-right img.nav-logo-ucen { height: 24px; }
     nav .nav-right .nav-cta { font-size: 0.58rem !important; padding: 0.4rem 0.5rem !important; }
   }
+  .doc-nota { margin-top:1.2rem; padding:0.9rem 1.1rem; background:var(--gris-claro); border-left:3px solid var(--rojo); font-size:0.9rem; line-height:1.6; color:var(--carbon); }
 </style>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">emailjs.init("ihfUuwYWzNx9WwHoE");</script>
@@ -2129,6 +2130,7 @@ setTimeout(function () {
           <button class="btn-descarga" id="btnRetiroFormulario" onclick="descargarArchivo(this)">⬇ Descargar formulario</button>
         </div>
       </div>
+      <div class="doc-nota" id="notaRetiroFormulario" style="display:none;">El formulario se encontrará habilitado durante el proceso de postulación.</div>
     </div>
 
     <!-- Becas de postgrado -->
@@ -2150,6 +2152,7 @@ setTimeout(function () {
           <button class="btn-descarga" id="btnBecasFormulario" onclick="descargarArchivo(this)">⬇ Descargar formulario</button>
         </div>
       </div>
+      <div class="doc-nota" id="notaBecasFormulario" style="display:none;">El formulario se encontrará habilitado durante el proceso de postulación.</div>
     </div>
 
     <!-- Transparencia financiera -->
@@ -2407,7 +2410,7 @@ const busquedaIndiceEstatico = [
   { titulo: 'Oscar González Morales', texto: 'Director de la directiva sindical', anchor: 'directiva', tipo: 'Directiva' },
   { titulo: 'Noticias y comunicados', texto: 'Últimas novedades del sindicato', anchor: 'noticias', tipo: 'Sección' },
   { titulo: 'Galería', texto: 'Fotos de eventos del sindicato', anchor: 'galeria', tipo: 'Sección' },
-  { titulo: 'Documentos', texto: 'Estatuto, formulario de inscripción, protocolo y formulario de retiro voluntario, becas de postgrado (Magíster y Advance), contrato colectivo, presupuesto anual, revisión de cuentas, transparencia, descargas', anchor: 'documentos', tipo: 'Sección', esOculta: true },
+  { titulo: 'Documentos', texto: 'Estatuto, formulario de inscripción, contrato colectivo, presupuesto anual, revisión de cuentas, transparencia, descargas', anchor: 'documentos', tipo: 'Sección', esOculta: true },
   { titulo: 'Estatuto', texto: 'Descarga el estatuto del sindicato', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Formulario de inscripción', texto: 'Descarga el formulario de afiliación', anchor: 'documentos', tipo: 'Documento', esOculta: true },
   { titulo: 'Contrato colectivo', texto: 'Descarga el contrato colectivo vigente', anchor: 'documentos', tipo: 'Documento', esOculta: true },
@@ -3302,8 +3305,17 @@ function convertirUrlVideo(url) {
         document.getElementById('cardEstatuto').style.display = 'block';
       }
 
+      // Período de postulaciones: el panel puede ocultar retiro voluntario y/o becas (sin configurar = visibles)
+      let verRetiro = true, verBecas = true;
+      try {
+        const snPost = await getDoc(doc(db, 'config', 'postulaciones'));
+        if (snPost.exists()) { verRetiro = snPost.data().retiro !== false; verBecas = snPost.data().becas !== false; }
+      } catch (e) { console.warn('postulaciones:', e); }
       // Retiro voluntario: protocolo (PDF) y formulario (Word); solo se muestran si ya fueron subidos
       for (const [id, cap, nombre, wrap] of [['retiroProtocolo', 'RetiroProtocolo', 'protocolo_retiro_voluntario', 'retiroWrap'], ['retiroFormulario', 'RetiroFormulario', 'formulario_retiro_voluntario', 'retiroWrap'], ['becasProtocolo', 'BecasProtocolo', 'protocolo_becas_postgrado', 'becasWrap'], ['becasFormulario', 'BecasFormulario', 'formulario_becas_postgrado', 'becasWrap']]) {
+        const esFormulario = id.endsWith('Formulario');
+        const habilitado = wrap === 'retiroWrap' ? verRetiro : verBecas;
+        if (esFormulario && !habilitado) continue;   // el formulario solo se ve durante el período de postulación (se controla desde el panel)
         const sn = await getDoc(doc(db, 'documentos', id));
         if (sn.exists() && sn.data().url) {
           document.getElementById('btn' + cap).dataset.url = sn.data().url;
@@ -3312,6 +3324,9 @@ function convertirUrlVideo(url) {
           document.getElementById(wrap).style.display = 'block';
         }
       }
+      // Con las postulaciones cerradas, los protocolos siguen visibles y se avisa cuándo estará el formulario
+      if (!verRetiro && document.getElementById('retiroWrap').style.display === 'block') document.getElementById('notaRetiroFormulario').style.display = 'block';
+      if (!verBecas && document.getElementById('becasWrap').style.display === 'block') document.getElementById('notaBecasFormulario').style.display = 'block';
 
       // Contratos
       const snapContratos = await getDocs(query(collection(db, 'documentos', 'contratos', 'lista'), orderBy('anoInicio', 'desc')));
